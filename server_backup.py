@@ -1,0 +1,29 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import anthropic
+import os
+
+app = Flask(_name_)
+app.static_folder = "."
+CORS(app)
+
+client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+
+@app.route("/")
+def home():
+    return app.send_static_file("index.html")
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    data = request.json
+    user_message = data["message"]
+    response = client.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=1024,
+        messages=[{"role": "user", "content": user_message}]
+    )
+    reply = response.content[0].text
+    return jsonify({"reply": reply})
+
+if _name_ == "_main_":
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
