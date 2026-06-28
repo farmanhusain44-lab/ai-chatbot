@@ -4,11 +4,14 @@ import anthropic
 import os
 
 app = Flask(__name__)
+app.static_folder = '.'
 CORS(app)
 
 client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
-@app.route('/chat', methods=['POST'])
+@app.route('/')
+def home():
+    return app.send_static_file('index.html')@app.route('/chat', methods=['POST'])
 def chat():
     data = request.json
     user_message = data['message']
