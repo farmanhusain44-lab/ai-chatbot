@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chatbot Service</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #0a0a0a; color: white; }
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+        h1 { font-size: 3rem; margin-bottom: 20px; }
+        p { font-size: 1.2rem; margin-bottom: 30px; opacity: 0.9; }
+        .btn {
+            background: white;
+            color: #764ba2;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+        .chat-overlay {
+            display: none;
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .chat-overlay.active { display: flex; }
+        .chat-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-header h3 { color: white; font-size: 1rem; }
+        .close-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .message {
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 80%;
+            font-size: 0.9rem;
+            color: #333;
+        }
+        .bot-message { background: #f0f0f0; align-self: flex-start; }
+        .user-message {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            align-self: flex-end;
+        }
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #eee;
+            gap: 10px;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            outline: none;
+            font-size: 0.9rem;
+            color: #333;
+        }
+        .send-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+        .typing { color: #999; font-size: 0.8rem; padding: 5px 15px; }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <h1>🤖 AI Chatbot Solutions</h1>
+        <p>We build intelligent chatbots for your business</p>
+        <button class="btn" onclick="openChat()">Get Started</button>
+    </div>
+
+    <div class="chat-overlay" id="chatBox">
+        <div class="chat-header">
+            <h3>🤖 AI Assistant</h3>
+            <button class="close-btn" onclick="closeChat()">×</button>
+        </div>
+        <div class="chat-messages" id="messages">
+            <div class="message bot-message">
+                Hello! I am your AI assistant. How can I help you today? 😊
+            </div>
+        </div>
+        <div id="typing" class="typing" style="display:none">AI is typing...</div>
+        <div class="chat-input">
+            <input type="text" id="userInput" placeholder="Type your message..."
+            onkeypress="if(event.key==='Enter') sendMessage()"/>
+            <button class="send-btn" onclick="sendMessage()">➤</button>
+        </div>
+    </div>
+
+    <script>
+        function openChat() {
+            document.getElementById('chatBox').classList.add('active');
+        }
+        function closeChat() {
+            document.getElementById('chatBox').classList.remove('active');
+        }
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const messages = document.getElementById('messages');
+            const typing = document.getElementById('typing');
+            if (!input.value.trim()) return;
+            const userText = input.value;
+            input.value = '';
+            messages.innerHTML += `<div class="message user-message">${userText}</div>`;
+            typing.style.display = 'block';
+            messages.scrollTop = messages.scrollHeight;
+            try {
+                const response = await fetch('http://127.0.0.1:5000/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: userText })
+                });
+                const data = await response.json();
+                typing.style.display = 'none';
+                messages.innerHTML += `<div class="message bot-message">${data.reply}</div>`;
+                messages.scrollTop = messages.scrollHeight;
+            } catch (error) {
+                typing.style.display = 'none';
+                messages.innerHTML += `<div class="message bot-message">Error! Please try again.</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
