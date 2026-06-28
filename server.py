@@ -3,7 +3,7 @@ from flask_cors import CORS
 import anthropic
 import os
 
-app = Flask(_name_)
+app = Flask(__name__)
 app.static_folder = "."
 CORS(app)
 
@@ -25,5 +25,5 @@ def chat():
     reply = response.content[0].text
     return jsonify({"reply": reply})
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
