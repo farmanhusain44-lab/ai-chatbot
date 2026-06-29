@@ -6,7 +6,6 @@ import os
 app = Flask(__name__, static_folder='.')
 CORS(app)
 port = int(os.environ.get("PORT", 8080))
-port = int(os.environ.get("PORT", 8080))
 
 client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
