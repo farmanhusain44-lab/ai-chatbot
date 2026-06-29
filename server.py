@@ -3,8 +3,7 @@ from flask_cors import CORS
 import anthropic
 import os
 
-app = Flask(__name__)
-app.static_folder = "."
+app = Flask(__name__, static_folder='.')
 CORS(app)
 
 client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
