@@ -5,6 +5,8 @@ import os
 
 app = Flask(__name__, static_folder='.')
 CORS(app)
+port = int(os.environ.get("PORT", 8080))
+port = int(os.environ.get("PORT", 8080))
 
 client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
@@ -25,5 +27,5 @@ def chat():
     return jsonify({"reply": reply})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(host="0.0.0.0", port=port, debug=True)  # 8080 ki jagah port
 
