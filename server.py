@@ -3,7 +3,7 @@ from flask_cors import CORS
 import anthropic
 import os
 
-app = Flask(__name__, static_folder='.')
+app = Flask(__name__, static_folder='static')
 CORS(app)
 port = int(os.environ.get("PORT", 8080))
 
