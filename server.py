@@ -1,17 +1,17 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template_string
 from flask_cors import CORS
 import anthropic
 import os
 
-app = Flask(__name__, static_folder='static')
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 CORS(app)
-port = int(os.environ.get("PORT", 8080))
 
 client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
 @app.route("/")
 def home():
-    return app.send_static_file("index.html")
+    with open('static/index.html', 'r') as f:
+        return f.read()
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -26,5 +26,5 @@ def chat():
     return jsonify({"reply": reply})
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=port, debug=True)  # 8080 ki jagah port
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
 
