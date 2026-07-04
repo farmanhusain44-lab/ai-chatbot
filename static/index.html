@@ -144,7 +144,7 @@
             font-size: 1rem;
             color: #333;
         }
-        .send-btn {
+        .send-btn, .mic-btn {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             border: none;
@@ -156,6 +156,16 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: transform 0.2s;
+        }
+        .mic-btn.listening {
+            background: #e74c3c;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
         @media (max-width: 900px) {
             .container { flex-direction: column; }
@@ -194,7 +204,9 @@
             <div id="typing" class="typing" style="display:none">AI is typing...</div>
             <div class="chat-input">
                 <input type="text" id="userInput" placeholder="Type your message..."
+                autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
                 onkeypress="if(event.key==='Enter') sendMessage()"/>
+                <button class="mic-btn" id="micBtn" onclick="toggleVoiceInput()">🎤</button>
                 <button class="send-btn" onclick="sendMessage()">➤</button>
             </div>
         </div>
@@ -216,6 +228,59 @@
             ur: 'ur-PK',
             ar: 'ar-SA'
         };
+
+        const recognitionLangs = {
+            en: 'en-US',
+            hi: 'hi-IN',
+            ur: 'ur-PK',
+            ar: 'ar-SA'
+        };
+
+        let recognition = null;
+        let isListening = false;
+
+        function initRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert('Voice input not supported in this browser. Try Chrome.');
+                return null;
+            }
+            const rec = new SpeechRecognition();
+            rec.continuous = false;
+            rec.interimResults = false;
+            rec.onresult = function(event) {
+                const text = event.results[0][0].transcript;
+                document.getElementById('userInput').value = text;
+                toggleVoiceInput();
+                sendMessage();
+            };
+            rec.onerror = function(event) {
+                console.error('Speech error:', event.error);
+                toggleVoiceInput();
+            };
+            rec.onend = function() {
+                isListening = false;
+                document.getElementById('micBtn').classList.remove('listening');
+            };
+            return rec;
+        }
+
+        function toggleVoiceInput() {
+            if (!recognition) {
+                recognition = initRecognition();
+                if (!recognition) return;
+            }
+            if (isListening) {
+                recognition.stop();
+                isListening = false;
+                document.getElementById('micBtn').classList.remove('listening');
+            } else {
+                recognition.lang = recognitionLangs[currentLanguage] || 'en-US';
+                recognition.start();
+                isListening = true;
+                document.getElementById('micBtn').classList.add('listening');
+            }
+        }
 
         function speakElement(elementId) {
             const el = document.getElementById(elementId);
