@@ -202,7 +202,7 @@
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
             background: white;
         }
-        .send-btn, .mic-btn, .mute-btn {
+        .send-btn, .mic-btn {
             border: none;
             border-radius: 50%;
             width: 46px;
@@ -214,22 +214,6 @@
             transition: all 0.2s;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             flex-shrink: 0;
-        }
-        .mute-btn {
-            background: white;
-            color: #667eea;
-            border: 1px solid #e0e0e0;
-            font-size: 1.1rem;
-        }
-        .mute-btn:hover {
-            background: #f8f9fa;
-            border-color: #667eea;
-            transform: scale(1.05);
-        }
-        .mute-btn.muted {
-            background: #e74c3c;
-            color: white;
-            border-color: #e74c3c;
         }
         .send-btn {
             background: linear-gradient(135deg, #667eea, #764ba2);
@@ -347,13 +331,6 @@
                         <line x1="8" y1="23" x2="16" y2="23"></line>
                     </svg>
                 </button>
-                <button class="mute-btn" id="muteBtn" onclick="toggleMute()" aria-label="Toggle voice" title="Toggle voice">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                    </svg>
-                </button>
                 <div class="voice-hint" id="voiceHint">Listening...</div>
                 <button class="send-btn" onclick="sendMessage()">➤</button>
             </div>
@@ -371,43 +348,11 @@
 
         const playIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`;
         const pauseIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>`;
-        const unmutedIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`;
-        const mutedIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>`;
-
-        let isMuted = false;
         let recognition = null;
         let isListening = false;
+        let voiceSendTimer = null;
         let currentAudio = null;
         let currentAudioMsg = null;
-
-        function playBeep(frequency = 800, duration = 120) {
-            try {
-                const AudioCtx = window.AudioContext || window.webkitAudioContext;
-                if (!AudioCtx) return;
-                const ctx = new AudioCtx();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.frequency.value = frequency;
-                osc.type = 'sine';
-                gain.gain.setValueAtTime(0.1, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration / 1000);
-                osc.start(ctx.currentTime);
-                osc.stop(ctx.currentTime + duration / 1000);
-            } catch (e) {
-                console.error('Beep error:', e);
-            }
-        }
-
-        function toggleMute() {
-            isMuted = !isMuted;
-            const btn = document.getElementById('muteBtn');
-            btn.classList.toggle('muted', isMuted);
-            btn.innerHTML = isMuted ? mutedIcon : unmutedIcon;
-            playBeep(isMuted ? 300 : 700, 140);
-            if (isMuted) stopVoice();
-        }
 
         function initRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -421,13 +366,16 @@
             rec.onresult = function(event) {
                 const input = document.getElementById('userInput');
                 let finalText = input.value;
+                let gotFinal = false;
                 for (let i = event.resultIndex; i < event.results.length; i++) {
                     const transcript = event.results[i][0].transcript;
                     if (event.results[i].isFinal) {
                         finalText = (finalText ? finalText + ' ' : '') + transcript;
+                        gotFinal = true;
                     }
                 }
                 input.value = finalText;
+                if (gotFinal) scheduleVoiceSend();
             };
             rec.onerror = function(event) {
                 console.error('Speech error:', event.error);
@@ -439,6 +387,17 @@
                 }
             };
             return rec;
+        }
+
+        function scheduleVoiceSend() {
+            if (voiceSendTimer) clearTimeout(voiceSendTimer);
+            voiceSendTimer = setTimeout(() => {
+                const text = document.getElementById('userInput').value.trim();
+                if (text) {
+                    document.getElementById('userInput').value = '';
+                    sendMessage();
+                }
+            }, 1500);
         }
 
         function setListeningState(listening) {
@@ -460,10 +419,9 @@
                 if (!recognition) return;
             }
             if (isListening) {
+                if (voiceSendTimer) clearTimeout(voiceSendTimer);
                 recognition.stop();
                 setListeningState(false);
-                const text = document.getElementById('userInput').value.trim();
-                if (text) sendMessage();
             } else {
                 document.getElementById('userInput').value = '';
                 recognition.lang = 'en-US';
@@ -529,11 +487,6 @@
             const msg = document.getElementById(id);
             const text = msg.querySelector('.bot-text').textContent;
             const lang = msg.dataset.lang || 'en';
-
-            if (isMuted) {
-                alert('Voice is muted. Tap the mute button to unmute.');
-                return;
-            }
 
             if (currentAudio && currentAudioMsg === id) {
                 if (currentAudio.paused) currentAudio.play();
