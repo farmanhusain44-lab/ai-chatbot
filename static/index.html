@@ -647,6 +647,13 @@
             const userText = voiceText ? voiceText.trim() : input.value.trim();
             if (!userText) return;
             input.value = '';
+
+            // If user typed (not voice), disable voice mode so replies stay text-only
+            if (!voiceText) {
+                stopVoiceInput();
+                stopVoice();
+            }
+
             addUserMessage(userText);
             typing.style.display = 'block';
             messages.scrollTop = messages.scrollHeight;
