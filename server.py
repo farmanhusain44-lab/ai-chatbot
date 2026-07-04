@@ -28,28 +28,43 @@ if twilio_sid and twilio_token:
 
 elevenlabs_key = os.environ.get("ELEVENLABS_API_KEY")
 
-# Male voice IDs for ElevenLabs (Adam is a clear male voice that works across languages)
-ELEVENLABS_VOICES = {
-    "en": "pNInz6obpgDQGcFmaJgB",
-    "hi": "pNInz6obpgDQGcFmaJgB",
-    "ur": "pNInz6obpgDQGcFmaJgB",
-    "ar": "pNInz6obpgDQGcFmaJgB"
-}
-
 LANGUAGE_NAMES = {
     "en": "English",
     "hi": "Hindi",
     "ur": "Urdu",
-    "ar": "Arabic"
+    "ar": "Arabic",
+    "bn": "Bangla",
+    "pa": "Punjabi",
+    "ta": "Tamil",
+    "te": "Telugu",
+    "ml": "Malayalam",
+    "kn": "Kannada",
+    "mr": "Marathi",
+    "gu": "Gujarati",
+    "or": "Odia",
+    "as": "Assamese",
+    "es": "Spanish",
+    "fr": "French",
+    "de": "German",
+    "zh": "Chinese",
+    "ja": "Japanese",
+    "ko": "Korean",
+    "ru": "Russian",
+    "pt": "Portuguese",
+    "it": "Italian",
+    "tr": "Turkish"
 }
+
+# Male voice IDs for ElevenLabs (Adam is a clear male voice that works across languages)
+# All languages use the same multilingual voice; ElevenLabs model detects language automatically.
+ELEVENLABS_VOICES = {k: "pNInz6obpgDQGcFmaJgB" for k in LANGUAGE_NAMES}
 
 def detect_language(text):
     try:
         lang = detect(text)
         if lang in LANGUAGE_NAMES:
             return lang
-        if lang == "pa" or lang == "mr":
-            return "hi"
+        # Fallback mappings for close languages
         if lang == "fa":
             return "ur"
         return "en"
