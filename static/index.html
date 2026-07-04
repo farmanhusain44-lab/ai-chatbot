@@ -567,6 +567,29 @@
                 || voices[0];
         }
 
+        function createTTSFallback(text, lang, onPlay, onEnd) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = recognitionLangs[lang] || 'en-US';
+            const voice = getTTSVoice(lang);
+            if (voice) utterance.voice = voice;
+            let playing = false;
+            utterance.onstart = () => { playing = true; if (onPlay) onPlay(); };
+            utterance.onend = () => { playing = false; if (onEnd) onEnd(); };
+            utterance.onerror = () => { playing = false; if (onEnd) onEnd(); };
+            return {
+                play: () => {
+                    window.speechSynthesis.cancel();
+                    window.speechSynthesis.speak(utterance);
+                },
+                pause: () => {
+                    window.speechSynthesis.cancel();
+                    playing = false;
+                    if (onEnd) onEnd();
+                },
+                get paused() { return !playing; }
+            };
+        }
+
         function toggleVoiceInput() {
             if (isListening) {
                 stopVoiceInput();
@@ -686,21 +709,19 @@
                 setVoiceLoading(id, false);
                 // Fallback to browser TTS
                 if (window.speechSynthesis) {
-                    const utterance = new SpeechSynthesisUtterance(text);
-                    utterance.lang = recognitionLangs[lang] || 'en-US';
-                    const voice = getTTSVoice(lang);
-                    if (voice) utterance.voice = voice;
-                    window.speechSynthesis.cancel();
-                    window.speechSynthesis.speak(utterance);
+                    currentAudio = createTTSFallback(text, lang,
+                        () => {
+                            updateVoiceUI(id, 'playing');
+                            if (voiceMode) pauseVoiceInput();
+                        },
+                        () => {
+                            stopVoice();
+                            if (voiceMode) resumeVoiceInput();
+                        }
+                    );
+                    currentAudioMsg = id;
                     updateVoiceUI(id, 'playing');
-                    utterance.onend = () => {
-                        updateVoiceUI(id, 'idle');
-                        if (voiceMode) resumeVoiceInput();
-                    };
-                    utterance.onerror = () => {
-                        updateVoiceUI(id, 'idle');
-                        if (voiceMode) resumeVoiceInput();
-                    };
+                    currentAudio.play();
                 } else {
                     alert('Voice failed: ' + err.message);
                 }
