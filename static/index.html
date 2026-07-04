@@ -363,7 +363,7 @@
                 <input type="text" id="userInput" placeholder="Type your message..."
                 autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
                 onkeydown="if(event.key==='Enter'){ event.preventDefault(); sendMessage(); }"/>
-                <button class="mic-btn" id="micBtn" onclick="toggleVoiceInput()" aria-label="Voice input">
+                <button type="button" class="mic-btn" id="micBtn" onclick="toggleVoiceInput()" aria-label="Voice input">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
                         <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
@@ -372,7 +372,7 @@
                     </svg>
                 </button>
                 <div class="voice-hint" id="voiceHint">Listening...</div>
-                <button class="send-btn" onclick="sendMessage()">➤</button>
+                <button type="button" class="send-btn" onclick="sendMessage()">➤</button>
             </div>
         </div>
     </div>
@@ -572,18 +572,22 @@
         }
 
         function createTTSFallback(text, lang, onPlay, onEnd) {
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = recognitionLangs[lang] || 'en-US';
-            const voice = getTTSVoice(lang);
-            if (voice) utterance.voice = voice;
             let playing = false;
-            utterance.onstart = () => { playing = true; if (onPlay) onPlay(); };
-            utterance.onend = () => { playing = false; if (onEnd) onEnd(); };
-            utterance.onerror = () => { playing = false; if (onEnd) onEnd(); };
+            function makeUtterance() {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = recognitionLangs[lang] || 'en-US';
+                const voice = getTTSVoice(lang);
+                if (voice) utterance.voice = voice;
+                utterance.onstart = () => { if (onPlay) onPlay(); };
+                utterance.onend = () => { playing = false; if (onEnd) onEnd(); };
+                utterance.onerror = () => { playing = false; if (onEnd) onEnd(); };
+                return utterance;
+            }
             return {
                 play: () => {
+                    playing = true;
                     window.speechSynthesis.cancel();
-                    window.speechSynthesis.speak(utterance);
+                    window.speechSynthesis.speak(makeUtterance());
                 },
                 pause: () => {
                     window.speechSynthesis.cancel();
@@ -636,10 +640,11 @@
         function stopVoice() {
             if (currentAudio) {
                 const id = currentAudioMsg;
-                currentAudio.pause();
+                const audio = currentAudio;
                 currentAudio = null;
-                updateVoiceUI(id, 'idle');
                 currentAudioMsg = null;
+                audio.pause();
+                updateVoiceUI(id, 'idle');
             }
         }
 
