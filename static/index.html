@@ -314,7 +314,13 @@
                     <div class="avatar bot-avatar">🤖</div>
                     <div class="message bot-message" id="welcomeMsg">
                         <span class="bot-text">Hello! I am your AI assistant. I know about many topics — ask me anything! 😊</span>
-                        <button class="speak-btn" onclick="speakElement('welcomeMsg', this)">🔊</button>
+                        <button class="speak-btn" onclick="speakElement('welcomeMsg', this)" aria-label="Play voice">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -442,18 +448,34 @@
         let currentAudio = null;
         let currentAudioBtn = null;
 
+        const speakerIcon = `
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>`;
+        const playIcon = `
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>`;
+        const pauseIcon = `
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="6" y="4" width="4" height="16"></rect>
+                <rect x="14" y="4" width="4" height="16"></rect>
+            </svg>`;
+
         function setBtnState(btn, state) {
             if (!btn) return;
             btn.classList.remove('loading');
             if (state === 'loading') {
-                btn.textContent = '';
+                btn.innerHTML = '';
                 btn.classList.add('loading');
             } else if (state === 'play') {
-                btn.textContent = '▶';
+                btn.innerHTML = playIcon;
             } else if (state === 'pause') {
-                btn.textContent = '⏸';
+                btn.innerHTML = pauseIcon;
             } else {
-                btn.textContent = '🔊';
+                btn.innerHTML = speakerIcon;
             }
         }
 
@@ -529,7 +551,7 @@
                 <div class="avatar bot-avatar">🤖</div>
                 <div class="message bot-message" id="${id}">
                     <span class="bot-text">${text}</span>
-                    <button class="speak-btn" onclick="speakElement('${id}', this)">🔊</button>
+                    <button class="speak-btn" onclick="speakElement('${id}', this)" aria-label="Play voice">${speakerIcon}</button>
                 </div>
             `;
             messages.appendChild(row);
