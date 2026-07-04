@@ -710,10 +710,10 @@
                 });
             })
             .catch(err => {
-                console.error('Voice play error:', err);
+                console.error('Voice play error:', err && err.message ? err.message : err);
                 setVoiceLoading(id, false);
                 // Fallback to browser TTS
-                if (window.speechSynthesis) {
+                if (window.speechSynthesis && window.speechSynthesis.speak) {
                     currentAudio = createTTSFallback(text, lang,
                         () => {
                             updateVoiceUI(id, 'playing');
@@ -728,7 +728,7 @@
                     updateVoiceUI(id, 'playing');
                     currentAudio.play();
                 } else {
-                    alert('Voice failed: ' + err.message);
+                    alert('Voice failed. Please check your audio/speech settings or try a different browser.');
                 }
             });
         }
