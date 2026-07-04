@@ -336,6 +336,11 @@
         }
 
         let currentAudio = null;
+        let currentAudioBtn = null;
+
+        function resetAudioBtn(btn) {
+            if (btn) btn.textContent = '🔊';
+        }
 
         function speakElement(elementId, btn) {
             const el = document.getElementById(elementId);
@@ -344,9 +349,22 @@
         }
 
         function speak(text, lang, btn) {
+            // Same button clicked while audio exists -> toggle play/pause
+            if (currentAudio && currentAudioBtn === btn) {
+                if (currentAudio.paused) {
+                    currentAudio.play();
+                } else {
+                    currentAudio.pause();
+                }
+                return;
+            }
+
+            // Different button clicked -> stop current and start new
             if (currentAudio) {
                 currentAudio.pause();
+                resetAudioBtn(currentAudioBtn);
                 currentAudio = null;
+                currentAudioBtn = null;
             }
 
             if (btn) btn.textContent = '⏳';
@@ -363,15 +381,27 @@
             .then(blob => {
                 const url = URL.createObjectURL(blob);
                 currentAudio = new Audio(url);
+                currentAudioBtn = btn;
                 currentAudio.play();
+                if (btn) btn.textContent = '⏸';
                 currentAudio.onended = function() {
-                    if (btn) btn.textContent = '🔊';
+                    resetAudioBtn(currentAudioBtn);
+                    currentAudio = null;
+                    currentAudioBtn = null;
+                };
+                currentAudio.onpause = function() {
+                    if (btn && currentAudio.currentTime > 0 && currentAudio.currentTime < currentAudio.duration) {
+                        btn.textContent = '▶';
+                    }
+                };
+                currentAudio.onplay = function() {
+                    if (btn) btn.textContent = '⏸';
                 };
             })
             .catch(err => {
                 console.error(err);
                 alert('Voice failed. Please try again.');
-                if (btn) btn.textContent = '🔊';
+                resetAudioBtn(btn);
             });
         }
 
