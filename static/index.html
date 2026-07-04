@@ -115,8 +115,30 @@
             color: #667eea;
             opacity: 0.8;
             transition: opacity 0.2s;
+            min-width: 28px;
+            min-height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .speak-btn:hover { opacity: 1; }
+        .speak-btn.loading {
+            color: transparent;
+            position: relative;
+        }
+        .speak-btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(102, 126, 234, 0.25);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
         .user-message {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
@@ -338,8 +360,19 @@
         let currentAudio = null;
         let currentAudioBtn = null;
 
-        function resetAudioBtn(btn) {
-            if (btn) btn.textContent = '🔊';
+        function setBtnState(btn, state) {
+            if (!btn) return;
+            btn.classList.remove('loading');
+            if (state === 'loading') {
+                btn.textContent = '';
+                btn.classList.add('loading');
+            } else if (state === 'play') {
+                btn.textContent = '▶';
+            } else if (state === 'pause') {
+                btn.textContent = '⏸';
+            } else {
+                btn.textContent = '🔊';
+            }
         }
 
         function speakElement(elementId, btn) {
@@ -362,12 +395,12 @@
             // Different button clicked -> stop current and start new
             if (currentAudio) {
                 currentAudio.pause();
-                resetAudioBtn(currentAudioBtn);
+                setBtnState(currentAudioBtn, 'idle');
                 currentAudio = null;
                 currentAudioBtn = null;
             }
 
-            if (btn) btn.textContent = '⏳';
+            setBtnState(btn, 'loading');
 
             fetch('/speak', {
                 method: 'POST',
@@ -383,25 +416,25 @@
                 currentAudio = new Audio(url);
                 currentAudioBtn = btn;
                 currentAudio.play();
-                if (btn) btn.textContent = '⏸';
+                setBtnState(btn, 'pause');
                 currentAudio.onended = function() {
-                    resetAudioBtn(currentAudioBtn);
+                    setBtnState(currentAudioBtn, 'idle');
                     currentAudio = null;
                     currentAudioBtn = null;
                 };
                 currentAudio.onpause = function() {
                     if (btn && currentAudio.currentTime > 0 && currentAudio.currentTime < currentAudio.duration) {
-                        btn.textContent = '▶';
+                        setBtnState(btn, 'play');
                     }
                 };
                 currentAudio.onplay = function() {
-                    if (btn) btn.textContent = '⏸';
+                    setBtnState(btn, 'pause');
                 };
             })
             .catch(err => {
                 console.error(err);
                 alert('Voice failed. Please try again.');
-                resetAudioBtn(btn);
+                setBtnState(btn, 'idle');
             });
         }
 
