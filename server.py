@@ -204,7 +204,8 @@ def speak():
     try:
         resp = requests.post(url, json=payload, headers=headers, timeout=60)
         if resp.status_code != 200:
-            return jsonify({"error": "ElevenLabs error"}), 500
+            logger.error("ElevenLabs error: status=%s, body=%s", resp.status_code, resp.text[:500])
+            return jsonify({"error": "ElevenLabs error", "details": resp.text[:200]}), 500
         return Response(resp.content, mimetype="audio/mpeg")
     except Exception as e:
         logger.error("ElevenLabs error: %s", e)
