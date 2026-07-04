@@ -8,6 +8,14 @@ from twilio.twiml.messaging_response import MessagingResponse
 from langdetect import detect
 from langdetect.lang_detect_exception import LangDetectException
 import requests
+import logging
+
+# Configure logging so errors appear in Gunicorn/Railway logs
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__, static_folder='static')
 CORS(app)
@@ -17,7 +25,12 @@ port = int(os.environ.get("PORT", 8080))
 def serve_public(filename):
     return send_from_directory('public', filename)
 
-client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+# Warn at startup if the API key is missing so it shows up in deploy logs
+api_key = os.environ.get("ANTHROPIC_API_KEY")
+if not api_key:
+    logger.warning("ANTHROPIC_API_KEY environment variable is not set — API calls will fail")
+
+client = anthropic.Anthropic(api_key=api_key)
 
 twilio_sid = os.environ.get("TWILIO_ACCOUNT_SID")
 twilio_token = os.environ.get("TWILIO_AUTH_TOKEN")
@@ -121,17 +134,45 @@ def home():
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    data = request.json
-    user_message = data["message"]
+    data = request.get_json(silent=True)
+    if not data:
+        logger.warning("Received request with no JSON body")
+        return jsonify({"error": "Request body must be JSON"}), 400
+
+    user_message = data.get("message", "").strip()
+    if not user_message:
+        logger.warning("Received request with missing or empty 'message' field")
+        return jsonify({"error": "Field 'message' is required and cannot be empty"}), 400
+
     language = data.get("language") or detect_language(user_message)
-    reply = get_ai_reply(user_message, language)
+    logger.info("Sending message to Claude (length=%d chars, lang=%s)", len(user_message), language)
+
+    try:
+        reply = get_ai_reply(user_message, language)
+    except anthropic.AuthenticationError as e:
+        logger.error("Anthropic authentication failed — check ANTHROPIC_API_KEY: %s", e)
+        return jsonify({"error": "API authentication failed. The server API key may be invalid or missing."}), 500
+    except anthropic.RateLimitError as e:
+        logger.error("Anthropic rate limit exceeded: %s", e)
+        return jsonify({"error": "Rate limit exceeded. Please wait a moment and try again."}), 429
+    except anthropic.APIStatusError as e:
+        logger.error("Anthropic API returned status %s: %s", e.status_code, e.message)
+        return jsonify({"error": f"Anthropic API error (status {e.status_code}): {e.message}"}), 502
+    except anthropic.APIConnectionError as e:
+        logger.error("Could not connect to Anthropic API: %s", e)
+        return jsonify({"error": "Could not reach the Anthropic API. Check network connectivity."}), 502
+    except Exception as e:
+        logger.exception("Unexpected error while calling Anthropic API: %s", e)
+        return jsonify({"error": f"Unexpected server error: {str(e)}"}), 500
+
+    logger.info("Successfully received reply (length=%d chars)", len(reply))
     return jsonify({"reply": reply, "language": language})
 
 @app.route("/speak", methods=["POST"])
 def speak():
-    data = request.json
-    text = data.get("text", "")
-    language = data.get("language", "en")
+    data = request.get_json(silent=True)
+    text = data.get("text", "") if data else ""
+    language = data.get("language", "en") if data else "en"
     if not text or not elevenlabs_key:
         return jsonify({"error": "Missing text or API key"}), 400
 
@@ -157,7 +198,7 @@ def speak():
             return jsonify({"error": "ElevenLabs error"}), 500
         return Response(resp.content, mimetype="audio/mpeg")
     except Exception as e:
-        print(f"ElevenLabs error: {e}")
+        logger.error("ElevenLabs error: %s", e)
         return jsonify({"error": "Failed to generate audio"}), 500
 
 @app.route("/whatsapp", methods=["POST"])
@@ -178,5 +219,5 @@ def whatsapp():
     return str(MessagingResponse())
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=port, debug=True)  # 8080 ki jagah port
+    app.run(host="0.0.0.0", port=port, debug=True)
 

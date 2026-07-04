@@ -641,10 +641,15 @@
                 });
                 const data = await response.json();
                 typing.style.display = 'none';
-                addBotMessage(data.reply, data.language);
+                if (!response.ok) {
+                    const errMsg = data.error || `Server error (${response.status})`;
+                    addBotMessage('⚠️ ' + errMsg, 'en');
+                } else {
+                    addBotMessage(data.reply, data.language);
+                }
             } catch (error) {
                 typing.style.display = 'none';
-                addBotMessage('Error! Please try again.', 'en');
+                addBotMessage('⚠️ Could not reach the server. Please try again.', 'en');
             }
         }
 
