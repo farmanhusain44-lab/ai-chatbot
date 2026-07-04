@@ -447,6 +447,7 @@
         let recognition = null;
         let isListening = false;
         let voiceMode = false;
+        let lastDetectedLang = 'en-US';
         let voiceSendTimer = null;
         let currentAudio = null;
         let currentAudioMsg = null;
@@ -545,7 +546,7 @@
             }
             recognition = initRecognition();
             if (!recognition) return;
-            recognition.lang = 'en-US';
+            recognition.lang = lastDetectedLang;
             try {
                 recognition.start();
                 isListening = true;
@@ -725,7 +726,7 @@
                 if (!voiceMode || isListening) return;
                 recognition = initRecognition();
                 if (!recognition) return;
-                recognition.lang = 'en-US';
+                recognition.lang = lastDetectedLang;
                 try {
                     recognition.start();
                     isListening = true;
@@ -799,6 +800,9 @@
                     const errMsg = data.error || `Server error (${response.status})`;
                     addBotMessage('⚠️ ' + errMsg, 'en');
                 } else {
+                    if (data.language) {
+                        lastDetectedLang = recognitionLangs[data.language] || 'en-US';
+                    }
                     addBotMessage(data.reply, data.language);
                 }
             } catch (error) {

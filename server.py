@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory, Response
 from flask_cors import CORS
 import anthropic
 import os
+import re
 from datetime import datetime
 from twilio.rest import Client as TwilioClient
 from twilio.twiml.messaging_response import MessagingResponse
@@ -105,6 +106,19 @@ def detect_language(text):
         return "ko"  # Korean
     if has_chars(0x0400, 0x04FF):
         return "ru"  # Cyrillic
+
+    # Roman Hindi detection (speech transcribed in English letters)
+    roman_hindi_words = {
+        "kya", "kaise", "kaun", "kahan", "kab", "kyun", "kitna", "kaunsa",
+        "main", "tum", "aap", "woh", "yeh", "hum", "sab", "log",
+        "hoon", "ho", "hai", "hain", "tha", "thi", "the", "raha", "rahi", "kar", "kiya", "gaya", "diya",
+        "accha", "theek", "nahi", "bilkul", "bahut", "thoda", "zyada", "kam", "achha",
+        "bhi", "lekin", "kyunki", "agar", "toh", "ya", "aur", "par", "se", "ko", "mein", "pe", "tak",
+        "shukriya", "dhanyawad", "namaste", "bhai", "yaar", "chal", "karo", "dekho"
+    }
+    words = set(re.findall(r"\b[a-z]+\b", text.lower()))
+    if len(words.intersection(roman_hindi_words)) >= 2:
+        return "hi"
 
     try:
         lang = detect(text)
