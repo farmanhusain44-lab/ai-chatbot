@@ -447,7 +447,7 @@
         let recognition = null;
         let isListening = false;
         let voiceMode = false;
-        let lastDetectedLang = 'en-US';
+        let lastDetectedLang = recognitionLangs[(navigator.language || 'en-US').split('-')[0]] || (navigator.language || 'en-US');
         let voiceSendTimer = null;
         let currentAudio = null;
         let currentAudioMsg = null;
