@@ -73,6 +73,39 @@ LANGUAGE_NAMES = {
 ELEVENLABS_VOICES = {k: "pNInz6obpgDQGcFmaJgB" for k in LANGUAGE_NAMES}
 
 def detect_language(text):
+    # Script-based detection is more reliable for non-Latin scripts
+    def has_chars(start, end):
+        return any(start <= ord(c) <= end for c in text)
+
+    if has_chars(0x0600, 0x06FF) or has_chars(0x0750, 0x077F) or has_chars(0x08A0, 0x08FF):
+        return "ur"  # Arabic/Persian/Urdu script
+    if has_chars(0x0900, 0x097F):
+        return "hi"  # Devanagari (Hindi, Marathi, Nepali)
+    if has_chars(0x0980, 0x09FF):
+        return "bn"  # Bengali
+    if has_chars(0x0A00, 0x0A7F):
+        return "pa"  # Gurmukhi (Punjabi)
+    if has_chars(0x0A80, 0x0AFF):
+        return "gu"  # Gujarati
+    if has_chars(0x0B00, 0x0B7F):
+        return "or"  # Oriya/Odia
+    if has_chars(0x0B80, 0x0BFF):
+        return "ta"  # Tamil
+    if has_chars(0x0C00, 0x0C7F):
+        return "te"  # Telugu
+    if has_chars(0x0C80, 0x0CFF):
+        return "kn"  # Kannada
+    if has_chars(0x0D00, 0x0D7F):
+        return "ml"  # Malayalam
+    if has_chars(0x4E00, 0x9FFF):
+        return "zh"  # Chinese
+    if has_chars(0x3040, 0x309F) or has_chars(0x30A0, 0x30FF):
+        return "ja"  # Japanese
+    if has_chars(0xAC00, 0xD7AF) or has_chars(0x1100, 0x11FF):
+        return "ko"  # Korean
+    if has_chars(0x0400, 0x04FF):
+        return "ru"  # Cyrillic
+
     try:
         lang = detect(text)
         if lang in LANGUAGE_NAMES:
