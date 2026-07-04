@@ -101,7 +101,22 @@
             background: #e8e8e8;
             align-self: flex-start;
             border-bottom-left-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
+        .bot-text { flex: 1; }
+        .speak-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 4px;
+            color: #667eea;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .speak-btn:hover { opacity: 1; }
         .user-message {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
@@ -172,7 +187,8 @@
             </div>
             <div class="chat-messages" id="messages">
                 <div class="message bot-message" id="welcomeMsg">
-                    Hello! I am your AI assistant. I know about many topics — ask me anything! 😊
+                    <span class="bot-text">Hello! I am your AI assistant. I know about many topics — ask me anything! 😊</span>
+                    <button class="speak-btn" onclick="speakElement('welcomeMsg')">🔊</button>
                 </div>
             </div>
             <div id="typing" class="typing" style="display:none">AI is typing...</div>
@@ -194,9 +210,46 @@
 
         let currentLanguage = 'en';
 
+        const languageVoices = {
+            en: 'en-US',
+            hi: 'hi-IN',
+            ur: 'ur-PK',
+            ar: 'ar-SA'
+        };
+
+        function speakElement(elementId) {
+            const el = document.getElementById(elementId);
+            const text = el.querySelector('.bot-text').textContent;
+            speak(text, currentLanguage);
+        }
+
+        function speak(text, lang) {
+            if (!('speechSynthesis' in window)) {
+                alert('Voice not supported in this browser');
+                return;
+            }
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = languageVoices[lang] || 'en-US';
+            utterance.rate = 0.95;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function addBotMessage(text) {
+            const messages = document.getElementById('messages');
+            const id = 'msg-' + Date.now();
+            const div = document.createElement('div');
+            div.className = 'message bot-message';
+            div.id = id;
+            div.innerHTML = `<span class="bot-text">${text}</span><button class="speak-btn" onclick="speakElement('${id}')">🔊</button>`;
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
         function changeLanguage() {
             currentLanguage = document.getElementById('langSelect').value;
-            document.getElementById('welcomeMsg').textContent = welcomeMessages[currentLanguage];
+            const welcome = document.getElementById('welcomeMsg');
+            welcome.querySelector('.bot-text').textContent = welcomeMessages[currentLanguage];
             const input = document.getElementById('userInput');
             const placeholders = {
                 en: "Type your message...",
@@ -225,11 +278,10 @@
                 });
                 const data = await response.json();
                 typing.style.display = 'none';
-                messages.innerHTML += `<div class="message bot-message">${data.reply}</div>`;
-                messages.scrollTop = messages.scrollHeight;
+                addBotMessage(data.reply);
             } catch (error) {
                 typing.style.display = 'none';
-                messages.innerHTML += `<div class="message bot-message">Error! Please try again.</div>`;
+                addBotMessage('Error! Please try again.');
             }
         }
     </script>
