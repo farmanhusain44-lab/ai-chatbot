@@ -172,6 +172,7 @@
             flex-shrink: 0;
         }
         .voice-play-btn:hover { transform: scale(1.05); background: #5a6fd6; }
+        .voice-play-btn.playing { background: #e74c3c; }
         .msg-actions {
             display: flex;
             gap: 8px;
@@ -358,7 +359,7 @@
             <div class="chat-input">
                 <input type="text" id="userInput" placeholder="Type your message..."
                 autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-                onkeypress="if(event.key==='Enter') sendMessage()"/>
+                onkeydown="if(event.key==='Enter'){ event.preventDefault(); sendMessage(); }"/>
                 <button class="mic-btn" id="micBtn" onclick="toggleVoiceInput()" aria-label="Voice input">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
@@ -612,15 +613,19 @@
         function updateVoiceUI(id, state) {
             const msg = document.getElementById(id);
             if (!msg) return;
+            const btn = msg.querySelector('.voice-play-btn');
             const play = msg.querySelector('.v-play');
             const pause = msg.querySelector('.v-pause');
+            if (!btn || !play || !pause) return;
             if (state === 'playing') {
                 play.style.display = 'none';
                 pause.style.display = 'block';
+                btn.classList.add('playing');
                 msg.classList.add('voice-active');
             } else {
                 play.style.display = 'block';
                 pause.style.display = 'none';
+                btn.classList.remove('playing');
                 msg.classList.remove('voice-active');
             }
         }
@@ -638,6 +643,7 @@
         function setVoiceLoading(id, loading) {
             const btn = document.getElementById(`play-${id}`);
             if (!btn) return;
+            btn.classList.remove('playing');
             if (loading) {
                 btn.innerHTML = `<div class="spinner" style="width:16px;height:16px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite"></div>`;
                 btn.disabled = true;
@@ -693,16 +699,12 @@
                     stopVoice();
                     if (voiceMode) resumeVoiceInput();
                 };
-                currentAudio.play()
-                    .then(() => {
-                        setVoiceLoading(id, false);
-                        updateVoiceUI(id, 'playing');
-                    })
-                    .catch(e => {
-                        console.error('Play error:', e);
-                        setVoiceLoading(id, false);
-                        updateVoiceUI(id, 'idle');
-                    });
+                setVoiceLoading(id, false);
+                updateVoiceUI(id, 'playing');
+                currentAudio.play().catch(e => {
+                    console.error('Play error:', e);
+                    updateVoiceUI(id, 'idle');
+                });
             })
             .catch(err => {
                 console.error('Voice play error:', err);
