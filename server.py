@@ -123,9 +123,9 @@ def home():
 def chat():
     data = request.json
     user_message = data["message"]
-    language = data.get("language", "en")
+    language = data.get("language") or detect_language(user_message)
     reply = get_ai_reply(user_message, language)
-    return jsonify({"reply": reply})
+    return jsonify({"reply": reply, "language": language})
 
 @app.route("/speak", methods=["POST"])
 def speak():

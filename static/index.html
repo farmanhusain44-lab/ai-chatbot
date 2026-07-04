@@ -69,17 +69,21 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         .chat-header h3 { color: white; font-size: 1.1rem; }
-        .lang-select {
-            padding: 6px 10px;
-            border-radius: 8px;
+        .mute-btn {
+            background: rgba(255,255,255,0.15);
             border: none;
-            outline: none;
-            font-size: 0.9rem;
-            background: rgba(255,255,255,0.2);
             color: white;
             cursor: pointer;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
         }
-        .lang-select option { background: #764ba2; color: white; }
+        .mute-btn:hover { background: rgba(255,255,255,0.3); }
+        .mute-btn.muted { background: rgba(231, 76, 60, 0.8); }
         .chat-messages {
             flex: 1;
             padding: 24px 20px;
@@ -143,49 +147,67 @@
             max-width: 100%;
         }
         .bot-text { flex: 1; }
-        .speak-btn {
-            background: #f0f2f5;
-            border: none;
-            cursor: pointer;
-            font-size: 1rem;
-            padding: 6px;
-            border-radius: 50%;
-            color: #667eea;
-            opacity: 0.85;
-            transition: all 0.2s;
-            min-width: 28px;
-            min-height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .speak-btn:hover {
-            opacity: 1;
-            background: #e8ebf0;
-            transform: scale(1.05);
-        }
-        .speak-btn.loading {
-            color: transparent;
-            position: relative;
-        }
-        .speak-btn.loading::after {
-            content: '';
-            position: absolute;
-            width: 14px;
-            height: 14px;
-            border: 2px solid rgba(102, 126, 234, 0.25);
-            border-top-color: #667eea;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
         .user-message {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             border-bottom-right-radius: 6px;
+        }
+        .bot-message.voice-active {
+            animation: messageGlow 1.6s ease-in-out infinite;
+            border-color: rgba(102, 126, 234, 0.5);
+        }
+        @keyframes messageGlow {
+            0%, 100% { box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+            50% { box-shadow: 0 0 24px rgba(102, 126, 234, 0.35); }
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .voice-player {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: rgba(102, 126, 234, 0.08);
+            border-radius: 20px;
+            min-width: 180px;
+        }
+        .voice-play-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: none;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+        }
+        .voice-play-btn:hover { transform: scale(1.05); background: #5a6fd6; }
+        .voice-bar {
+            flex: 1;
+            height: 5px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .voice-progress {
+            height: 100%;
+            width: 0%;
+            background: #667eea;
+            border-radius: 3px;
+            transition: width 0.1s linear;
+        }
+        .voice-time {
+            font-size: 0.75rem;
+            color: #666;
+            min-width: 32px;
+            text-align: right;
         }
         .typing {
             color: #777;
@@ -200,6 +222,7 @@
             gap: 12px;
             background: white;
             align-items: center;
+            position: relative;
         }
         .chat-input input {
             flex: 1;
@@ -244,6 +267,7 @@
             color: #667eea;
             border: 1px solid #e0e0e0;
             font-size: 1.2rem;
+            position: relative;
         }
         .mic-btn:hover {
             background: #f8f9fa;
@@ -254,8 +278,49 @@
             background: #667eea;
             color: white;
             border-color: #667eea;
-            animation: pulse 1.2s infinite;
         }
+        .mic-btn.voice-active::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: -6px;
+            right: -6px;
+            bottom: -6px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: #667eea;
+            border-right-color: #764ba2;
+            animation: voiceRing 1s linear infinite;
+        }
+        .mic-btn.voice-active::after {
+            content: '';
+            position: absolute;
+            top: -12px;
+            left: -12px;
+            right: -12px;
+            bottom: -12px;
+            border-radius: 50%;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            animation: voiceRing 1.5s linear infinite reverse;
+        }
+        @keyframes voiceRing {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .voice-hint {
+            position: absolute;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #667eea;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            display: none;
+            pointer-events: none;
+        }
+        .voice-hint.active { display: block; }
         @keyframes pulse {
             0% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4); }
             70% { box-shadow: 0 0 0 10px rgba(102, 126, 234, 0); }
@@ -282,45 +347,19 @@
         <div class="right-panel">
             <div class="chat-header">
                 <h3>🤖 Smart AI Assistant</h3>
-                <select id="langSelect" class="lang-select" onchange="changeLanguage()">
-                    <option value="en">English</option>
-                    <option value="hi">Hindi</option>
-                    <option value="ur">Urdu</option>
-                    <option value="bn">Bangla</option>
-                    <option value="pa">Punjabi</option>
-                    <option value="ta">Tamil</option>
-                    <option value="te">Telugu</option>
-                    <option value="ml">Malayalam</option>
-                    <option value="kn">Kannada</option>
-                    <option value="mr">Marathi</option>
-                    <option value="gu">Gujarati</option>
-                    <option value="or">Odia</option>
-                    <option value="as">Assamese</option>
-                    <option value="ar">Arabic</option>
-                    <option value="es">Spanish</option>
-                    <option value="fr">French</option>
-                    <option value="de">German</option>
-                    <option value="zh">Chinese</option>
-                    <option value="ja">Japanese</option>
-                    <option value="ko">Korean</option>
-                    <option value="ru">Russian</option>
-                    <option value="pt">Portuguese</option>
-                    <option value="it">Italian</option>
-                    <option value="tr">Turkish</option>
-                </select>
+                <button class="mute-btn" id="muteBtn" onclick="toggleMute()" aria-label="Toggle voice" title="Toggle voice">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    </svg>
+                </button>
             </div>
             <div class="chat-messages" id="messages">
                 <div class="message-row bot-row" id="welcomeRow">
                     <div class="avatar bot-avatar">🤖</div>
                     <div class="message bot-message" id="welcomeMsg">
                         <span class="bot-text">Hello! I am your AI assistant. I know about many topics — ask me anything! 😊</span>
-                        <button class="speak-btn" onclick="speakElement('welcomeMsg', this)" aria-label="Play voice">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-                            </svg>
-                        </button>
                     </div>
                 </div>
             </div>
@@ -337,70 +376,47 @@
                         <line x1="8" y1="23" x2="16" y2="23"></line>
                     </svg>
                 </button>
+                <div class="voice-hint" id="voiceHint">Listening...</div>
                 <button class="send-btn" onclick="sendMessage()">➤</button>
             </div>
         </div>
     </div>
 
     <script>
-        const welcomeMessages = {
-            en: "Hello! I am your AI assistant. I know about many topics — ask me anything! 😊",
-            hi: "नमस्ते! मैं आपका AI सहायक हूँ। मुझे कई विषयों के बारे में पता है — कुछ भी पूछें! 😊",
-            ur: "سلام! میں آپ کا AI مددگار ہوں۔ مجھے بہت سے موضوعات کا علم ہے — کچھ بھی پوچھیں! 😊",
-            bn: "হ্যালো! আমি আপনার AI সহায়ক। আমি অনেক বিষয়ে জানি — কিছু জিজ্ঞাসা করুন! 😊",
-            pa: "ਸਤ ਸ੍ਰੀ ਅਕਾਲ! ਮੈਂ ਤੁਹਾਡਾ AI ਸਹਾਇਕ ਹਾਂ। ਮੈਨੂੰ ਬਹੁਤ ਸਾਰੇ ਵਿਸ਼ਿਆਂ ਬਾਰੇ ਪਤਾ ਹੈ — ਕੁਝ ਵੀ ਪੁੱਛੋ! 😊",
-            ta: "வணக்கம்! நான் உங்கள் AI உதவியாளர். எனக்கு பல தலைப்புகள் தெரியும் — எதையும் கேளுங்கள்! 😊",
-            te: "హలో! నేను మీ AI సహాయకుడిని. నాకు అనేక అంశాలు తెలుసు — ఏదైనా అడగండి! 😊",
-            ml: "ഹലോ! ഞാൻ നിങ്ങളുടെ AI സഹായി. എനിക്ക് പല വിഷയങ്ങളും അറിയാം — എന്തെങ്കിലും ചോദിക്കൂ! 😊",
-            kn: "ಹಲೋ! ನಾನು ನಿಮ್ಮ AI ಸಹಾಯಕ. ನನಗೆ ಅನೇಕ ವಿಷಯಗಳು ತಿಳಿದಿದೆ — ಏನಾದರೂ ಕೇಳಿ! 😊",
-            mr: "नमस्कार! मी तुमचा AI सहाय्यक आहे. मला अनेक विषयांची माहिती आहे — काहीही विचारा! 😊",
-            gu: "નમસ્તે! હું તમારો AI સહાયક છું. મને ઘણા વિષયોની માહિતી છે — કંઈ પણ પૂછો! 😊",
-            or: "ନମସ୍କାର! ମୁଁ ଆପଣଙ୍କର AI ସହାୟକ। ମୋତେ ଅନେକ ବିଷୟରେ ଜ୍ଞାନ ଅଛି — କିଛି ପଚାରନ୍ତୁ! 😊",
-            as: "নমস্কাৰ! মই আপোনাৰ AI সহায়ক। মোক বহুতো বিষয়ৰ জ্ঞান আছে — কিবা সোধক! 😊",
-            ar: "مرحباً! أنا مساعدك الذكي. أعرف عن العديد من المواضيع — اسألني أي شيء! 😊",
-            es: "¡Hola! Soy tu asistente de IA. Sé sobre muchos temas — ¡pregúntame lo que sea! 😊",
-            fr: "Bonjour ! Je suis votre assistant IA. Je connais de nombreux sujets — demandez-moi ce que vous voulez ! 😊",
-            de: "Hallo! Ich bin dein KI-Assistent. Ich kenne viele Themen — frag mich einfach! 😊",
-            zh: "你好！我是你的AI助手。我了解很多话题——有什么都可以问我！😊",
-            ja: "こんにちは！あなたのAIアシスタントです。多くのことに詳しいので、何でも聞いてください！😊",
-            ko: "안녕하세요! 저는 당신의 AI 비서입니다. 많은 주제에 대해 알고 있으니 무엇이든 물어보세요! 😊",
-            ru: "Привет! Я ваш ИИ-ассистент. Я знаю много тем — спрашивайте что угодно! 😊",
-            pt: "Olá! Sou seu assistente de IA. Sei sobre muitos assuntos — pergunte o que quiser! 😊",
-            it: "Ciao! Sono il tuo assistente AI. So molte cose — chiedimi pure! 😊",
-            tr: "Merhaba! Ben senin AI asistanınım. Birçok konuda bilgim var — bana istediğini sor! 😊"
-        };
-
-        let currentLanguage = 'en';
-
         const recognitionLangs = {
-            en: 'en-US',
-            hi: 'hi-IN',
-            ur: 'ur-PK',
-            bn: 'bn-IN',
-            pa: 'pa-IN',
-            ta: 'ta-IN',
-            te: 'te-IN',
-            ml: 'ml-IN',
-            kn: 'kn-IN',
-            mr: 'mr-IN',
-            gu: 'gu-IN',
-            or: 'or-IN',
-            as: 'as-IN',
-            ar: 'ar-SA',
-            es: 'es-ES',
-            fr: 'fr-FR',
-            de: 'de-DE',
-            zh: 'zh-CN',
-            ja: 'ja-JP',
-            ko: 'ko-KR',
-            ru: 'ru-RU',
-            pt: 'pt-BR',
-            it: 'it-IT',
-            tr: 'tr-TR'
+            en: 'en-US', hi: 'hi-IN', ur: 'ur-PK', bn: 'bn-IN', pa: 'pa-IN',
+            ta: 'ta-IN', te: 'te-IN', ml: 'ml-IN', kn: 'kn-IN', mr: 'mr-IN',
+            gu: 'gu-IN', or: 'or-IN', as: 'as-IN', ar: 'ar-SA', es: 'es-ES',
+            fr: 'fr-FR', de: 'de-DE', zh: 'zh-CN', ja: 'ja-JP', ko: 'ko-KR',
+            ru: 'ru-RU', pt: 'pt-BR', it: 'it-IT', tr: 'tr-TR'
         };
 
+        const playIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`;
+        const pauseIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>`;
+        const unmutedIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`;
+        const mutedIcon = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>`;
+
+        let isMuted = false;
         let recognition = null;
         let isListening = false;
+        let currentAudio = null;
+        let currentAudioMsg = null;
+        let progressInterval = null;
+
+        function formatTime(seconds) {
+            if (!seconds || isNaN(seconds)) return '0:00';
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            const btn = document.getElementById('muteBtn');
+            btn.classList.toggle('muted', isMuted);
+            btn.innerHTML = isMuted ? mutedIcon : unmutedIcon;
+            if (isMuted) stopVoice();
+        }
 
         function initRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -414,18 +430,30 @@
             rec.onresult = function(event) {
                 const text = event.results[0][0].transcript;
                 document.getElementById('userInput').value = text;
-                toggleVoiceInput();
+                setListeningState(false);
                 sendMessage();
             };
             rec.onerror = function(event) {
                 console.error('Speech error:', event.error);
-                toggleVoiceInput();
+                setListeningState(false);
             };
             rec.onend = function() {
-                isListening = false;
-                document.getElementById('micBtn').classList.remove('listening');
+                setListeningState(false);
             };
             return rec;
+        }
+
+        function setListeningState(listening) {
+            isListening = listening;
+            const micBtn = document.getElementById('micBtn');
+            const voiceHint = document.getElementById('voiceHint');
+            if (listening) {
+                micBtn.classList.add('listening', 'voice-active');
+                voiceHint.classList.add('active');
+            } else {
+                micBtn.classList.remove('listening', 'voice-active');
+                voiceHint.classList.remove('active');
+            }
         }
 
         function toggleVoiceInput() {
@@ -435,76 +463,96 @@
             }
             if (isListening) {
                 recognition.stop();
-                isListening = false;
-                document.getElementById('micBtn').classList.remove('listening');
             } else {
-                recognition.lang = recognitionLangs[currentLanguage] || 'en-US';
+                recognition.lang = 'en-US';
                 recognition.start();
-                isListening = true;
-                document.getElementById('micBtn').classList.add('listening');
+                setListeningState(true);
             }
         }
 
-        let currentAudio = null;
-        let currentAudioBtn = null;
+        function createVoicePlayerHTML(id) {
+            return `
+                <div class="voice-player" id="voice-${id}">
+                    <button class="voice-play-btn" id="play-${id}" onclick="playVoice('${id}')">
+                        <span class="v-play">${playIcon}</span>
+                        <span class="v-pause" style="display:none">${pauseIcon}</span>
+                    </button>
+                    <div class="voice-bar" onclick="seekVoice(event, '${id}')">
+                        <div class="voice-progress" id="progress-${id}"></div>
+                    </div>
+                    <span class="voice-time" id="time-${id}">0:00</span>
+                </div>
+            `;
+        }
 
-        const speakerIcon = `
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-            </svg>`;
-        const playIcon = `
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="5 3 19 12 5 21 5 3"></polygon>
-            </svg>`;
-        const pauseIcon = `
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="6" y="4" width="4" height="16"></rect>
-                <rect x="14" y="4" width="4" height="16"></rect>
-            </svg>`;
-
-        function setBtnState(btn, state) {
-            if (!btn) return;
-            btn.classList.remove('loading');
-            if (state === 'loading') {
-                btn.innerHTML = '';
-                btn.classList.add('loading');
-            } else if (state === 'play') {
-                btn.innerHTML = playIcon;
-            } else if (state === 'pause') {
-                btn.innerHTML = pauseIcon;
+        function updateVoiceUI(id, state) {
+            const msg = document.getElementById(id);
+            if (!msg) return;
+            const play = msg.querySelector('.v-play');
+            const pause = msg.querySelector('.v-pause');
+            if (state === 'playing') {
+                play.style.display = 'none';
+                pause.style.display = 'block';
+                msg.classList.add('voice-active');
             } else {
-                btn.innerHTML = speakerIcon;
+                play.style.display = 'block';
+                pause.style.display = 'none';
+                msg.classList.remove('voice-active');
             }
         }
 
-        function speakElement(elementId, btn) {
-            const el = document.getElementById(elementId);
-            const text = el.querySelector('.bot-text').textContent;
-            speak(text, currentLanguage, btn);
+        function updateVoiceProgress() {
+            if (!currentAudio || !currentAudioMsg) return;
+            const id = currentAudioMsg;
+            const audio = currentAudio;
+            const pct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+            const progress = document.getElementById(`progress-${id}`);
+            const time = document.getElementById(`time-${id}`);
+            if (progress) progress.style.width = pct + '%';
+            if (time) time.textContent = formatTime(audio.currentTime);
         }
 
-        function speak(text, lang, btn) {
-            // Same button clicked while audio exists -> toggle play/pause
-            if (currentAudio && currentAudioBtn === btn) {
-                if (currentAudio.paused) {
-                    currentAudio.play();
-                } else {
-                    currentAudio.pause();
-                }
+        function stopVoice() {
+            if (progressInterval) clearInterval(progressInterval);
+            if (currentAudio) {
+                const id = currentAudioMsg;
+                currentAudio.pause();
+                currentAudio = null;
+                updateVoiceUI(id, 'idle');
+                currentAudioMsg = null;
+            }
+        }
+
+        function setVoiceLoading(id, loading) {
+            const btn = document.getElementById(`play-${id}`);
+            if (!btn) return;
+            if (loading) {
+                btn.innerHTML = `<div class="spinner" style="width:16px;height:16px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite"></div>`;
+                btn.disabled = true;
+            } else {
+                btn.innerHTML = `<span class="v-play">${playIcon}</span><span class="v-pause" style="display:none">${pauseIcon}</span>`;
+                btn.disabled = false;
+            }
+        }
+
+        function playVoice(id) {
+            const msg = document.getElementById(id);
+            const text = msg.querySelector('.bot-text').textContent;
+            const lang = msg.dataset.lang || 'en';
+
+            if (isMuted) {
+                alert('Voice is muted. Tap the speaker icon in the header to unmute.');
                 return;
             }
 
-            // Different button clicked -> stop current and start new
-            if (currentAudio) {
-                currentAudio.pause();
-                setBtnState(currentAudioBtn, 'idle');
-                currentAudio = null;
-                currentAudioBtn = null;
+            if (currentAudio && currentAudioMsg === id) {
+                if (currentAudio.paused) currentAudio.play();
+                else currentAudio.pause();
+                return;
             }
 
-            setBtnState(btn, 'loading');
+            stopVoice();
+            setVoiceLoading(id, true);
 
             fetch('/speak', {
                 method: 'POST',
@@ -518,40 +566,45 @@
             .then(blob => {
                 const url = URL.createObjectURL(blob);
                 currentAudio = new Audio(url);
-                currentAudioBtn = btn;
+                currentAudioMsg = id;
+                currentAudio.onplay = () => updateVoiceUI(id, 'playing');
+                currentAudio.onpause = () => updateVoiceUI(id, 'paused');
+                currentAudio.onended = () => stopVoice();
+                currentAudio.onloadedmetadata = () => {
+                    const time = document.getElementById(`time-${id}`);
+                    if (time) time.textContent = formatTime(currentAudio.duration);
+                };
                 currentAudio.play();
-                setBtnState(btn, 'pause');
-                currentAudio.onended = function() {
-                    setBtnState(currentAudioBtn, 'idle');
-                    currentAudio = null;
-                    currentAudioBtn = null;
-                };
-                currentAudio.onpause = function() {
-                    if (btn && currentAudio.currentTime > 0 && currentAudio.currentTime < currentAudio.duration) {
-                        setBtnState(btn, 'play');
-                    }
-                };
-                currentAudio.onplay = function() {
-                    setBtnState(btn, 'pause');
-                };
+                setVoiceLoading(id, false);
+                updateVoiceUI(id, 'playing');
+                progressInterval = setInterval(updateVoiceProgress, 100);
             })
             .catch(err => {
                 console.error(err);
+                setVoiceLoading(id, false);
                 alert('Voice failed. Please try again.');
-                setBtnState(btn, 'idle');
             });
         }
 
-        function addBotMessage(text) {
+        function seekVoice(e, id) {
+            if (!currentAudio || currentAudioMsg !== id) return;
+            const bar = e.currentTarget;
+            const rect = bar.getBoundingClientRect();
+            const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+            currentAudio.currentTime = pct * currentAudio.duration;
+            updateVoiceProgress();
+        }
+
+        function addBotMessage(text, lang) {
             const messages = document.getElementById('messages');
             const id = 'msg-' + Date.now();
             const row = document.createElement('div');
             row.className = 'message-row bot-row';
             row.innerHTML = `
                 <div class="avatar bot-avatar">🤖</div>
-                <div class="message bot-message" id="${id}">
+                <div class="message bot-message" id="${id}" data-lang="${lang || 'en'}">
                     <span class="bot-text">${text}</span>
-                    <button class="speak-btn" onclick="speakElement('${id}', this)" aria-label="Play voice">${speakerIcon}</button>
+                    ${createVoicePlayerHTML(id)}
                 </div>
             `;
             messages.appendChild(row);
@@ -570,40 +623,6 @@
             messages.scrollTop = messages.scrollHeight;
         }
 
-        function changeLanguage() {
-            currentLanguage = document.getElementById('langSelect').value;
-            const welcome = document.getElementById('welcomeMsg');
-            welcome.querySelector('.bot-text').textContent = welcomeMessages[currentLanguage];
-            const input = document.getElementById('userInput');
-            const placeholders = {
-                en: "Type your message...",
-                hi: "अपना संदेश लिखें...",
-                ur: "اپنا پیغام لکھیں...",
-                bn: "আপনার বার্তা লিখুন...",
-                pa: "ਆਪਨਾ ਸੰਦੇਸ਼ ਲਿਖੋ...",
-                ta: "உங்கள் செய்தியை டைப் செய்யவும்...",
-                te: "మీ సందేశాన్ని టైప్ చేయండి...",
-                ml: "നിങ്ങളുടെ സന്ദേശം ടൈപ്പ് ചെയ്യുക...",
-                kn: "ನಿಮ್ಮ ಸಂದೇಶವನ್ನು ಟೈಪ್ ಮಾಡಿ...",
-                mr: "तुमचा संदेश टाइप करा...",
-                gu: "તમારો સંદેશ લખો...",
-                or: "ଆପଣଙ୍କ ବାର୍ତ୍ତା ଟାଇପ୍ କରନ୍ତୁ...",
-                as: "আপোনাৰ বাৰ্তা টাইপ কৰক...",
-                ar: "اكتب رسالتك...",
-                es: "Escribe tu mensaje...",
-                fr: "Tapez votre message...",
-                de: "Nachricht eingeben...",
-                zh: "输入您的消息...",
-                ja: "メッセージを入力...",
-                ko: "메시지를 입력하세요...",
-                ru: "Введите сообщение...",
-                pt: "Digite sua mensagem...",
-                it: "Scrivi il tuo messaggio...",
-                tr: "Mesajınızı yazın..."
-            };
-            input.placeholder = placeholders[currentLanguage];
-        }
-
         async function sendMessage() {
             const input = document.getElementById('userInput');
             const messages = document.getElementById('messages');
@@ -618,15 +637,22 @@
                 const response = await fetch('/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: userText, language: currentLanguage })
+                    body: JSON.stringify({ message: userText })
                 });
                 const data = await response.json();
                 typing.style.display = 'none';
-                addBotMessage(data.reply);
+                addBotMessage(data.reply, data.language);
             } catch (error) {
                 typing.style.display = 'none';
-                addBotMessage('Error! Please try again.');
+                addBotMessage('Error! Please try again.', 'en');
             }
+        }
+
+        // Add voice player to the welcome message
+        const welcomeMsg = document.getElementById('welcomeMsg');
+        if (welcomeMsg && !welcomeMsg.querySelector('.voice-player')) {
+            welcomeMsg.dataset.lang = 'en';
+            welcomeMsg.insertAdjacentHTML('beforeend', createVoicePlayerHTML('welcomeMsg'));
         }
     </script>
 </body>
