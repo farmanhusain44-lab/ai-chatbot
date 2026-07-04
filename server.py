@@ -106,24 +106,30 @@ def send_whatsapp_reply(to, reply):
         print(f"WhatsApp send error: {e}")
         return False
 
-def get_ai_reply(message, language):
+def get_ai_reply(message, language, timezone=None):
     response = client.messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=2048,
-        system=get_system_prompt(language),
+        system=get_system_prompt(language, timezone),
         messages=[{"role": "user", "content": message}]
     )
     return response.content[0].text
 
-def get_system_prompt(language="en"):
-    now = datetime.now().strftime("%A, %B %d, %Y at %I:%M %p")
+def get_system_prompt(language="en", timezone=None):
+    try:
+        from zoneinfo import ZoneInfo
+        tz = ZoneInfo(timezone) if timezone else None
+    except Exception:
+        tz = None
+    now = datetime.now(tz) if tz else datetime.now()
+    now_str = now.strftime("%A, %B %d, %Y at %I:%M %p %Z")
     lang_name = LANGUAGE_NAMES.get(language, "English")
     return (
         "You are a highly intelligent, helpful, and knowledgeable AI assistant. "
         "You can answer questions on a wide range of topics including science, technology, history, "
         "general knowledge, coding, math, business, health, lifestyle, and more. "
         "Provide accurate, detailed, and useful answers. If you are unsure about something, say so honestly. "
-        f"The current date and time is: {now}. When asked about today's date, current time, or anything time-related, "
+        f"The current date and time is: {now_str}. When asked about today's date, current time, or anything time-related, "
         "you must answer using this exact date and time. Do not say you lack real-time information. "
         f"You must respond in {lang_name} language."
     )
@@ -145,10 +151,11 @@ def chat():
         return jsonify({"error": "Field 'message' is required and cannot be empty"}), 400
 
     language = data.get("language") or detect_language(user_message)
-    logger.info("Sending message to Claude (length=%d chars, lang=%s)", len(user_message), language)
+    timezone = data.get("timezone")
+    logger.info("Sending message to Claude (length=%d chars, lang=%s, tz=%s)", len(user_message), language, timezone)
 
     try:
-        reply = get_ai_reply(user_message, language)
+        reply = get_ai_reply(user_message, language, timezone)
     except anthropic.AuthenticationError as e:
         logger.error("Anthropic authentication failed — check ANTHROPIC_API_KEY: %s", e)
         return jsonify({"error": "API authentication failed. The server API key may be invalid or missing."}), 500

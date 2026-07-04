@@ -364,26 +364,30 @@
             rec.continuous = true;
             rec.interimResults = true;
             rec.onresult = function(event) {
-                const input = document.getElementById('userInput');
-                let finalText = input.value;
-                let gotFinal = false;
-                for (let i = event.resultIndex; i < event.results.length; i++) {
+                let finalText = '';
+                let interimText = '';
+                for (let i = 0; i < event.results.length; i++) {
                     const transcript = event.results[i][0].transcript;
                     if (event.results[i].isFinal) {
-                        finalText = (finalText ? finalText + ' ' : '') + transcript;
-                        gotFinal = true;
+                        finalText += transcript + ' ';
+                    } else {
+                        interimText += transcript;
                     }
                 }
-                input.value = finalText;
-                if (gotFinal) scheduleVoiceSend();
+                document.getElementById('userInput').value = (finalText + interimText).trim();
+                scheduleVoiceSend();
             };
             rec.onerror = function(event) {
                 console.error('Speech error:', event.error);
                 if (event.error !== 'aborted') setListeningState(false);
             };
             rec.onend = function() {
-                if (isListening) {
-                    try { recognition.start(); } catch(e) {}
+                if (isListening && recognition === rec) {
+                    setTimeout(() => {
+                        if (isListening && recognition === rec) {
+                            try { rec.start(); } catch(e) {}
+                        }
+                    }, 200);
                 }
             };
             return rec;
@@ -396,8 +400,28 @@
                 if (text) {
                     document.getElementById('userInput').value = '';
                     sendMessage();
+                    restartVoiceInput();
                 }
-            }, 1500);
+            }, 2000);
+        }
+
+        function restartVoiceInput() {
+            if (voiceSendTimer) clearTimeout(voiceSendTimer);
+            const oldRec = recognition;
+            recognition = null;
+            if (oldRec) {
+                try { oldRec.stop(); } catch (e) {}
+                try { oldRec.abort(); } catch (e) {}
+            }
+            setTimeout(() => {
+                if (isListening) {
+                    recognition = initRecognition();
+                    if (recognition) {
+                        recognition.lang = 'en-US';
+                        try { recognition.start(); } catch(e) {}
+                    }
+                }
+            }, 400);
         }
 
         function setListeningState(listening) {
@@ -420,7 +444,13 @@
             }
             if (isListening) {
                 if (voiceSendTimer) clearTimeout(voiceSendTimer);
-                recognition.stop();
+                isListening = false;
+                const oldRec = recognition;
+                recognition = null;
+                if (oldRec) {
+                    try { oldRec.stop(); } catch (e) {}
+                    try { oldRec.abort(); } catch (e) {}
+                }
                 setListeningState(false);
             } else {
                 document.getElementById('userInput').value = '';
@@ -552,6 +582,8 @@
             messages.scrollTop = messages.scrollHeight;
         }
 
+        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
         async function sendMessage() {
             const input = document.getElementById('userInput');
             const messages = document.getElementById('messages');
@@ -566,7 +598,7 @@
                 const response = await fetch('/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: userText })
+                    body: JSON.stringify({ message: userText, timezone: userTimezone })
                 });
                 const data = await response.json();
                 typing.style.display = 'none';
