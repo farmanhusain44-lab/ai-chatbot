@@ -350,6 +350,7 @@
         const pauseIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>`;
         let recognition = null;
         let isListening = false;
+        let voiceMode = false;
         let voiceSendTimer = null;
         let currentAudio = null;
         let currentAudioMsg = null;
@@ -399,29 +400,10 @@
                 const text = document.getElementById('userInput').value.trim();
                 if (text) {
                     document.getElementById('userInput').value = '';
+                    pauseVoiceInput();
                     sendMessage();
-                    restartVoiceInput();
                 }
             }, 2000);
-        }
-
-        function restartVoiceInput() {
-            if (voiceSendTimer) clearTimeout(voiceSendTimer);
-            const oldRec = recognition;
-            recognition = null;
-            if (oldRec) {
-                try { oldRec.stop(); } catch (e) {}
-                try { oldRec.abort(); } catch (e) {}
-            }
-            setTimeout(() => {
-                if (isListening) {
-                    recognition = initRecognition();
-                    if (recognition) {
-                        recognition.lang = 'en-US';
-                        try { recognition.start(); } catch(e) {}
-                    }
-                }
-            }, 400);
         }
 
         function setListeningState(listening) {
@@ -437,30 +419,40 @@
             }
         }
 
-        function toggleVoiceInput() {
-            if (!recognition) {
-                recognition = initRecognition();
-                if (!recognition) return;
+        function stopVoiceInput() {
+            if (voiceSendTimer) clearTimeout(voiceSendTimer);
+            isListening = false;
+            voiceMode = false;
+            const oldRec = recognition;
+            recognition = null;
+            if (oldRec) {
+                try { oldRec.stop(); } catch (e) {}
+                try { oldRec.abort(); } catch (e) {}
             }
+            setListeningState(false);
+            stopVoice();
+        }
+
+        function startVoiceInput() {
+            document.getElementById('userInput').value = '';
+            voiceMode = true;
+            recognition = initRecognition();
+            if (!recognition) return;
+            recognition.lang = 'en-US';
+            try {
+                recognition.start();
+                isListening = true;
+                setListeningState(true);
+            } catch (e) {
+                console.error('Recognition start error:', e);
+            }
+        }
+
+        function toggleVoiceInput() {
             if (isListening) {
-                if (voiceSendTimer) clearTimeout(voiceSendTimer);
-                isListening = false;
-                const oldRec = recognition;
-                recognition = null;
-                if (oldRec) {
-                    try { oldRec.stop(); } catch (e) {}
-                    try { oldRec.abort(); } catch (e) {}
-                }
-                setListeningState(false);
+                stopVoiceInput();
             } else {
-                document.getElementById('userInput').value = '';
-                recognition.lang = 'en-US';
-                try {
-                    recognition.start();
-                    setListeningState(true);
-                } catch (e) {
-                    console.error('Recognition start error:', e);
-                }
+                startVoiceInput();
             }
         }
 
@@ -519,8 +511,11 @@
             const lang = msg.dataset.lang || 'en';
 
             if (currentAudio && currentAudioMsg === id) {
-                if (currentAudio.paused) currentAudio.play();
-                else currentAudio.pause();
+                if (currentAudio.paused) {
+                    currentAudio.play().catch(e => console.error('Play error:', e));
+                } else {
+                    currentAudio.pause();
+                }
                 return;
             }
 
@@ -540,18 +535,61 @@
                 const url = URL.createObjectURL(blob);
                 currentAudio = new Audio(url);
                 currentAudioMsg = id;
-                currentAudio.onplay = () => updateVoiceUI(id, 'playing');
+                currentAudio.onplay = () => {
+                    updateVoiceUI(id, 'playing');
+                    if (voiceMode) pauseVoiceInput();
+                };
                 currentAudio.onpause = () => updateVoiceUI(id, 'paused');
-                currentAudio.onended = () => stopVoice();
-                currentAudio.play();
-                setVoiceLoading(id, false);
-                updateVoiceUI(id, 'playing');
+                currentAudio.onended = () => {
+                    stopVoice();
+                    if (voiceMode) resumeVoiceInput();
+                };
+                currentAudio.play()
+                    .then(() => {
+                        setVoiceLoading(id, false);
+                        updateVoiceUI(id, 'playing');
+                    })
+                    .catch(e => {
+                        console.error('Play error:', e);
+                        setVoiceLoading(id, false);
+                        updateVoiceUI(id, 'idle');
+                    });
             })
             .catch(err => {
                 console.error(err);
                 setVoiceLoading(id, false);
                 alert('Voice failed. Please try again.');
             });
+        }
+
+        function pauseVoiceInput() {
+            if (!isListening || !recognition) return;
+            isListening = false;
+            const oldRec = recognition;
+            recognition = null;
+            if (oldRec) {
+                try { oldRec.stop(); } catch (e) {}
+                try { oldRec.abort(); } catch (e) {}
+            }
+            setListeningState(false);
+        }
+
+        function resumeVoiceInput() {
+            if (!voiceMode || isListening) return;
+            document.getElementById('userInput').value = '';
+            setTimeout(() => {
+                if (!voiceMode || isListening) return;
+                recognition = initRecognition();
+                if (!recognition) return;
+                recognition.lang = 'en-US';
+                try {
+                    recognition.start();
+                    isListening = true;
+                    setListeningState(true);
+                } catch (e) {
+                    console.error('Resume voice input error:', e);
+                }
+            }, 300);
         }
 
         function addBotMessage(text, lang) {
@@ -568,6 +606,9 @@
             `;
             messages.appendChild(row);
             messages.scrollTop = messages.scrollHeight;
+            if (voiceMode) {
+                setTimeout(() => playVoice(id), 400);
+            }
         }
 
         function addUserMessage(text) {
