@@ -150,11 +150,16 @@
                 });
                 const data = await response.json();
                 typing.style.display = 'none';
-                messages.innerHTML += `<div class="message bot-message">${data.reply}</div>`;
+                if (!response.ok) {
+                    const errMsg = data.error || `Server error (${response.status})`;
+                    messages.innerHTML += `<div class="message bot-message" style="color:#c0392b;">⚠️ ${errMsg}</div>`;
+                } else {
+                    messages.innerHTML += `<div class="message bot-message">${data.reply}</div>`;
+                }
                 messages.scrollTop = messages.scrollHeight;
             } catch (error) {
                 typing.style.display = 'none';
-                messages.innerHTML += `<div class="message bot-message">Error! Please try again.</div>`;
+                messages.innerHTML += `<div class="message bot-message" style="color:#c0392b;">⚠️ Could not reach the server. Please try again.</div>`;
             }
         }
     </script>
