@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, Response
 from flask_cors import CORS
 import anthropic
 import os
@@ -7,6 +7,7 @@ from twilio.rest import Client as TwilioClient
 from twilio.twiml.messaging_response import MessagingResponse
 from langdetect import detect
 from langdetect.lang_detect_exception import LangDetectException
+import requests
 
 app = Flask(__name__, static_folder='static')
 CORS(app)
@@ -24,6 +25,16 @@ twilio_from = os.environ.get("TWILIO_WHATSAPP_NUMBER")
 twilio = None
 if twilio_sid and twilio_token:
     twilio = TwilioClient(twilio_sid, twilio_token)
+
+elevenlabs_key = os.environ.get("ELEVENLABS_API_KEY")
+
+# Male voice IDs for ElevenLabs (Adam is a clear male voice that works across languages)
+ELEVENLABS_VOICES = {
+    "en": "pNInz6obpgDQGcFmaJgB",
+    "hi": "pNInz6obpgDQGcFmaJgB",
+    "ur": "pNInz6obpgDQGcFmaJgB",
+    "ar": "pNInz6obpgDQGcFmaJgB"
+}
 
 LANGUAGE_NAMES = {
     "en": "English",
@@ -100,6 +111,39 @@ def chat():
     language = data.get("language", "en")
     reply = get_ai_reply(user_message, language)
     return jsonify({"reply": reply})
+
+@app.route("/speak", methods=["POST"])
+def speak():
+    data = request.json
+    text = data.get("text", "")
+    language = data.get("language", "en")
+    if not text or not elevenlabs_key:
+        return jsonify({"error": "Missing text or API key"}), 400
+
+    voice_id = ELEVENLABS_VOICES.get(language, ELEVENLABS_VOICES["en"])
+    url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
+    headers = {
+        "Accept": "audio/mpeg",
+        "Content-Type": "application/json",
+        "xi-api-key": elevenlabs_key
+    }
+    payload = {
+        "text": text[:4000],
+        "model_id": "eleven_multilingual_v2",
+        "voice_settings": {
+            "stability": 0.5,
+            "similarity_boost": 0.5
+        }
+    }
+
+    try:
+        resp = requests.post(url, json=payload, headers=headers, timeout=60)
+        if resp.status_code != 200:
+            return jsonify({"error": "ElevenLabs error"}), 500
+        return Response(resp.content, mimetype="audio/mpeg")
+    except Exception as e:
+        print(f"ElevenLabs error: {e}")
+        return jsonify({"error": "Failed to generate audio"}), 500
 
 @app.route("/whatsapp", methods=["POST"])
 def whatsapp():

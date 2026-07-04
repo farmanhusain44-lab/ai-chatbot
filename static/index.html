@@ -198,7 +198,7 @@
             <div class="chat-messages" id="messages">
                 <div class="message bot-message" id="welcomeMsg">
                     <span class="bot-text">Hello! I am your AI assistant. I know about many topics — ask me anything! 😊</span>
-                    <button class="speak-btn" onclick="speakElement('welcomeMsg')">🔊</button>
+                    <button class="speak-btn" onclick="speakElement('welcomeMsg', this)">🔊</button>
                 </div>
             </div>
             <div id="typing" class="typing" style="display:none">AI is typing...</div>
@@ -282,22 +282,44 @@
             }
         }
 
-        function speakElement(elementId) {
+        let currentAudio = null;
+
+        function speakElement(elementId, btn) {
             const el = document.getElementById(elementId);
             const text = el.querySelector('.bot-text').textContent;
-            speak(text, currentLanguage);
+            speak(text, currentLanguage, btn);
         }
 
-        function speak(text, lang) {
-            if (!('speechSynthesis' in window)) {
-                alert('Voice not supported in this browser');
-                return;
+        function speak(text, lang, btn) {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio = null;
             }
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = languageVoices[lang] || 'en-US';
-            utterance.rate = 0.95;
-            window.speechSynthesis.speak(utterance);
+
+            if (btn) btn.textContent = '⏳';
+
+            fetch('/speak', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text, language: lang })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Audio failed');
+                return response.blob();
+            })
+            .then(blob => {
+                const url = URL.createObjectURL(blob);
+                currentAudio = new Audio(url);
+                currentAudio.play();
+                currentAudio.onended = function() {
+                    if (btn) btn.textContent = '🔊';
+                };
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Voice failed. Please try again.');
+                if (btn) btn.textContent = '🔊';
+            });
         }
 
         function addBotMessage(text) {
@@ -306,7 +328,7 @@
             const div = document.createElement('div');
             div.className = 'message bot-message';
             div.id = id;
-            div.innerHTML = `<span class="bot-text">${text}</span><button class="speak-btn" onclick="speakElement('${id}')">🔊</button>`;
+            div.innerHTML = `<span class="bot-text">${text}</span><button class="speak-btn" onclick="speakElement('${id}', this)">🔊</button>`;
             messages.appendChild(div);
             messages.scrollTop = messages.scrollHeight;
         }
