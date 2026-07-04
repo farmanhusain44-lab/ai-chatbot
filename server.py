@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import anthropic
 import os
@@ -24,7 +24,7 @@ client = anthropic.Anthropic(api_key=api_key)
 
 @app.route("/")
 def home():
-    return app.send_static_file("index.html")
+    return send_from_directory(app.static_folder, "index.html")
 
 @app.route("/chat", methods=["POST"])
 def chat():
