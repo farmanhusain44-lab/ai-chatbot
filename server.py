@@ -170,7 +170,6 @@ def get_system_prompt(language="en", timezone=None):
         tz = None
     now = datetime.now(tz) if tz else datetime.now()
     now_str = now.strftime("%A, %B %d, %Y at %I:%M %p %Z")
-    lang_name = LANGUAGE_NAMES.get(language, "English")
     return (
         "You are a smart, warm, and professional multilingual AI assistant. Talk like an intelligent, well-mannered human friend. "
         "You can speak many languages fluently. Whatever language the user writes or speaks in, reply directly in that same language. "
