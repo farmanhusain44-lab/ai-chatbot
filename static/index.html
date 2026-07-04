@@ -69,6 +69,17 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         .chat-header h3 { color: white; font-size: 1.1rem; }
+        .lang-select {
+            padding: 6px 10px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            font-size: 0.9rem;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            cursor: pointer;
+        }
+        .lang-select option { background: #764ba2; color: white; }
         .chat-messages {
             flex: 1;
             padding: 20px;
@@ -152,9 +163,15 @@
         <div class="right-panel">
             <div class="chat-header">
                 <h3>🤖 Smart AI Assistant</h3>
+                <select id="langSelect" class="lang-select" onchange="changeLanguage()">
+                    <option value="en">English</option>
+                    <option value="hi">Hindi</option>
+                    <option value="ur">Urdu</option>
+                    <option value="ar">Arabic</option>
+                </select>
             </div>
             <div class="chat-messages" id="messages">
-                <div class="message bot-message">
+                <div class="message bot-message" id="welcomeMsg">
                     Hello! I am your AI assistant. I know about many topics — ask me anything! 😊
                 </div>
             </div>
@@ -168,6 +185,28 @@
     </div>
 
     <script>
+        const welcomeMessages = {
+            en: "Hello! I am your AI assistant. I know about many topics — ask me anything! 😊",
+            hi: "नमस्ते! मैं आपका AI सहायक हूँ। मुझे कई विषयों के बारे में पता है — कुछ भी पूछें! 😊",
+            ur: "سلام! میں آپ کا AI مددگار ہوں۔ مجھے بہت سے موضوعات کا علم ہے — کچھ بھی پوچھیں! 😊",
+            ar: "مرحباً! أنا مساعدك الذكي. أعرف عن العديد من المواضيع — اسألني أي شيء! 😊"
+        };
+
+        let currentLanguage = 'en';
+
+        function changeLanguage() {
+            currentLanguage = document.getElementById('langSelect').value;
+            document.getElementById('welcomeMsg').textContent = welcomeMessages[currentLanguage];
+            const input = document.getElementById('userInput');
+            const placeholders = {
+                en: "Type your message...",
+                hi: "अपना संदेश लिखें...",
+                ur: "اپنا پیغام لکھیں...",
+                ar: "اكتب رسالتك..."
+            };
+            input.placeholder = placeholders[currentLanguage];
+        }
+
         async function sendMessage() {
             const input = document.getElementById('userInput');
             const messages = document.getElementById('messages');
@@ -182,7 +221,7 @@
                 const response = await fetch('/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: userText })
+                    body: JSON.stringify({ message: userText, language: currentLanguage })
                 });
                 const data = await response.json();
                 typing.style.display = 'none';
