@@ -4,3 +4,4 @@ anthropic
 gunicorn
 twilio
 langdetect
+tzdata
