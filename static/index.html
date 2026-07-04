@@ -532,6 +532,17 @@
         function startVoiceInput() {
             document.getElementById('userInput').value = '';
             voiceMode = true;
+            // Unlock browser TTS on mobile (requires user gesture)
+            if (window.speechSynthesis) {
+                try {
+                    const unlock = new SpeechSynthesisUtterance(' ');
+                    unlock.volume = 0;
+                    window.speechSynthesis.speak(unlock);
+                } catch (e) {}
+                if (window.speechSynthesis.getVoices().length === 0) {
+                    window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+                }
+            }
             recognition = initRecognition();
             if (!recognition) return;
             recognition.lang = 'en-US';
@@ -542,6 +553,17 @@
             } catch (e) {
                 console.error('Recognition start error:', e);
             }
+        }
+
+        function getTTSVoice(lang) {
+            if (!window.speechSynthesis) return null;
+            const voices = window.speechSynthesis.getVoices();
+            const preferred = recognitionLangs[lang] || 'en-US';
+            return voices.find(v => v.lang === preferred)
+                || voices.find(v => v.lang.startsWith(lang + '-'))
+                || voices.find(v => v.lang.startsWith(preferred.split('-')[0]))
+                || voices.find(v => v.lang.startsWith('en'))
+                || voices[0];
         }
 
         function toggleVoiceInput() {
@@ -664,11 +686,17 @@
                 // Fallback to browser TTS
                 if (window.speechSynthesis) {
                     const utterance = new SpeechSynthesisUtterance(text);
-                    utterance.lang = lang === 'en' ? 'en-US' : (recognitionLangs[lang] || 'en-US');
+                    utterance.lang = recognitionLangs[lang] || 'en-US';
+                    const voice = getTTSVoice(lang);
+                    if (voice) utterance.voice = voice;
                     window.speechSynthesis.cancel();
                     window.speechSynthesis.speak(utterance);
                     updateVoiceUI(id, 'playing');
                     utterance.onend = () => {
+                        updateVoiceUI(id, 'idle');
+                        if (voiceMode) resumeVoiceInput();
+                    };
+                    utterance.onerror = () => {
                         updateVoiceUI(id, 'idle');
                         if (voiceMode) resumeVoiceInput();
                     };
