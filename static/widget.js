@@ -42,6 +42,42 @@
             transform: scale(1.05);
             box-shadow: 0 6px 25px rgba(0,0,0,0.4);
         }
+        #${widgetId}-tooltip {
+            position: absolute;
+            ${position.includes('bottom') ? 'bottom: 70px;' : 'top: 70px;'}
+            ${position.includes('right') ? 'right: 0;' : 'left: 0;'}
+            background: white;
+            color: #333;
+            padding: 10px 14px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            font-size: 13px;
+            white-space: nowrap;
+            max-width: 220px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            pointer-events: none;
+            z-index: 1000000;
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+        #${widgetId}-tooltip.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #${widgetId}-tooltip::after {
+            content: '';
+            position: absolute;
+            ${position.includes('bottom') ? 'top: 100%;' : 'bottom: 100%;'}
+            ${position.includes('right') ? 'right: 22px;' : 'left: 22px;'}
+            margin-${position.includes('right') ? 'right' : 'left'}: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: white transparent transparent transparent;
+            ${position.includes('bottom') ? '' : 'transform: rotate(180deg);'}
+        }
         #${widgetId}-panel {
             position: fixed;
             ${position.includes('right') ? 'right: 20px;' : 'left: 20px;'}
@@ -85,6 +121,11 @@
     const container = document.createElement('div');
     container.id = widgetId + '-container';
 
+    // Cycling tooltip above button
+    const tooltip = document.createElement('div');
+    tooltip.id = widgetId + '-tooltip';
+    tooltip.textContent = 'Welcome to Al Faredah';
+
     // Floating button
     const button = document.createElement('button');
     button.id = widgetId + '-button';
@@ -105,7 +146,45 @@
 
     container.appendChild(panel);
     container.appendChild(button);
+    container.appendChild(tooltip);
     document.body.appendChild(container);
+
+    // Cycle tooltip messages: English, English, Arabic - repeat
+    const tooltipMessages = [
+        { text: 'Welcome to Al Faredah', lang: 'en' },
+        { text: 'Chat with us', lang: 'en' },
+        { text: 'أهلاً وسهلاً', lang: 'ar' }
+    ];
+    let tooltipIndex = 0;
+    let tooltipInterval = null;
+
+    function startTooltipCycle() {
+        tooltip.classList.add('show');
+        tooltipIndex = 0;
+        tooltip.textContent = tooltipMessages[0].text;
+        tooltip.style.direction = tooltipMessages[0].lang === 'ar' ? 'rtl' : 'ltr';
+        if (tooltipInterval) clearInterval(tooltipInterval);
+        tooltipInterval = setInterval(function() {
+            tooltipIndex = (tooltipIndex + 1) % tooltipMessages.length;
+            const item = tooltipMessages[tooltipIndex];
+            tooltip.classList.remove('show');
+            setTimeout(function() {
+                tooltip.textContent = item.text;
+                tooltip.style.direction = item.lang === 'ar' ? 'rtl' : 'ltr';
+                tooltip.classList.add('show');
+            }, 400);
+        }, 3000);
+    }
+
+    function stopTooltipCycle() {
+        if (tooltipInterval) {
+            clearInterval(tooltipInterval);
+            tooltipInterval = null;
+        }
+        tooltip.classList.remove('show');
+    }
+
+    startTooltipCycle();
 
     // Toggle panel
     let isOpen = false;
@@ -113,12 +192,14 @@
         isOpen = !isOpen;
         if (isOpen) {
             panel.classList.add('open');
+            stopTooltipCycle();
             // Focus the input inside iframe
             try {
                 panel.contentWindow.focus();
             } catch (e) {}
         } else {
             panel.classList.remove('open');
+            startTooltipCycle();
         }
     });
 
@@ -127,6 +208,7 @@
         if (isOpen && !container.contains(e.target)) {
             isOpen = false;
             panel.classList.remove('open');
+            startTooltipCycle();
         }
     });
 
@@ -135,6 +217,7 @@
         if (event.data && event.data.action === 'close-widget') {
             isOpen = false;
             panel.classList.remove('open');
+            startTooltipCycle();
         }
     });
     }
