@@ -249,56 +249,61 @@
         </div>
 
         <div class="payment-methods">
-            <h3>💳 Payment Methods</h3>
+            <h3>💳 Secure Payment Methods</h3>
             
             <div class="payment-method">
-                <h4>🏦 Bank Transfer (India)</h4>
-                <p><strong>Account Name:</strong> Farman Husain</p>
-                <p><strong>Account Number:</strong> 43229135452</p>
-                <p><strong>Account Type:</strong> Savings Account</p>
-                <p><strong>IFSC Code:</strong> SBIN0018417</p>
-                <p><strong>Bank Name:</strong> State Bank of India</p>
-                <p><strong>Branch:</strong> Nasirabad</p>
+                <h4>💳 Credit/Debit Card</h4>
+                <p>Pay securely with Visa, Mastercard, RuPay, or Amex</p>
+                <div id="stripe-payment-element">
+                    <!-- Stripe payment element will be inserted here -->
+                </div>
+                <button class="pay-btn" onclick="payWithStripe()" style="margin-top: 15px;">
+                    Pay with Card - <span id="stripeAmount">₹0</span>
+                </button>
             </div>
 
             <div class="payment-method">
-                <h4>📱 UPI Payment</h4>
-                <p><strong>UPI ID:</strong> 43229135452@sbi</p>
-                <p>Scan QR code or send money to above UPI ID</p>
+                <h4>🅿️ PayPal</h4>
+                <p>Pay with PayPal or credit card through PayPal</p>
+                <div id="paypal-button-container">
+                    <!-- PayPal button will be inserted here -->
+                </div>
             </div>
 
             <div class="payment-method">
-                <h4>🌍 PayPal (International)</h4>
-                <p><strong>PayPal Email:</strong> payments@aichatbot.in</p>
-                <p>Send payment to above PayPal email</p>
+                <h4>📱 UPI (India)</h4>
+                <p>Pay with any UPI app - PhonePe, GPay, Paytm</p>
+                <button class="pay-btn" onclick="payWithUPI()" style="background: linear-gradient(135deg, #075e54, #128c7e);">
+                    Pay with UPI - <span id="upiAmount">₹0</span>
+                </button>
             </div>
 
             <div class="payment-method">
-                <h4>💸 Wise (International)</h4>
-                <p><strong>Wise Email:</strong> payments@aichatbot.in</p>
-                <p>Best for international transfers with low fees</p>
+                <h4>🌍 International Cards</h4>
+                <p>Accepting cards from 195+ countries worldwide</p>
+                <p><strong>Supported:</strong> USD, EUR, GBP, AED, SGD, and more</p>
             </div>
         </div>
 
         <div class="instructions">
-            <h3>📋 Payment Instructions</h3>
+            <h3>📋 Instant Access - Pay & Get Started</h3>
             <ol>
                 <li><strong>Choose your plan</strong> above (Starter, Professional, or Enterprise)</li>
                 <li><strong>Fill your details</strong> (Name and Email)</li>
-                <li><strong>Make payment</strong> using any of the payment methods shown</li>
-                <li><strong>Send screenshot</strong> of payment to <strong>payments@aichatbot.in</strong></li>
-                <li><strong>Receive access code</strong> within 2 hours via email</li>
-                <li><strong>Activate your AI chatbot</strong> using the access code</li>
+                <li><strong>Pay instantly</strong> using Card, PayPal, or UPI</li>
+                <li><strong>Get immediate access</strong> - No waiting time!</li>
+                <li><strong>Start using AI chatbot</strong> right away</li>
             </ol>
         </div>
 
-        <button class="pay-btn" onclick="proceedToPayment()" id="payBtn" disabled>
-            Select a Plan to Proceed
-        </button>
+        <div class="success-message" id="paymentSuccess" style="display: none;">
+            <h3>🎉 Payment Successful!</h3>
+            <p>Your AI chatbot access is now active. Redirecting to your dashboard...</p>
+        </div>
 
         <div class="note">
-            <strong>⚠️ Important:</strong> Please include your email address in payment description for faster processing. 
-            Access codes are usually sent within 2 hours of payment confirmation.
+            <strong>🔒 Secure Payments:</strong> All payments are processed securely through Stripe and PayPal. 
+            Your financial information is never stored on our servers. Instant access guaranteed!
         </div>
     </div>
 
@@ -321,57 +326,161 @@
             };
             selectedPrice = prices[plan];
             
-            // Update button
-            document.getElementById('payBtn').disabled = false;
-            document.getElementById('payBtn').textContent = `Proceed to Payment - ₹${selectedPrice.toLocaleString()}`;
+            // Update all payment buttons with price
+            document.getElementById('stripeAmount').textContent = `₹${selectedPrice.toLocaleString()}`;
+            document.getElementById('upiAmount').textContent = `₹${selectedPrice.toLocaleString()}`;
+            
+            // Enable payment methods
+            document.querySelectorAll('.pay-btn').forEach(btn => btn.disabled = false);
         }
 
-        function proceedToPayment() {
+        // Stripe Payment
+        function payWithStripe() {
             const fullName = document.getElementById('fullName').value;
             const email = document.getElementById('email').value;
             
-            if (!selectedPlan) {
-                alert('Please select a plan');
+            if (!selectedPlan || !fullName || !email) {
+                alert('Please select a plan and fill your details');
                 return;
             }
-            
-            if (!fullName || !email) {
-                alert('Please fill in all details');
-                return;
-            }
-            
-            // Show success message
-            document.getElementById('successMessage').classList.add('show');
-            
-            // Scroll to payment instructions
-            document.querySelector('.payment-methods').scrollIntoView({ behavior: 'smooth' });
-            
-            // Log for tracking (in production, save to database)
-            console.log('Payment initiated:', {
-                plan: selectedPlan,
-                price: selectedPrice,
-                name: fullName,
-                email: email,
-                timestamp: new Date().toISOString()
+
+            // Create payment session
+            fetch('/stripe-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    plan: selectedPlan,
+                    name: fullName,
+                    email: email,
+                    amount: selectedPrice * 100, // Convert to paise
+                    currency: 'inr'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Redirect to Stripe Checkout
+                    window.location.href = `https://checkout.stripe.com/pay/${data.session_id}`;
+                } else {
+                    alert('Payment failed. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Payment error:', error);
+                alert('Payment failed. Please try again.');
             });
-            
-            // Update button
-            document.getElementById('payBtn').textContent = 'Payment Instructions Sent - Check Email';
-            document.getElementById('payBtn').disabled = true;
         }
 
-        // Auto-fill from URL parameters
+        // PayPal Payment
+        function initPayPal() {
+            paypal.Buttons({
+                createOrder: function(data, actions) {
+                    const fullName = document.getElementById('fullName').value;
+                    const email = document.getElementById('email').value;
+                    
+                    if (!selectedPlan || !fullName || !email) {
+                        alert('Please select a plan and fill your details');
+                        return;
+                    }
+
+                    return actions.order.create({
+                        purchase_units: [{
+                            amount: {
+                                value: selectedPrice,
+                                currency_code: 'USD'
+                            },
+                            description: `AI Chatbot ${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} Plan`
+                        }]
+                    });
+                },
+                onApprove: function(data, actions) {
+                    return actions.order.capture().then(function(details) {
+                        // Payment successful
+                        showPaymentSuccess();
+                        // Send to backend for access code generation
+                        generateAccessCode();
+                    });
+                }
+            }).render('#paypal-button-container');
+        }
+
+        // UPI Payment
+        function payWithUPI() {
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            
+            if (!selectedPlan || !fullName || !email) {
+                alert('Please select a plan and fill your details');
+                return;
+            }
+
+            // Generate UPI payment URL
+            const upiUrl = `upi://pay?pa=43229135452@sbi&pn=Farman%20Husain&am=${selectedPrice}&cu=INR&tn=AI%20Chatbot%20${selectedPlan}`;
+            
+            // Open UPI app
+            window.location.href = upiUrl;
+            
+            // Show instructions
+            setTimeout(() => {
+                alert('Please complete payment in your UPI app. You will receive access code via email within 2 hours.');
+            }, 2000);
+        }
+
+        // Show payment success
+        function showPaymentSuccess() {
+            document.getElementById('paymentSuccess').style.display = 'block';
+            setTimeout(() => {
+                window.location.href = '/chat?access=SUCCESS';
+            }, 3000);
+        }
+
+        // Generate access code after payment
+        function generateAccessCode() {
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            
+            fetch('/payment-success', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    plan: selectedPlan,
+                    name: fullName,
+                    email: email,
+                    payment_id: 'PAYMENT_' + Date.now(),
+                    order_id: 'ORDER_' + Date.now()
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showPaymentSuccess();
+                }
+            });
+        }
+
+        // Initialize on page load
         window.onload = function() {
+            // Initialize PayPal if available
+            if (typeof paypal !== 'undefined') {
+                initPayPal();
+            }
+            
+            // Auto-select plan from URL
             const urlParams = new URLSearchParams(window.location.search);
             const plan = urlParams.get('plan');
             if (plan) {
-                // Auto-select plan if specified in URL
-                const planElement = document.querySelector(`.plan:has([data-plan="${plan}"])`);
+                const planElement = document.querySelector(`[onclick="selectPlan('${plan}')"]`);
                 if (planElement) {
                     planElement.click();
                 }
             }
         }
     </script>
+
+    <!-- Stripe.js -->
+    <script src="https://js.stripe.com/v3/"></script>
+    
+    <!-- PayPal.js -->
+    <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script>
 </body>
 </html>

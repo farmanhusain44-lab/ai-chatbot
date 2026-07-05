@@ -649,16 +649,22 @@ def payment_instructions():
     """Display payment instructions with account details"""
     return jsonify({
         "success": True,
-        "account_details": {
-            "account_name": "Farman Husain",
-            "account_number": "43229135452",
-            "account_type": "Savings Account",
-            "ifsc_code": "SBIN0018417",
-            "bank_name": "State Bank of India",
-            "branch": "Nasirabad",
-            "upi_id": "43229135452@sbi",
-            "paypal": "payments@aichatbot.in",
-            "wise_email": "payments@aichatbot.in"
+        "payment_methods": {
+            "stripe": {
+                "enabled": true,
+                "publishable_key": "pk_live_YOUR_STRIPE_KEY",
+                "supported_cards": ["Visa", "Mastercard", "RuPay", "Amex"],
+                "currencies": ["INR", "USD", "EUR", "GBP", "AED", "SGD"]
+            },
+            "paypal": {
+                "enabled": true,
+                "client_id": "YOUR_PAYPAL_CLIENT_ID",
+                "supported_countries": 195
+            },
+            "upi": {
+                "enabled": true,
+                "apps": ["PhonePe", "Google Pay", "Paytm", "BHIM"]
+            }
         },
         "instructions": {
             "step1": "Choose your plan (Starter: ₹3,000, Professional: ₹10,000, Enterprise: ₹25,000)",
@@ -828,61 +834,73 @@ def paypal_payment():
 
 @app.route("/stripe-payment", methods=["POST"])
 def stripe_payment():
-    """Handle Stripe international payment requests"""
+    """Handle Stripe payment session creation"""
     try:
         data = request.get_json()
         plan = data.get('plan', 'starter')
-        country = data.get('country', 'IN')
+        name = data.get('name', '')
+        email = data.get('email', '')
+        amount = data.get('amount', 3000)  # Amount in paise
+        currency = data.get('currency', 'inr')
         
-        # Stripe pricing in local currencies (in cents/pennies)
-        pricing = {
-            'IN': {'starter': 300000, 'professional': 1000000, 'enterprise': 2500000, 'currency': 'inr'},
-            'AE': {'starter': 49900, 'professional': 149900, 'enterprise': 349900, 'currency': 'aed'},
-            'SG': {'starter': 8900, 'professional': 26900, 'enterprise': 62900, 'currency': 'sgd'},
-            'GB': {'starter': 4900, 'professional': 14900, 'enterprise': 34900, 'currency': 'gbp'},
-            'US': {'starter': 5900, 'professional': 17900, 'enterprise': 41900, 'currency': 'usd'}
-        }
+        if not plan or not name or not email:
+            return jsonify({"error": "Missing required fields"}), 400
         
-        if country not in pricing:
-            return jsonify({"error": "Country not supported"}), 400
+        # In production, use actual Stripe API
+        # For now, simulate session creation
+        session_id = f"cs_test_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{hash(email + plan)}"
         
-        if plan not in ['starter', 'professional', 'enterprise']:
-            return jsonify({"error": "Invalid plan selected"}), 400
-        
-        country_pricing = pricing[country]
-        amount = country_pricing[plan]
-        currency = country_pricing['currency']
-        
-        # Stripe payment details
-        stripe_details = {
+        # Create checkout session details
+        session_data = {
+            "session_id": session_id,
+            "publishable_key": "pk_test_51234567890abcdef",  # Test key
+            "checkout_url": f"https://checkout.stripe.com/pay/{session_id}",
             "amount": amount,
             "currency": currency,
-            "product_name": f"AI Chatbot {plan.title()} Plan",
-            "description": f"AI Chatbot {plan.title()} Plan - {country}",
-            "customer_email": data.get('email', ''),
-            "metadata": {
-                "plan": plan,
-                "country": country,
-                "customer_name": data.get('name', '')
-            },
-            "success_url": f"{request.url_root}payment-success?session_id={{CHECKOUT_SESSION_ID}}",
-            "cancel_url": f"{request.url_root}payment-cancelled",
-            "stripe_publishable_key": "pk_test_1234567890",  # Test key in production
-            "payment_intent_id": f"pi_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            "plan": plan,
+            "customer_email": email,
+            "customer_name": name,
+            "success_url": f"{request.url_root}payment-success?session_id={session_id}",
+            "cancel_url": f"{request.url_root}payment-cancelled"
         }
         
-        logger.info(f"Stripe payment initiated: {stripe_details['payment_intent_id']} for {amount} {currency}")
+        logger.info(f"Stripe session created: {session_id} for {email}")
         
         return jsonify({
             "success": True,
-            "payment_method": "stripe",
-            "details": stripe_details,
-            "client_secret": f"pi_{datetime.now().strftime('%Y%m%d_%H%M%S')}_secret_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            "session_id": session_id,
+            "checkout_url": session_data["checkout_url"],
+            "publishable_key": session_data["publishable_key"]
         })
         
     except Exception as e:
-        logger.error(f"Error creating Stripe payment: {e}")
-        return jsonify({"error": "Failed to create Stripe payment"}), 500
+        logger.error(f"Error creating Stripe session: {e}")
+        return jsonify({"error": "Failed to create payment session"}), 500
+
+@app.route("/stripe-webhook", methods=["POST"])
+def stripe_webhook():
+    """Handle Stripe webhook events"""
+    try:
+        # Verify webhook signature in production
+        event = request.get_json()
+        
+        if event['type'] == 'checkout.session.completed':
+            session = event['data']['object']
+            # Payment successful - grant access
+            access_code = generate_access_code(
+                session['customer_details']['email'], 
+                session['metadata']['plan']
+            )
+            
+            logger.info(f"Stripe payment completed: {session['id']} - Access: {access_code}")
+            
+            return jsonify({"status": "success", "access_code": access_code})
+        
+        return jsonify({"status": "received"})
+        
+    except Exception as e:
+        logger.error(f"Stripe webhook error: {e}")
+        return jsonify({"error": "Webhook processing failed"}), 500
 
 @app.route("/payment-cancelled", methods=["GET", "POST"])
 def payment_cancelled():
