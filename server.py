@@ -11,6 +11,12 @@ from langdetect.lang_detect_exception import LangDetectException
 import requests
 import logging
 from io import BytesIO
+import numpy as np
+
+try:
+    import openai
+except ImportError:
+    openai = None
 
 # Document extraction libraries
 try:
@@ -38,6 +44,19 @@ DOCUMENT_CHUNKS = []
 MAX_DOCUMENT_CHUNKS = 2000
 CHUNK_SIZE = 800
 CHUNK_OVERLAP = 100
+
+
+def normalize_arabic(text):
+    """Normalize Arabic text for better matching across dialects and diacritics."""
+    if not text:
+        return text
+    # Remove tashkeel (diacritics)
+    text = re.sub(r'[\u064B-\u065F\u0670\u0640]', '', text)
+    # Normalize alef variants
+    text = re.sub(r'[\u0622\u0623\u0625]', '\u0627', text)
+    # Normalize yaa and alif maqsura
+    text = text.replace('\u0649', '\u064A')
+    return text
 
 
 def extract_text_from_file(file_obj, filename):
@@ -86,34 +105,64 @@ def chunk_text(text, chunk_size=CHUNK_SIZE, overlap=CHUNK_OVERLAP):
     return chunks
 
 
+def embed_texts(texts):
+    """Get OpenAI embeddings for a list of texts. Falls back to None if unavailable."""
+    if not openai_client or not texts:
+        return None
+    try:
+        response = openai_client.embeddings.create(
+            model="text-embedding-3-small",
+            input=texts
+        )
+        return [item.embedding for item in response.data]
+    except Exception as e:
+        logger.error("OpenAI embedding failed: %s", e)
+        return None
+
+
+def cosine_similarity(a, b):
+    return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
+
+
 def add_document_to_knowledge_base(filename, text):
-    """Chunk and store document text."""
+    """Chunk, embed, and store document text."""
     global DOCUMENT_CHUNKS
     chunks = chunk_text(text)
-    for chunk in chunks:
-        if chunk:
-            DOCUMENT_CHUNKS.append({"source": filename, "text": chunk})
+    valid_chunks = [chunk for chunk in chunks if chunk]
+    if not valid_chunks:
+        return 0
+
+    embeddings = embed_texts(valid_chunks)
+    for i, chunk in enumerate(valid_chunks):
+        item = {"source": filename, "text": chunk, "norm": normalize_arabic(chunk.lower())}
+        if embeddings:
+            item["embedding"] = embeddings[i]
+        DOCUMENT_CHUNKS.append(item)
+
     # Keep within memory limit
     if len(DOCUMENT_CHUNKS) > MAX_DOCUMENT_CHUNKS:
         DOCUMENT_CHUNKS = DOCUMENT_CHUNKS[-MAX_DOCUMENT_CHUNKS:]
-    logger.info("Added document %s: %d chunks, total %d chunks", filename, len(chunks), len(DOCUMENT_CHUNKS))
-    return len(chunks)
+    logger.info("Added document %s: %d chunks, total %d chunks, embeddings=%s", filename, len(valid_chunks), len(DOCUMENT_CHUNKS), bool(embeddings))
+    return len(valid_chunks)
 
 
-def get_relevant_context(query, top_k=3):
-    """Simple keyword relevance search across document chunks."""
+def keyword_search_context(query, top_k=3):
+    """Keyword search as fallback."""
     if not DOCUMENT_CHUNKS:
         return ""
-    query_words = set(re.findall(r'\w+', query.lower()))
-    # Remove common stop words
-    stop_words = {'the', 'is', 'a', 'an', 'and', 'or', 'to', 'of', 'in', 'for', 'on', 'with', 'what', 'how', 'who', 'where', 'when', 'why', 'me', 'my', 'your', 'this', 'that', 'are', 'do', 'does', 'can', 'you'}
+    query_norm = normalize_arabic(query.lower())
+    query_words = set(re.findall(r"[\w'\u0600-\u06FF]+", query_norm))
+    # Stop words for English and Arabic
+    stop_words = {
+        'the', 'is', 'a', 'an', 'and', 'or', 'to', 'of', 'in', 'for', 'on', 'with', 'what', 'how', 'who', 'where', 'when', 'why', 'me', 'my', 'your', 'this', 'that', 'are', 'do', 'does', 'can', 'you', 'was', 'were', 'did', 'will',
+        'هذا', 'هذه', 'التي', 'الذي', 'من', 'في', 'على', 'إلى', 'عن', 'مع', 'كان', 'أن', 'أو', 'لم', 'قد', 'ما', 'كل', 'بعد', 'قبل', 'أي', 'هل', 'كيف', 'أين', 'متى', 'لماذا', 'لمن', 'هو', 'هي', 'هم'
+    }
     query_words = query_words - stop_words
     if not query_words:
         return ""
     scored = []
     for chunk in DOCUMENT_CHUNKS:
-        chunk_text_lower = chunk["text"].lower()
-        chunk_words = set(re.findall(r'\w+', chunk_text_lower))
+        chunk_words = set(re.findall(r"[\w'\u0600-\u06FF]+", chunk.get("norm", chunk["text"].lower())))
         score = len(query_words & chunk_words)
         if score > 0:
             scored.append((score, chunk["text"]))
@@ -128,6 +177,38 @@ def get_relevant_context(query, top_k=3):
     return "\n\n".join(selected)
 
 
+def get_relevant_context(query, top_k=3):
+    """Find relevant document chunks using embeddings if available, else keyword search."""
+    if not DOCUMENT_CHUNKS:
+        return ""
+
+    # If we have embeddings, do vector search
+    if openai_client and any("embedding" in c for c in DOCUMENT_CHUNKS):
+        query_embedding = embed_texts([query])
+        if query_embedding and query_embedding[0]:
+            q_vec = np.array(query_embedding[0])
+            scored = []
+            for chunk in DOCUMENT_CHUNKS:
+                if "embedding" not in chunk:
+                    continue
+                c_vec = np.array(chunk["embedding"])
+                score = cosine_similarity(q_vec, c_vec)
+                scored.append((score, chunk["text"]))
+            scored.sort(reverse=True, key=lambda x: x[0])
+            selected = []
+            total_len = 0
+            for score, text in scored[:top_k]:
+                if total_len + len(text) > 2500:
+                    break
+                selected.append(text)
+                total_len += len(text)
+            if selected:
+                return "\n\n".join(selected)
+
+    # Fallback to keyword search
+    return keyword_search_context(query, top_k)
+
+
 @app.route('/public/<path:filename>')
 def serve_public(filename):
     return send_from_directory('public', filename)
@@ -138,6 +219,15 @@ if not api_key:
     logger.warning("ANTHROPIC_API_KEY environment variable is not set — API calls will fail")
 
 client = anthropic.Anthropic(api_key=api_key)
+
+# Optional OpenAI client for document embeddings (vector search)
+openai_api_key = os.environ.get("OPENAI_API_KEY")
+openai_client = None
+if openai and openai_api_key:
+    try:
+        openai_client = openai.OpenAI(api_key=openai_api_key)
+    except Exception as e:
+        logger.warning("OpenAI client failed to initialize: %s", e)
 
 twilio_sid = os.environ.get("TWILIO_ACCOUNT_SID")
 twilio_token = os.environ.get("TWILIO_AUTH_TOKEN")
