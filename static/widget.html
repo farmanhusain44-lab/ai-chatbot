@@ -26,7 +26,7 @@
             overflow: hidden;
         }
         .widget-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #25D366;
             color: white;
             padding: 14px 16px;
             display: flex;
@@ -47,7 +47,7 @@
             align-items: center;
             gap: 4px;
         }
-        .close-btn {
+        .header-btn {
             background: rgba(255,255,255,0.2);
             border: none;
             color: white;
@@ -60,11 +60,11 @@
             justify-content: center;
             transition: background 0.2s;
         }
-        .close-btn:hover { background: rgba(255,255,255,0.35); }
+        .header-btn:hover { background: rgba(255,255,255,0.35); }
         .status-dot {
             width: 8px;
             height: 8px;
-            background: #2ecc71;
+            background: #ffffff;
             border-radius: 50%;
             animation: pulse 2s infinite;
         }
@@ -297,9 +297,16 @@
 <body>
     <div class="widget-container">
         <div class="widget-header">
-            <h3><span class="status-dot"></span><span id="agentName">Al Faredah Assistant</span></h3>
+            <h3><span class="status-dot"></span><span id="agentName">Chat with us</span></h3>
             <div class="widget-header-actions">
-                <button type="button" class="close-btn" id="closeBtn" onclick="closeWidget()" aria-label="Close chat" title="Close chat">
+                <button type="button" class="header-btn" id="menuBtn" onclick="resetChat()" aria-label="Start again" title="Start again">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="1"></circle>
+                        <circle cx="19" cy="12" r="1"></circle>
+                        <circle cx="5" cy="12" r="1"></circle>
+                    </svg>
+                </button>
+                <button type="button" class="header-btn" id="closeBtn" onclick="closeWidget()" aria-label="Close chat" title="Close chat">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -309,8 +316,8 @@
         </div>
         <div class="messages" id="messages">
             <div class="welcome-msg" id="welcomeMsg">
-                <div class="welcome-line en" id="welcomeEn">Welcome to Al Faredah</div>
-                <div class="welcome-line ar" id="welcomeAr">تحدث معنا</div>
+                <div class="welcome-line en" id="welcomeEn">Welcome</div>
+                <div class="welcome-line ar" id="welcomeAr">Chat with us</div>
             </div>
         </div>
         <div id="typing" class="typing">AI is typing...</div>
@@ -385,6 +392,20 @@
             } catch (e) {
                 console.error('Close widget error:', e);
             }
+        }
+
+        function resetChat() {
+            conversationHistory = [];
+            const messages = document.getElementById('messages');
+            messages.innerHTML = `
+                <div class="welcome-msg" id="welcomeMsg">
+                    <div class="welcome-line en show" id="welcomeEn">Welcome</div>
+                    <div class="welcome-line ar show" id="welcomeAr">Chat with us</div>
+                </div>
+            `;
+            const urlParams = new URLSearchParams(window.location.search);
+            const welcomeText = urlParams.get('welcome') || 'Welcome';
+            document.getElementById('welcomeEn').textContent = welcomeText;
         }
 
         function stripEmojis(text) {
@@ -823,8 +844,8 @@
 
         // Apply configuration from URL params
         const urlParams = new URLSearchParams(window.location.search);
-        const agentName = urlParams.get('name') || 'Al Faredah Assistant';
-        const welcomeText = urlParams.get('welcome') || 'Welcome to Al Faredah';
+        const agentName = urlParams.get('name') || 'Chat with us';
+        const welcomeText = urlParams.get('welcome') || 'Welcome';
         document.getElementById('agentName').textContent = agentName;
         document.getElementById('welcomeEn').textContent = welcomeText;
 

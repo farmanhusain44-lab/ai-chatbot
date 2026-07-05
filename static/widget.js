@@ -6,10 +6,10 @@
     const scripts = document.getElementsByTagName('script');
     const currentScript = scripts[scripts.length - 1];
     const baseUrl = currentScript.src.replace('/widget.js', '');
-    const agentName = currentScript.getAttribute('data-agent') || 'Al Faredah Assistant';
-    const welcomeText = currentScript.getAttribute('data-welcome') || 'Welcome to Al Faredah';
+    const agentName = currentScript.getAttribute('data-agent') || 'Chat with us';
+    const welcomeText = currentScript.getAttribute('data-welcome') || 'Welcome';
     const position = currentScript.getAttribute('data-position') || 'bottom-right';
-    const color = currentScript.getAttribute('data-color') || '#d81b60';
+    const color = currentScript.getAttribute('data-color') || '#25D366';
 
     const widgetId = 'ai-chatbot-widget-' + Date.now();
 
@@ -44,24 +44,25 @@
         }
         #${widgetId}-tooltip {
             position: absolute;
-            ${position.includes('right') ? 'right: 52px;' : 'left: 52px;'}
+            ${position.includes('right') ? 'right: 48px;' : 'left: 48px;'}
             ${position.includes('bottom') ? 'bottom: 8px;' : 'top: 8px;'}
-            background: white;
-            color: #333;
+            background: ${color};
+            color: white;
             padding: 0;
             border-radius: 24px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             font-size: 13px;
+            font-weight: 500;
             white-space: nowrap;
             max-width: 0;
             overflow: hidden;
             opacity: 0;
             height: 44px;
             line-height: 44px;
-            transition: max-width 0.6s ease, opacity 0.4s ease, padding 0.4s ease;
+            transition: max-width 0.7s ease, opacity 0.4s ease, padding 0.4s ease;
             pointer-events: none;
             z-index: 999998;
-            border: 1px solid rgba(0,0,0,0.08);
+            border: none;
             display: flex;
             align-items: center;
             transform-origin: ${position.includes('right') ? 'right center' : 'left center'};
@@ -117,7 +118,7 @@
     // Cycling tooltip above button
     const tooltip = document.createElement('div');
     tooltip.id = widgetId + '-tooltip';
-    tooltip.textContent = 'Welcome to Al Faredah';
+    tooltip.textContent = 'Welcome';
     tooltip.style.direction = 'ltr';
 
     // Floating button
@@ -143,11 +144,11 @@
     container.appendChild(tooltip);
     document.body.appendChild(container);
 
-    // Cycle tooltip messages: English, English, Arabic - repeat
+    // Cycle popup messages: English first, then Arabic - repeat every 15s
     const tooltipMessages = [
-        { text: 'Welcome to Al Faredah', lang: 'en' },
+        { text: 'Welcome', lang: 'en' },
         { text: 'Chat with us', lang: 'en' },
-        { text: 'مرحباً بكم في الفريدة', lang: 'ar' },
+        { text: 'مرحباً', lang: 'ar' },
         { text: 'تحدث معنا', lang: 'ar' }
     ];
     let tooltipIndex = 0;
@@ -168,7 +169,7 @@
                 tooltip.style.direction = item.lang === 'ar' ? 'rtl' : 'ltr';
                 tooltip.classList.add('show');
             }, 400);
-        }, 3000);
+        }, 15000);
     }
 
     function stopTooltipCycle() {
