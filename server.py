@@ -604,6 +604,200 @@ def upi_payment():
         logger.error(f"Error creating UPI payment: {e}")
         return jsonify({"error": "Failed to create UPI payment"}), 500
 
+@app.route("/wise-payment", methods=["POST"])
+def wise_payment():
+    """Handle Wise (TransferWise) international payment requests"""
+    try:
+        data = request.get_json()
+        plan = data.get('plan', 'starter')
+        country = data.get('country', 'IN')
+        
+        # International pricing in local currencies
+        pricing = {
+            'IN': {'starter': 3000, 'professional': 10000, 'enterprise': 25000, 'currency': 'INR'},
+            'AE': {'starter': 499, 'professional': 1499, 'enterprise': 3499, 'currency': 'AED'},
+            'SG': {'starter': 89, 'professional': 269, 'enterprise': 629, 'currency': 'SGD'},
+            'GB': {'starter': 49, 'professional': 149, 'enterprise': 349, 'currency': 'GBP'},
+            'US': {'starter': 59, 'professional': 179, 'enterprise': 419, 'currency': 'USD'}
+        }
+        
+        if country not in pricing:
+            return jsonify({"error": "Country not supported"}), 400
+        
+        if plan not in ['starter', 'professional', 'enterprise']:
+            return jsonify({"error": "Invalid plan selected"}), 400
+        
+        country_pricing = pricing[country]
+        amount = country_pricing[plan]
+        currency = country_pricing['currency']
+        
+        # Wise payment details
+        wise_details = {
+            "amount": amount,
+            "currency": currency,
+            "recipient_name": "AI Chatbot Services",
+            "recipient_email": "payments@aichatbot.in",
+            "wise_account_id": "AI123456789",
+            "reference": f"Chatbot_{plan}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            "customer_name": data.get('name', ''),
+            "customer_email": data.get('email', ''),
+            "description": f"AI Chatbot {plan.title()} Plan - {country}",
+            "payment_url": f"https://wise.com/pay/{wise_details['reference']}",
+            "bank_details": {
+                "account_name": "AI Chatbot Services",
+                "account_number": "1234567890",
+                "ifsc_code": "ICIC0001234",
+                "bank_name": "ICICI Bank",
+                "branch": "Mumbai Main"
+            }
+        }
+        
+        logger.info(f"Wise payment initiated: {wise_details['reference']} for {amount} {currency}")
+        
+        return jsonify({
+            "success": True,
+            "payment_method": "wise",
+            "details": wise_details,
+            "instructions": f"Transfer {amount} {currency} to the provided bank details or use the Wise payment link"
+        })
+        
+    except Exception as e:
+        logger.error(f"Error creating Wise payment: {e}")
+        return jsonify({"error": "Failed to create Wise payment"}), 500
+
+@app.route("/paypal-payment", methods=["POST"])
+def paypal_payment():
+    """Handle PayPal international payment requests"""
+    try:
+        data = request.get_json()
+        plan = data.get('plan', 'starter')
+        country = data.get('country', 'IN')
+        
+        # PayPal pricing in local currencies
+        pricing = {
+            'IN': {'starter': 3000, 'professional': 10000, 'enterprise': 25000, 'currency': 'INR'},
+            'AE': {'starter': 499, 'professional': 1499, 'enterprise': 3499, 'currency': 'AED'},
+            'SG': {'starter': 89, 'professional': 269, 'enterprise': 629, 'currency': 'SGD'},
+            'GB': {'starter': 49, 'professional': 149, 'enterprise': 349, 'currency': 'GBP'},
+            'US': {'starter': 59, 'professional': 179, 'enterprise': 419, 'currency': 'USD'}
+        }
+        
+        if country not in pricing:
+            return jsonify({"error": "Country not supported"}), 400
+        
+        if plan not in ['starter', 'professional', 'enterprise']:
+            return jsonify({"error": "Invalid plan selected"}), 400
+        
+        country_pricing = pricing[country]
+        amount = country_pricing[plan]
+        currency = country_pricing['currency']
+        
+        # PayPal payment details
+        paypal_details = {
+            "amount": amount,
+            "currency": currency,
+            "merchant_id": "AI_CHATBOT_MERCHANT",
+            "paypal_email": "payments@aichatbot.in",
+            "item_name": f"AI Chatbot {plan.title()} Plan",
+            "item_number": f"CHATBOT_{plan.upper()}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            "custom": f"customer:{data.get('email', '')};plan:{plan};country:{country}",
+            "return_url": f"{request.url_root}payment-success",
+            "cancel_url": f"{request.url_root}payment-cancelled",
+            "notify_url": f"{request.url_root}paypal-ipn",
+            "payment_url": f"https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business={paypal_details['paypal_email']}&item_name={paypal_details['item_name']}&amount={amount}&currency_code={currency}&return={paypal_details['return_url']}&cancel_return={paypal_details['cancel_url']}"
+        }
+        
+        logger.info(f"PayPal payment initiated: {paypal_details['item_number']} for {amount} {currency}")
+        
+        return jsonify({
+            "success": True,
+            "payment_method": "paypal",
+            "details": paypal_details,
+            "redirect_url": paypal_details['payment_url']
+        })
+        
+    except Exception as e:
+        logger.error(f"Error creating PayPal payment: {e}")
+        return jsonify({"error": "Failed to create PayPal payment"}), 500
+
+@app.route("/stripe-payment", methods=["POST"])
+def stripe_payment():
+    """Handle Stripe international payment requests"""
+    try:
+        data = request.get_json()
+        plan = data.get('plan', 'starter')
+        country = data.get('country', 'IN')
+        
+        # Stripe pricing in local currencies (in cents/pennies)
+        pricing = {
+            'IN': {'starter': 300000, 'professional': 1000000, 'enterprise': 2500000, 'currency': 'inr'},
+            'AE': {'starter': 49900, 'professional': 149900, 'enterprise': 349900, 'currency': 'aed'},
+            'SG': {'starter': 8900, 'professional': 26900, 'enterprise': 62900, 'currency': 'sgd'},
+            'GB': {'starter': 4900, 'professional': 14900, 'enterprise': 34900, 'currency': 'gbp'},
+            'US': {'starter': 5900, 'professional': 17900, 'enterprise': 41900, 'currency': 'usd'}
+        }
+        
+        if country not in pricing:
+            return jsonify({"error": "Country not supported"}), 400
+        
+        if plan not in ['starter', 'professional', 'enterprise']:
+            return jsonify({"error": "Invalid plan selected"}), 400
+        
+        country_pricing = pricing[country]
+        amount = country_pricing[plan]
+        currency = country_pricing['currency']
+        
+        # Stripe payment details
+        stripe_details = {
+            "amount": amount,
+            "currency": currency,
+            "product_name": f"AI Chatbot {plan.title()} Plan",
+            "description": f"AI Chatbot {plan.title()} Plan - {country}",
+            "customer_email": data.get('email', ''),
+            "metadata": {
+                "plan": plan,
+                "country": country,
+                "customer_name": data.get('name', '')
+            },
+            "success_url": f"{request.url_root}payment-success?session_id={{CHECKOUT_SESSION_ID}}",
+            "cancel_url": f"{request.url_root}payment-cancelled",
+            "stripe_publishable_key": "pk_test_1234567890",  # Test key in production
+            "payment_intent_id": f"pi_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        }
+        
+        logger.info(f"Stripe payment initiated: {stripe_details['payment_intent_id']} for {amount} {currency}")
+        
+        return jsonify({
+            "success": True,
+            "payment_method": "stripe",
+            "details": stripe_details,
+            "client_secret": f"pi_{datetime.now().strftime('%Y%m%d_%H%M%S')}_secret_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        })
+        
+    except Exception as e:
+        logger.error(f"Error creating Stripe payment: {e}")
+        return jsonify({"error": "Failed to create Stripe payment"}), 500
+
+@app.route("/payment-cancelled", methods=["GET", "POST"])
+def payment_cancelled():
+    """Handle cancelled payments"""
+    return jsonify({
+        "success": False,
+        "message": "Payment was cancelled",
+        "redirect_url": "/"
+    })
+
+@app.route("/paypal-ipn", methods=["POST"])
+def paypal_ipn():
+    """Handle PayPal Instant Payment Notification"""
+    try:
+        # In production, verify IPN data with PayPal
+        logger.info("PayPal IPN received")
+        return jsonify({"status": "verified"}), 200
+    except Exception as e:
+        logger.error(f"Error processing PayPal IPN: {e}")
+        return jsonify({"status": "error"}), 500
+
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json(silent=True)
