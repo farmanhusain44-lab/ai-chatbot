@@ -8,3 +8,4 @@ tzdata
 PyPDF2
 python-docx
 openai
+numpy
