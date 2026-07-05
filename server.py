@@ -270,7 +270,9 @@ def get_ai_reply(message, language, timezone=None, history=None, context=None):
     # If history is provided, it already contains the current user message as the last item.
     messages = history if history else [{"role": "user", "content": message}]
     if context and messages and messages[-1]["role"] == "user":
+        lang_name = LANGUAGE_NAMES.get(language, language)
         context_prompt = (
+            f"You must reply in {lang_name}. "
             "Use the following document context to answer the question. "
             "If the answer is not in the context, say you don't know. "
             "Do not make up information.\n\n"
