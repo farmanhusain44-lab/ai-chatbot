@@ -421,6 +421,10 @@ def widget_html():
 def demo_page():
     return app.send_static_file("demo.html")
 
+@app.route("/india")
+def india_landing():
+    return app.send_static_file("india-landing.html")
+
 @app.route("/save-lead", methods=["POST"])
 def save_lead():
     try:
