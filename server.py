@@ -160,12 +160,14 @@ def send_whatsapp_reply(to, reply):
         print(f"WhatsApp send error: {e}")
         return False
 
-def get_ai_reply(message, language, timezone=None):
+def get_ai_reply(message, language, timezone=None, history=None):
+    # If history is provided, it already contains the current user message as the last item.
+    messages = history if history else [{"role": "user", "content": message}]
     response = client.messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=2048,
         system=get_system_prompt(language, timezone),
-        messages=[{"role": "user", "content": message}]
+        messages=messages
     )
     return response.content[0].text
 
@@ -223,10 +225,11 @@ def chat():
 
     language = data.get("language") or detect_language(user_message)
     timezone = data.get("timezone")
-    logger.info("Sending message to Claude (length=%d chars, lang=%s, tz=%s)", len(user_message), language, timezone)
+    history = data.get("history", [])
+    logger.info("Sending message to Claude (length=%d chars, lang=%s, tz=%s, history=%d)", len(user_message), language, timezone, len(history))
 
     try:
-        reply = get_ai_reply(user_message, language, timezone)
+        reply = get_ai_reply(user_message, language, timezone, history)
     except anthropic.AuthenticationError as e:
         logger.error("Anthropic authentication failed — check ANTHROPIC_API_KEY: %s", e)
         return jsonify({"error": "API authentication failed. The server API key may be invalid or missing."}), 500

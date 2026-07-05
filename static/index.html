@@ -455,6 +455,7 @@
         let voiceSendTimer = null;
         let currentAudio = null;
         let currentAudioMsg = null;
+        let conversationHistory = [];
 
         function initRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -817,13 +818,15 @@
             }
 
             addUserMessage(userText);
+            const messagesToSend = conversationHistory.concat([{ role: 'user', content: userText }]);
+            if (messagesToSend.length > 10) messagesToSend.shift();
             typing.style.display = 'block';
             messages.scrollTop = messages.scrollHeight;
             try {
                 const response = await fetch('/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: userText, timezone: userTimezone })
+                    body: JSON.stringify({ message: userText, timezone: userTimezone, history: messagesToSend })
                 });
                 const data = await response.json();
                 typing.style.display = 'none';
@@ -835,6 +838,9 @@
                         lastDetectedLang = recognitionLangs[data.language] || 'en-US';
                     }
                     addBotMessage(data.reply, data.language);
+                    conversationHistory.push({ role: 'user', content: userText });
+                    conversationHistory.push({ role: 'assistant', content: data.reply });
+                    if (conversationHistory.length > 10) conversationHistory.shift();
                 }
             } catch (error) {
                 typing.style.display = 'none';
