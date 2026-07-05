@@ -44,40 +44,32 @@
         }
         #${widgetId}-tooltip {
             position: absolute;
-            ${position.includes('bottom') ? 'bottom: 70px;' : 'top: 70px;'}
-            ${position.includes('right') ? 'right: 0;' : 'left: 0;'}
+            ${position.includes('right') ? 'right: 52px;' : 'left: 52px;'}
+            ${position.includes('bottom') ? 'bottom: 8px;' : 'top: 8px;'}
             background: white;
             color: #333;
-            padding: 0 14px;
-            border-radius: 20px;
+            padding: 0;
+            border-radius: 24px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             font-size: 13px;
             white-space: nowrap;
             max-width: 0;
             overflow: hidden;
             opacity: 0;
-            height: 36px;
-            line-height: 36px;
+            height: 44px;
+            line-height: 44px;
             transition: max-width 0.6s ease, opacity 0.4s ease, padding 0.4s ease;
             pointer-events: none;
-            z-index: 1000000;
+            z-index: 999998;
             border: 1px solid rgba(0,0,0,0.08);
-            direction: rtl;
+            display: flex;
+            align-items: center;
+            transform-origin: ${position.includes('right') ? 'right center' : 'left center'};
         }
         #${widgetId}-tooltip.show {
             opacity: 1;
-            max-width: 260px;
-        }
-        #${widgetId}-tooltip::after {
-            content: '';
-            position: absolute;
-            ${position.includes('bottom') ? 'top: 100%;' : 'bottom: 100%;'}
-            ${position.includes('right') ? 'right: 22px;' : 'left: 22px;'}
-            margin-${position.includes('right') ? 'right' : 'left'}: -5px;
-            border-width: 5px;
-            border-style: solid;
-            border-color: white transparent transparent transparent;
-            ${position.includes('bottom') ? '' : 'transform: rotate(180deg);'}
+            max-width: 240px;
+            padding: 0 18px;
         }
         #${widgetId}-panel {
             position: fixed;
@@ -154,8 +146,9 @@
     // Cycle tooltip messages: English, English, Arabic - repeat
     const tooltipMessages = [
         { text: 'Welcome to Al Faredah', lang: 'en' },
-        { text: 'تحدث معنا', lang: 'ar' },
-        { text: 'مرحباً بكم في الفريدة', lang: 'ar' }
+        { text: 'Chat with us', lang: 'en' },
+        { text: 'مرحباً بكم في الفريدة', lang: 'ar' },
+        { text: 'تحدث معنا', lang: 'ar' }
     ];
     let tooltipIndex = 0;
     let tooltipInterval = null;
