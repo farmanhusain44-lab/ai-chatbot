@@ -433,6 +433,10 @@ def boss_demo():
 def uae_landing():
     return app.send_static_file("uae-landing.html")
 
+@app.route("/free-chatbot")
+def free_chatbot():
+    return app.send_static_file("free-chatbot.html")
+
 @app.route("/save-lead", methods=["POST"])
 def save_lead():
     try:
