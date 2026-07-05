@@ -5,3 +5,5 @@ gunicorn
 twilio
 langdetect
 tzdata
+PyPDF2
+python-docx

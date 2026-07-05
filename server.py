@@ -10,6 +10,17 @@ from langdetect import detect
 from langdetect.lang_detect_exception import LangDetectException
 import requests
 import logging
+from io import BytesIO
+
+# Document extraction libraries
+try:
+    import PyPDF2
+except ImportError:
+    PyPDF2 = None
+try:
+    from docx import Document
+except ImportError:
+    Document = None
 
 # Configure logging so errors appear in Gunicorn/Railway logs
 logging.basicConfig(
@@ -21,6 +32,101 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__, static_folder='static')
 CORS(app)
 port = int(os.environ.get("PORT", 8080))
+
+# In-memory document knowledge base
+DOCUMENT_CHUNKS = []
+MAX_DOCUMENT_CHUNKS = 2000
+CHUNK_SIZE = 800
+CHUNK_OVERLAP = 100
+
+
+def extract_text_from_file(file_obj, filename):
+    """Extract text from PDF, DOCX, or TXT files."""
+    ext = os.path.splitext(filename.lower())[1]
+    try:
+        if ext == '.pdf' and PyPDF2:
+            reader = PyPDF2.PdfReader(BytesIO(file_obj.read()))
+            parts = []
+            for page in reader.pages:
+                try:
+                    parts.append(page.extract_text() or '')
+                except Exception:
+                    pass
+            return '\n'.join(parts)
+        elif ext in ('.docx', '.doc') and Document:
+            doc = Document(BytesIO(file_obj.read()))
+            return '\n'.join(p.text for p in doc.paragraphs if p.text)
+        elif ext in ('.txt', '.md', '.csv', '.json'):
+            return file_obj.read().decode('utf-8', errors='ignore')
+        else:
+            return file_obj.read().decode('utf-8', errors='ignore')
+    except Exception as e:
+        logger.error("Document extraction failed for %s: %s", filename, e)
+        return ""
+
+
+def chunk_text(text, chunk_size=CHUNK_SIZE, overlap=CHUNK_OVERLAP):
+    """Split text into overlapping chunks."""
+    text = re.sub(r'\s+', ' ', text).strip()
+    if not text:
+        return []
+    chunks = []
+    start = 0
+    while start < len(text):
+        end = min(start + chunk_size, len(text))
+        # Try to break at a sentence or space
+        if end < len(text):
+            for sep in ['. ', '? ', '! ', '\n', ' ']:
+                pos = text.rfind(sep, start, end)
+                if pos > start:
+                    end = pos + len(sep)
+                    break
+        chunks.append(text[start:end].strip())
+        start = end - overlap if end < len(text) else end
+    return chunks
+
+
+def add_document_to_knowledge_base(filename, text):
+    """Chunk and store document text."""
+    global DOCUMENT_CHUNKS
+    chunks = chunk_text(text)
+    for chunk in chunks:
+        if chunk:
+            DOCUMENT_CHUNKS.append({"source": filename, "text": chunk})
+    # Keep within memory limit
+    if len(DOCUMENT_CHUNKS) > MAX_DOCUMENT_CHUNKS:
+        DOCUMENT_CHUNKS = DOCUMENT_CHUNKS[-MAX_DOCUMENT_CHUNKS:]
+    logger.info("Added document %s: %d chunks, total %d chunks", filename, len(chunks), len(DOCUMENT_CHUNKS))
+    return len(chunks)
+
+
+def get_relevant_context(query, top_k=3):
+    """Simple keyword relevance search across document chunks."""
+    if not DOCUMENT_CHUNKS:
+        return ""
+    query_words = set(re.findall(r'\w+', query.lower()))
+    # Remove common stop words
+    stop_words = {'the', 'is', 'a', 'an', 'and', 'or', 'to', 'of', 'in', 'for', 'on', 'with', 'what', 'how', 'who', 'where', 'when', 'why', 'me', 'my', 'your', 'this', 'that', 'are', 'do', 'does', 'can', 'you'}
+    query_words = query_words - stop_words
+    if not query_words:
+        return ""
+    scored = []
+    for chunk in DOCUMENT_CHUNKS:
+        chunk_text_lower = chunk["text"].lower()
+        chunk_words = set(re.findall(r'\w+', chunk_text_lower))
+        score = len(query_words & chunk_words)
+        if score > 0:
+            scored.append((score, chunk["text"]))
+    scored.sort(reverse=True, key=lambda x: x[0])
+    selected = []
+    total_len = 0
+    for score, text in scored[:top_k]:
+        if total_len + len(text) > 2500:
+            break
+        selected.append(text)
+        total_len += len(text)
+    return "\n\n".join(selected)
+
 
 @app.route('/public/<path:filename>')
 def serve_public(filename):
@@ -160,9 +266,18 @@ def send_whatsapp_reply(to, reply):
         print(f"WhatsApp send error: {e}")
         return False
 
-def get_ai_reply(message, language, timezone=None, history=None):
+def get_ai_reply(message, language, timezone=None, history=None, context=None):
     # If history is provided, it already contains the current user message as the last item.
     messages = history if history else [{"role": "user", "content": message}]
+    if context and messages and messages[-1]["role"] == "user":
+        context_prompt = (
+            "Use the following document context to answer the question. "
+            "If the answer is not in the context, say you don't know. "
+            "Do not make up information.\n\n"
+            f"Context:\n{context}\n\n"
+            "Question:\n"
+        )
+        messages[-1]["content"] = context_prompt + messages[-1]["content"]
     response = client.messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=2048,
@@ -226,10 +341,11 @@ def chat():
     language = data.get("language") or detect_language(user_message)
     timezone = data.get("timezone")
     history = data.get("history", [])
-    logger.info("Sending message to Claude (length=%d chars, lang=%s, tz=%s, history=%d)", len(user_message), language, timezone, len(history))
+    context = get_relevant_context(user_message)
+    logger.info("Sending message to Claude (length=%d chars, lang=%s, tz=%s, history=%d, context=%d)", len(user_message), language, timezone, len(history), len(context))
 
     try:
-        reply = get_ai_reply(user_message, language, timezone, history)
+        reply = get_ai_reply(user_message, language, timezone, history, context)
     except anthropic.AuthenticationError as e:
         logger.error("Anthropic authentication failed — check ANTHROPIC_API_KEY: %s", e)
         return jsonify({"error": "API authentication failed. The server API key may be invalid or missing."}), 500
@@ -248,6 +364,36 @@ def chat():
 
     logger.info("Successfully received reply (length=%d chars)", len(reply))
     return jsonify({"reply": reply, "language": language})
+
+@app.route("/upload", methods=["POST"])
+def upload_document():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No file selected"}), 400
+    allowed_extensions = {'.pdf', '.docx', '.doc', '.txt', '.md', '.csv', '.json'}
+    ext = os.path.splitext(file.filename.lower())[1]
+    if ext not in allowed_extensions:
+        return jsonify({"error": f"Unsupported file type: {ext}. Allowed: {', '.join(allowed_extensions)}"}), 400
+
+    try:
+        text = extract_text_from_file(file, file.filename)
+    except Exception as e:
+        logger.error("Extraction failed: %s", e)
+        return jsonify({"error": "Failed to extract text from file"}), 500
+
+    if not text.strip():
+        return jsonify({"error": "No text could be extracted from the file"}), 400
+
+    chunk_count = add_document_to_knowledge_base(file.filename, text)
+    preview = text[:300].replace('\n', ' ')
+    return jsonify({
+        "success": True,
+        "filename": file.filename,
+        "chunks": chunk_count,
+        "preview": preview
+    })
 
 @app.route("/speak", methods=["POST"])
 def speak():
