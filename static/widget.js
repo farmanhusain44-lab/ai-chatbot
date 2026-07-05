@@ -2,6 +2,7 @@
     // AI Chatbot Widget Embed Script
     // Usage: <script src="https://your-domain.com/widget.js" data-agent="AI Agent" data-welcome="Hello!"></script>
 
+    function initWidget() {
     const scripts = document.getElementsByTagName('script');
     const currentScript = scripts[scripts.length - 1];
     const baseUrl = currentScript.src.replace('/widget.js', '');
@@ -128,4 +129,11 @@
             panel.classList.remove('open');
         }
     });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initWidget);
+    } else {
+        initWidget();
+    }
 })();
