@@ -185,6 +185,7 @@ def get_system_prompt(language="en", timezone=None):
         "Use common sense: a greeting like 'kya haal hai' means 'how are you' — simply reply naturally. "
         "When the user uses Hindi (or Roman Hindi), write your reply in Devanagari script (हिंदी). "
         "When the user uses Urdu, write your reply in Arabic/Persian script (اردو). "
+        "When the user uses Arabic, write your reply in pure Arabic script (العربية الفصحى) only. "
         "When the user uses Bengali, write your reply in Bengali script. "
         "Keep answers short and friendly, 1-3 sentences when possible. "
         "If you are unsure about something, say so honestly. "
