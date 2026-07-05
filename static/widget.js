@@ -154,7 +154,7 @@
     // Cycle tooltip messages: English, English, Arabic - repeat
     const tooltipMessages = [
         { text: 'Welcome to Al Faredah', lang: 'en' },
-        { text: 'Chat with us', lang: 'en' },
+        { text: 'تحدث معنا', lang: 'ar' },
         { text: 'مرحباً بكم في الفريدة', lang: 'ar' }
     ];
     let tooltipIndex = 0;
