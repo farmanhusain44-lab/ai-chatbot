@@ -483,6 +483,123 @@ def get_leads():
         "total": len(LEADS)
     })
 
+@app.route("/create-payment", methods=["POST"])
+def create_payment():
+    """Create Razorpay payment order for Indian customers"""
+    try:
+        data = request.get_json()
+        plan = data.get('plan', 'starter')
+        
+        # Plan pricing in INR
+        pricing = {
+            'starter': {'amount': 300000, 'name': 'Starter Plan'},  # ₹3,000 in paise
+            'professional': {'amount': 1000000, 'name': 'Professional Plan'},  # ₹10,000 in paise
+            'enterprise': {'amount': 2500000, 'name': 'Enterprise Plan'}  # ₹25,000 in paise
+        }
+        
+        if plan not in pricing:
+            return jsonify({"error": "Invalid plan selected"}), 400
+        
+        plan_details = pricing[plan]
+        
+        # In production, integrate with actual Razorpay API
+        # For now, return mock payment order
+        payment_order = {
+            "id": f"order_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            "amount": plan_details['amount'],
+            "currency": "INR",
+            "name": "AI Chatbot India",
+            "description": plan_details['name'],
+            "customer_email": data.get('email', ''),
+            "customer_phone": data.get('phone', ''),
+            "callback_url": f"{request.url_root}payment-success",
+            "notes": {
+                "plan": plan,
+                "customer_name": data.get('name', '')
+            }
+        }
+        
+        logger.info(f"Payment order created: {payment_order['id']} for plan {plan}")
+        return jsonify({
+            "success": True,
+            "order": payment_order,
+            "key": "rzp_test_1234567890"  # Test key in production
+        })
+        
+    except Exception as e:
+        logger.error(f"Error creating payment: {e}")
+        return jsonify({"error": "Failed to create payment"}), 500
+
+@app.route("/payment-success", methods=["POST"])
+def payment_success():
+    """Handle successful payment callback"""
+    try:
+        data = request.get_json()
+        payment_id = data.get('payment_id')
+        order_id = data.get('order_id')
+        
+        # In production, verify with Razorpay API
+        # For now, just log the successful payment
+        logger.info(f"Payment successful: {payment_id} for order {order_id}")
+        
+        # Store payment record
+        payment_record = {
+            "payment_id": payment_id,
+            "order_id": order_id,
+            "timestamp": datetime.now().isoformat(),
+            "status": "success"
+        }
+        
+        return jsonify({
+            "success": True,
+            "message": "Payment processed successfully",
+            "redirect_url": "/chat"
+        })
+        
+    except Exception as e:
+        logger.error(f"Error processing payment success: {e}")
+        return jsonify({"error": "Payment processing failed"}), 500
+
+@app.route("/upi-payment", methods=["POST"])
+def upi_payment():
+    """Handle UPI payment requests"""
+    try:
+        data = request.get_json()
+        plan = data.get('plan', 'starter')
+        
+        pricing = {
+            'starter': 3000,
+            'professional': 10000,
+            'enterprise': 25000
+        }
+        
+        if plan not in pricing:
+            return jsonify({"error": "Invalid plan selected"}), 400
+        
+        amount = pricing[plan]
+        
+        # UPI details for payment
+        upi_details = {
+            "upi_id": "aichatbot@okicici",
+            "amount": amount,
+            "note": f"AI Chatbot {plan.title()} Plan",
+            "customer_name": data.get('name', ''),
+            "customer_phone": data.get('phone', ''),
+            "transaction_id": f"UPI_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        }
+        
+        logger.info(f"UPI payment initiated: {upi_details['transaction_id']}")
+        
+        return jsonify({
+            "success": True,
+            "upi_details": upi_details,
+            "qr_code_url": f"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa={upi_details['upi_id']}&pn=AI%20Chatbot&am={amount}&cu=INR&tn={upi_details['note']}"
+        })
+        
+    except Exception as e:
+        logger.error(f"Error creating UPI payment: {e}")
+        return jsonify({"error": "Failed to create UPI payment"}), 500
+
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json(silent=True)

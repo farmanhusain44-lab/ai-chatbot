@@ -291,6 +291,140 @@
             margin: 0 auto;
         }
         
+        .payment-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        .payment-modal.active {
+            display: flex;
+        }
+        .payment-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            animation: slideUp 0.3s ease;
+        }
+        .payment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .payment-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            padding: 5px;
+        }
+        .close-btn:hover { color: #333; }
+        .payment-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+        }
+        .form-group input, .form-group select {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #FF9933;
+        }
+        .payment-methods {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .payment-method {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .payment-method:hover {
+            border-color: #FF9933;
+            background: #fff8f0;
+        }
+        .payment-method.selected {
+            border-color: #FF9933;
+            background: #fff8f0;
+        }
+        .payment-method-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .payment-method-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .pay-button {
+            background: linear-gradient(135deg, #FF9933 0%, #FF6B35 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .pay-button:hover {
+            transform: translateY(-2px);
+        }
+        .pay-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .upi-qr {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .upi-qr img {
+            max-width: 200px;
+            border-radius: 10px;
+        }
+        .upi-details {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
         @media (max-width: 768px) {
             .hero h1 { font-size: 2rem; }
             .hero p { font-size: 1.1rem; }
@@ -298,6 +432,8 @@
             .hero-buttons { flex-direction: column; align-items: center; }
             .btn-primary, .btn-secondary { width: 200px; }
             .pricing-card.featured { transform: scale(1); }
+            .payment-content { padding: 20px; }
+            .payment-methods { flex-direction: column; }
         }
     </style>
 </head>
@@ -347,7 +483,7 @@
                         <li>Email support</li>
                         <li>Basic analytics</li>
                     </ul>
-                    <a href="/lead-capture.html" class="btn-primary" style="width: 100%;">Get Started</a>
+                    <button class="btn-primary" style="width: 100%;" onclick="openPaymentModal('starter')">Get Started</button>
                 </div>
                 
                 <div class="pricing-card featured">
@@ -366,7 +502,7 @@
                         <li>WhatsApp integration</li>
                         <li>Custom branding</li>
                     </ul>
-                    <a href="/lead-capture.html" class="btn-primary" style="width: 100%;">Get Started</a>
+                    <button class="btn-primary" style="width: 100%;" onclick="openPaymentModal('professional')">Get Started</button>
                 </div>
                 
                 <div class="pricing-card">
@@ -431,7 +567,167 @@
         </div>
     </footer>
 
+    <!-- Payment Modal -->
+    <div class="payment-modal" id="paymentModal">
+        <div class="payment-content">
+            <div class="payment-header">
+                <div class="payment-title">Complete Your Purchase</div>
+                <button class="close-btn" onclick="closePaymentModal()">✕</button>
+            </div>
+            
+            <form class="payment-form" id="paymentForm">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="paymentName" required placeholder="Enter your full name">
+                </div>
+                
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="paymentEmail" required placeholder="your@email.com">
+                </div>
+                
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="paymentPhone" required placeholder="+91 98XXX XXXXX">
+                </div>
+                
+                <div class="form-group">
+                    <label>Select Plan</label>
+                    <select id="paymentPlan" required>
+                        <option value="">Choose a plan</option>
+                        <option value="starter">Starter - ₹3,000/month</option>
+                        <option value="professional">Professional - ₹10,000/month</option>
+                        <option value="enterprise">Enterprise - ₹25,000/month</option>
+                    </select>
+                </div>
+                
+                <div class="payment-methods">
+                    <div class="payment-method selected" onclick="selectPaymentMethod('razorpay')">
+                        <div class="payment-method-icon">💳</div>
+                        <div class="payment-method-name">Card/Net Banking</div>
+                    </div>
+                    <div class="payment-method" onclick="selectPaymentMethod('upi')">
+                        <div class="payment-method-icon">📱</div>
+                        <div class="payment-method-name">UPI Payment</div>
+                    </div>
+                </div>
+                
+                <div id="razorpayPayment">
+                    <button type="button" class="pay-button" onclick="processRazorpayPayment()">
+                        Pay with Razorpay
+                    </button>
+                </div>
+                
+                <div id="upiPayment" style="display: none;">
+                    <div class="upi-qr">
+                        <div id="qrCodeContainer"></div>
+                        <div class="upi-details">
+                            <strong>UPI ID:</strong> aichatbot@okicici<br>
+                            <strong>Amount:</strong> <span id="upiAmount">₹3,000</span><br>
+                            <small>Scan QR code or use UPI app to pay</small>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
+        // Payment functionality
+        let selectedPaymentMethod = 'razorpay';
+        let currentPlan = '';
+
+        function openPaymentModal(plan = '') {
+            if (plan) {
+                document.getElementById('paymentPlan').value = plan;
+            }
+            document.getElementById('paymentModal').classList.add('active');
+        }
+
+        function closePaymentModal() {
+            document.getElementById('paymentModal').classList.remove('active');
+        }
+
+        function selectPaymentMethod(method) {
+            selectedPaymentMethod = method;
+            document.querySelectorAll('.payment-method').forEach(el => {
+                el.classList.remove('selected');
+            });
+            event.target.closest('.payment-method').classList.add('selected');
+            
+            if (method === 'razorpay') {
+                document.getElementById('razorpayPayment').style.display = 'block';
+                document.getElementById('upiPayment').style.display = 'none';
+            } else {
+                document.getElementById('razorpayPayment').style.display = 'none';
+                document.getElementById('upiPayment').style.display = 'block';
+                generateUPIQR();
+            }
+        }
+
+        async function processRazorpayPayment() {
+            const name = document.getElementById('paymentName').value;
+            const email = document.getElementById('paymentEmail').value;
+            const phone = document.getElementById('paymentPhone').value;
+            const plan = document.getElementById('paymentPlan').value;
+            
+            if (!name || !email || !phone || !plan) {
+                alert('Please fill all fields');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/create-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, phone, plan })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    // In production, initialize actual Razorpay
+                    alert('Payment order created! In production, Razorpay popup would appear here.');
+                    console.log('Payment order:', data.order);
+                } else {
+                    alert('Payment failed: ' + data.error);
+                }
+            } catch (error) {
+                alert('Payment processing error. Please try again.');
+            }
+        }
+
+        async function generateUPIQR() {
+            const name = document.getElementById('paymentName').value;
+            const phone = document.getElementById('paymentPhone').value;
+            const plan = document.getElementById('paymentPlan').value;
+            
+            if (!plan) return;
+            
+            try {
+                const response = await fetch('/upi-payment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, phone, plan })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('upiAmount').textContent = `₹${data.upi_details.amount}`;
+                    document.getElementById('qrCodeContainer').innerHTML = 
+                        `<img src="${data.qr_code_url}" alt="UPI QR Code">`;
+                }
+            } catch (error) {
+                console.error('Error generating UPI QR:', error);
+            }
+        }
+
+        // Update pricing when plan changes
+        document.getElementById('paymentPlan').addEventListener('change', function() {
+            if (selectedPaymentMethod === 'upi') {
+                generateUPIQR();
+            }
+        });
+
         // Smooth scrolling for navigation links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
@@ -444,6 +740,13 @@
                     });
                 }
             });
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('paymentModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePaymentModal();
+            }
         });
     </script>
 </body>
