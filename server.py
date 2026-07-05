@@ -45,6 +45,9 @@ MAX_DOCUMENT_CHUNKS = 2000
 CHUNK_SIZE = 800
 CHUNK_OVERLAP = 100
 
+# In-memory lead storage (in production, use database)
+LEADS = []
+
 
 def normalize_arabic(text):
     """Normalize Arabic text for better matching across dialects and diacritics."""
@@ -417,6 +420,60 @@ def widget_html():
 @app.route("/demo.html")
 def demo_page():
     return app.send_static_file("demo.html")
+
+@app.route("/save-lead", methods=["POST"])
+def save_lead():
+    try:
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['name', 'email', 'phone']
+        for field in required_fields:
+            if not data.get(field, '').strip():
+                return jsonify({"error": f"Missing required field: {field}"}), 400
+        
+        # Create lead record
+        lead = {
+            "id": len(LEADS) + 1,
+            "name": data['name'].strip(),
+            "email": data['email'].strip().lower(),
+            "phone": data['phone'].strip(),
+            "company": data.get('company', '').strip(),
+            "timestamp": data.get('timestamp', datetime.now().isoformat()),
+            "source": data.get('source', 'unknown'),
+            "status": "new"
+        }
+        
+        # Check for duplicate leads
+        for existing_lead in LEADS:
+            if (existing_lead['email'] == lead['email'] or 
+                existing_lead['phone'] == lead['phone']):
+                # Update existing lead instead of creating duplicate
+                existing_lead.update(lead)
+                logger.info(f"Updated existing lead: {lead['email']}")
+                return jsonify({"success": True, "lead_id": existing_lead['id'], "updated": True})
+        
+        # Add new lead
+        LEADS.append(lead)
+        logger.info(f"New lead captured: {lead['name']} - {lead['email']}")
+        
+        return jsonify({
+            "success": True, 
+            "lead_id": lead['id'],
+            "message": "Lead saved successfully"
+        })
+        
+    except Exception as e:
+        logger.error(f"Error saving lead: {e}")
+        return jsonify({"error": "Failed to save lead"}), 500
+
+@app.route("/leads", methods=["GET"])
+def get_leads():
+    # Simple endpoint to view leads (in production, add authentication)
+    return jsonify({
+        "leads": LEADS,
+        "total": len(LEADS)
+    })
 
 @app.route("/chat", methods=["POST"])
 def chat():
