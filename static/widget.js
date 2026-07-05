@@ -48,24 +48,25 @@
             ${position.includes('right') ? 'right: 0;' : 'left: 0;'}
             background: white;
             color: #333;
-            padding: 10px 14px;
-            border-radius: 12px;
+            padding: 0 14px;
+            border-radius: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
             font-size: 13px;
             white-space: nowrap;
-            max-width: 220px;
+            max-width: 0;
             overflow: hidden;
-            text-overflow: ellipsis;
             opacity: 0;
-            transform: translateY(8px);
-            transition: opacity 0.4s ease, transform 0.4s ease;
+            height: 36px;
+            line-height: 36px;
+            transition: max-width 0.6s ease, opacity 0.4s ease, padding 0.4s ease;
             pointer-events: none;
             z-index: 1000000;
             border: 1px solid rgba(0,0,0,0.08);
+            direction: rtl;
         }
         #${widgetId}-tooltip.show {
             opacity: 1;
-            transform: translateY(0);
+            max-width: 260px;
         }
         #${widgetId}-tooltip::after {
             content: '';
@@ -125,6 +126,7 @@
     const tooltip = document.createElement('div');
     tooltip.id = widgetId + '-tooltip';
     tooltip.textContent = 'Welcome to Al Faredah';
+    tooltip.style.direction = 'ltr';
 
     // Floating button
     const button = document.createElement('button');
@@ -153,7 +155,7 @@
     const tooltipMessages = [
         { text: 'Welcome to Al Faredah', lang: 'en' },
         { text: 'Chat with us', lang: 'en' },
-        { text: 'أهلاً وسهلاً', lang: 'ar' }
+        { text: 'مرحباً بكم في الفريدة', lang: 'ar' }
     ];
     let tooltipIndex = 0;
     let tooltipInterval = null;
