@@ -78,8 +78,15 @@ def detect_language(text):
     def has_chars(start, end):
         return any(start <= ord(c) <= end for c in text)
 
+    # Urdu-specific characters (Arabic script with Persian/Urdu letters)
+    if has_chars(0x067E, 0x067E) or has_chars(0x0686, 0x0686) or has_chars(0x0688, 0x0688) \
+            or has_chars(0x0691, 0x0691) or has_chars(0x06A9, 0x06A9) or has_chars(0x06AF, 0x06AF) \
+            or has_chars(0x06BA, 0x06BA) or has_chars(0x06CC, 0x06CC) or has_chars(0x06D2, 0x06D2) \
+            or has_chars(0x06C1, 0x06C1) or has_chars(0x06BE, 0x06BE):
+        return "ur"
+    # Arabic/Persian script (without Urdu-specific characters)
     if has_chars(0x0600, 0x06FF) or has_chars(0x0750, 0x077F) or has_chars(0x08A0, 0x08FF):
-        return "ur"  # Arabic/Persian/Urdu script
+        return "ar"
     if has_chars(0x0900, 0x097F):
         return "hi"  # Devanagari (Hindi, Marathi, Nepali)
     if has_chars(0x0980, 0x09FF):
