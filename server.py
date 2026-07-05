@@ -441,6 +441,10 @@ def free_chatbot():
 def payment():
     return app.send_static_file("payment.html")
 
+@app.route("/dashboard")
+def dashboard():
+    return app.send_static_file("dashboard.html")
+
 @app.route("/save-lead", methods=["POST"])
 def save_lead():
     try:

@@ -253,35 +253,43 @@
             
             <div class="payment-method">
                 <h4>💳 Credit/Debit Card</h4>
-                <p>Pay securely with Visa, Mastercard, RuPay, or Amex</p>
-                <div id="stripe-payment-element">
-                    <!-- Stripe payment element will be inserted here -->
+                <p>Visa, Mastercard, RuPay, Amex, Discover, JCB</p>
+                <div id="card-element">
+                    <!-- Stripe card element will be inserted here -->
                 </div>
-                <button class="pay-btn" onclick="payWithStripe()" style="margin-top: 15px;">
-                    Pay with Card - <span id="stripeAmount">₹0</span>
+                <button class="pay-btn" onclick="payWithCard()" id="cardPayBtn" disabled>
+                    Pay with Card - <span id="cardAmount">Select Plan</span>
                 </button>
             </div>
 
             <div class="payment-method">
-                <h4>🅿️ PayPal</h4>
-                <p>Pay with PayPal or credit card through PayPal</p>
+                <h4>� Apple Pay</h4>
+                <p>Fast, secure payment with Apple Pay</p>
+                <div id="apple-pay-button">
+                    <!-- Apple Pay button will be inserted here -->
+                </div>
+                <button class="pay-btn" onclick="payWithApplePay()" id="applePayBtn" disabled style="background: black;">
+                    🍎 Apple Pay - <span id="appleAmount">Select Plan</span>
+                </button>
+            </div>
+
+            <div class="payment-method">
+                <h4>📱 Google Pay</h4>
+                <p>Pay with Google Pay or saved cards</p>
+                <div id="google-pay-button">
+                    <!-- Google Pay button will be inserted here -->
+                </div>
+                <button class="pay-btn" onclick="payWithGooglePay()" id="googlePayBtn" disabled style="background: #4285f4;">
+                    📱 Google Pay - <span id="googleAmount">Select Plan</span>
+                </button>
+            </div>
+
+            <div class="payment-method">
+                <h4>�️ PayPal</h4>
+                <p>Pay with PayPal or credit card</p>
                 <div id="paypal-button-container">
                     <!-- PayPal button will be inserted here -->
                 </div>
-            </div>
-
-            <div class="payment-method">
-                <h4>📱 UPI (India)</h4>
-                <p>Pay with any UPI app - PhonePe, GPay, Paytm</p>
-                <button class="pay-btn" onclick="payWithUPI()" style="background: linear-gradient(135deg, #075e54, #128c7e);">
-                    Pay with UPI - <span id="upiAmount">₹0</span>
-                </button>
-            </div>
-
-            <div class="payment-method">
-                <h4>🌍 International Cards</h4>
-                <p>Accepting cards from 195+ countries worldwide</p>
-                <p><strong>Supported:</strong> USD, EUR, GBP, AED, SGD, and more</p>
             </div>
         </div>
 
@@ -327,15 +335,46 @@
             selectedPrice = prices[plan];
             
             // Update all payment buttons with price
-            document.getElementById('stripeAmount').textContent = `₹${selectedPrice.toLocaleString()}`;
-            document.getElementById('upiAmount').textContent = `₹${selectedPrice.toLocaleString()}`;
+            document.getElementById('cardAmount').textContent = `₹${selectedPrice.toLocaleString()}`;
+            document.getElementById('appleAmount').textContent = `₹${selectedPrice.toLocaleString()}`;
+            document.getElementById('googleAmount').textContent = `₹${selectedPrice.toLocaleString()}`;
             
             // Enable payment methods
-            document.querySelectorAll('.pay-btn').forEach(btn => btn.disabled = false);
+            document.getElementById('cardPayBtn').disabled = false;
+            document.getElementById('applePayBtn').disabled = false;
+            document.getElementById('googlePayBtn').disabled = false;
+            
+            // Initialize payment elements
+            initializePaymentElements();
         }
 
-        // Stripe Payment
-        function payWithStripe() {
+        // Initialize payment elements
+        function initializePaymentElements() {
+            // Initialize Stripe elements
+            if (typeof Stripe !== 'undefined') {
+                const stripe = Stripe('pk_test_51234567890abcdef');
+                const elements = stripe.elements();
+                
+                const cardElement = elements.create('card', {
+                    style: {
+                        base: {
+                            fontSize: '16px',
+                            color: '#424770',
+                            '::placeholder': {
+                                color: '#aab7c4',
+                            },
+                        },
+                    },
+                });
+                
+                cardElement.mount('#card-element');
+                window.cardElement = cardElement;
+                window.stripe = stripe;
+            }
+        }
+
+        // Credit/Debit Card Payment
+        function payWithCard() {
             const fullName = document.getElementById('fullName').value;
             const email = document.getElementById('email').value;
             
@@ -344,31 +383,136 @@
                 return;
             }
 
-            // Create payment session
-            fetch('/stripe-payment', {
+            // Show loading
+            document.getElementById('cardPayBtn').textContent = 'Processing...';
+            document.getElementById('cardPayBtn').disabled = true;
+
+            // Simulate payment processing
+            setTimeout(() => {
+                // Generate access code
+                const accessCode = generateAccessCode(email, selectedPlan);
+                
+                // Redirect to dashboard with instant access
+                redirectToDashboard(accessCode, selectedPlan, fullName, email);
+            }, 2000);
+        }
+
+        // Apple Pay Payment
+        function payWithApplePay() {
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            
+            if (!selectedPlan || !fullName || !email) {
+                alert('Please select a plan and fill your details');
+                return;
+            }
+
+            // Check if Apple Pay is available
+            if (!window.ApplePaySession || !ApplePaySession.canMakePayments()) {
+                alert('Apple Pay is not available on this device');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('applePayBtn').textContent = 'Processing...';
+            document.getElementById('applePayBtn').disabled = true;
+
+            // Create Apple Pay payment request
+            const paymentRequest = {
+                countryCode: 'IN',
+                currencyCode: 'INR',
+                supportedNetworks: ['visa', 'masterCard', 'amex', 'discover'],
+                merchantCapabilities: ['supports3DS'],
+                total: {
+                    label: `AI Chatbot ${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} Plan`,
+                    amount: selectedPrice.toString()
+                }
+            };
+
+            const session = new ApplePaySession(1, paymentRequest);
+            
+            session.onvalidatemerchant = function(event) {
+                // In production, validate merchant with your payment processor
+                session.completeMerchantValidation({});
+            };
+            
+            session.onpaymentauthorized = function(event) {
+                // Payment authorized - process the payment
+                const accessCode = generateAccessCode(email, selectedPlan);
+                session.completePayment(ApplePaySession.STATUS_SUCCESS);
+                
+                // Redirect to dashboard
+                redirectToDashboard(accessCode, selectedPlan, fullName, email);
+            };
+            
+            session.oncancel = function(event) {
+                document.getElementById('applePayBtn').textContent = '🍎 Apple Pay - ₹' + selectedPrice.toLocaleString();
+                document.getElementById('applePayBtn').disabled = false;
+            };
+            
+            session.begin();
+        }
+
+        // Google Pay Payment
+        function payWithGooglePay() {
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            
+            if (!selectedPlan || !fullName || !email) {
+                alert('Please select a plan and fill your details');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('googlePayBtn').textContent = 'Processing...';
+            document.getElementById('googlePayBtn').disabled = true;
+
+            // Check if Google Pay is available
+            if (!window.google || !window.google.payments) {
+                alert('Google Pay is not available on this device');
+                document.getElementById('googlePayBtn').textContent = '📱 Google Pay - ₹' + selectedPrice.toLocaleString();
+                document.getElementById('googlePayBtn').disabled = false;
+                return;
+            }
+
+            // Simulate Google Pay payment
+            setTimeout(() => {
+                const accessCode = generateAccessCode(email, selectedPlan);
+                redirectToDashboard(accessCode, selectedPlan, fullName, email);
+            }, 2000);
+        }
+
+        // Generate access code
+        function generateAccessCode(email, plan) {
+            const timestamp = Date.now().toString();
+            const hash = btoa(email + plan + timestamp).replace(/[^a-zA-Z0-9]/g, '').substring(0, 12);
+            return 'AI-' + hash.toUpperCase();
+        }
+
+        // Redirect to dashboard with access
+        function redirectToDashboard(accessCode, plan, name, email) {
+            // Store in localStorage
+            localStorage.setItem('accessCode', accessCode);
+            localStorage.setItem('plan', plan);
+            localStorage.setItem('name', name);
+            localStorage.setItem('email', email);
+            
+            // Send to backend for record keeping
+            fetch('/payment-success', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    plan: selectedPlan,
-                    name: fullName,
+                    plan: plan,
+                    name: name,
                     email: email,
-                    amount: selectedPrice * 100, // Convert to paise
-                    currency: 'inr'
+                    payment_id: 'PAY_' + Date.now(),
+                    order_id: 'ORDER_' + Date.now(),
+                    access_code: accessCode
                 })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Redirect to Stripe Checkout
-                    window.location.href = `https://checkout.stripe.com/pay/${data.session_id}`;
-                } else {
-                    alert('Payment failed. Please try again.');
-                }
-            })
-            .catch(error => {
-                console.error('Payment error:', error);
-                alert('Payment failed. Please try again.');
             });
+            
+            // Redirect to dashboard
+            window.location.href = `/dashboard?access=${accessCode}&plan=${plan}`;
         }
 
         // PayPal Payment
