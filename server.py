@@ -425,6 +425,10 @@ def demo_page():
 def india_landing():
     return app.send_static_file("india-landing.html")
 
+@app.route("/boss-demo")
+def boss_demo():
+    return app.send_static_file("boss-demo.html")
+
 @app.route("/save-lead", methods=["POST"])
 def save_lead():
     try:

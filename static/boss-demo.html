@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant Demo - Advanced Conversational AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            text-align: center;
+            color: white;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .demo-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+        .demo-frame {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 900px;
+            height: 700px;
+            position: relative;
+            overflow: hidden;
+        }
+        .demo-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .demo-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        .demo-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .demo-content {
+            height: calc(100% - 60px);
+            position: relative;
+        }
+        .features-bar {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .feature-tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .iframe-container {
+            height: calc(100% - 50px);
+            position: relative;
+        }
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .instructions {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            text-align: center;
+            color: white;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+        .instructions h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        .instruction-list {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .instruction-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px 20px;
+            border-radius: 10px;
+            min-width: 200px;
+        }
+        .instruction-item strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+        .floating-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+        .control-btn {
+            background: rgba(255,255,255,0.9);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .control-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+        }
+        .control-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2rem; }
+            .demo-frame { height: 600px; }
+            .instruction-list { flex-direction: column; align-items: center; }
+            .floating-controls { position: relative; top: auto; right: auto; margin-bottom: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>AI Assistant Demo</h1>
+        <p>Advanced conversational AI with multi-language support and intelligent responses</p>
+    </div>
+
+    <div class="demo-container">
+        <div class="demo-frame">
+            <div class="demo-header">
+                <div class="demo-title">🤖 AI Assistant - Live Demo</div>
+                <div class="demo-status">
+                    <div class="status-dot"></div>
+                    <span>Online</span>
+                </div>
+            </div>
+            
+            <div class="demo-content">
+                <div class="features-bar">
+                    <div class="feature-tag">🌍 Multi-Language</div>
+                    <div class="feature-tag">📚 Document Upload</div>
+                    <div class="feature-tag">🧠 Smart Responses</div>
+                    <div class="feature-tag">⚡ Real-time</div>
+                    <div class="feature-tag">📱 Mobile Friendly</div>
+                </div>
+                
+                <div class="iframe-container">
+                    <iframe src="/widget.html" id="demoFrame"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="floating-controls">
+        <button class="control-btn active" onclick="resetChat()">🔄 Reset Chat</button>
+        <button class="control-btn" onclick="toggleFullscreen()">🔳 Fullscreen</button>
+    </div>
+
+    <div class="instructions">
+        <h3>Try These Features</h3>
+        <div class="instruction-list">
+            <div class="instruction-item">
+                <strong>🌍 Multi-Language</strong>
+                Try: "Hello", "مرحبا", "नमस्ते", "Hola"
+            </div>
+            <div class="instruction-item">
+                <strong>📚 Document Upload</strong>
+                Upload PDF or Word files
+            </div>
+            <div class="instruction-item">
+                <strong>🧠 Smart Questions</strong>
+                Ask about business, tech, or general topics
+            </div>
+            <div class="instruction-item">
+                <strong>⚡ Real-time</strong>
+                Get instant responses 24/7
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Reset chat functionality
+        function resetChat() {
+            const iframe = document.getElementById('demoFrame');
+            iframe.src = iframe.src;
+            
+            // Visual feedback
+            const btn = event.target;
+            btn.textContent = '✅ Reset!';
+            setTimeout(() => {
+                btn.textContent = '🔄 Reset Chat';
+            }, 2000);
+        }
+
+        // Fullscreen functionality
+        function toggleFullscreen() {
+            const demoFrame = document.querySelector('.demo-frame');
+            const btn = event.target;
+            
+            if (!document.fullscreenElement) {
+                demoFrame.requestFullscreen().then(() => {
+                    btn.textContent = '🔲 Exit Fullscreen';
+                    btn.classList.add('active');
+                }).catch(err => {
+                    console.log('Fullscreen failed:', err);
+                });
+            } else {
+                document.exitFullscreen().then(() => {
+                    btn.textContent = '🔳 Fullscreen';
+                    btn.classList.remove('active');
+                });
+            }
+        }
+
+        // Handle fullscreen change
+        document.addEventListener('fullscreenchange', () => {
+            const btn = document.querySelector('.control-btn:nth-child(2)');
+            if (!document.fullscreenElement) {
+                btn.textContent = '🔳 Fullscreen';
+                btn.classList.remove('active');
+            }
+        });
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'r':
+                        e.preventDefault();
+                        resetChat();
+                        break;
+                    case 'f':
+                        e.preventDefault();
+                        toggleFullscreen();
+                        break;
+                }
+            }
+        });
+
+        // Auto-hide controls on inactivity
+        let controlsTimeout;
+        const floatingControls = document.querySelector('.floating-controls');
+        
+        function showControls() {
+            floatingControls.style.opacity = '1';
+            clearTimeout(controlsTimeout);
+            controlsTimeout = setTimeout(() => {
+                floatingControls.style.opacity = '0.3';
+            }, 3000);
+        }
+        
+        document.addEventListener('mousemove', showControls);
+        floatingControls.addEventListener('mouseenter', () => {
+            floatingControls.style.opacity = '1';
+            clearTimeout(controlsTimeout);
+        });
+        
+        // Initialize
+        showControls();
+    </script>
+</body>
+</html>
