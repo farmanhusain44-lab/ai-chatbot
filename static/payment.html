@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - AI Chatbot Services</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 1.2rem;
+            color: #666;
+        }
+        .plans {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .plan {
+            padding: 25px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .plan:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+        }
+        .plan.selected {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        .plan h3 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .plan .price {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        .plan .features {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+        .plan .features li {
+            padding: 5px 0;
+            color: #666;
+        }
+        .plan .features li:before {
+            content: "✓ ";
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .payment-methods {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        .payment-methods h3 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .payment-method {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #e0e0e0;
+        }
+        .payment-method h4 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .payment-method p {
+            color: #666;
+            font-family: 'Courier New', monospace;
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            word-break: break-all;
+        }
+        .instructions {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .instructions h3 {
+            color: #1976d2;
+            margin-bottom: 15px;
+        }
+        .instructions ol {
+            margin-left: 20px;
+        }
+        .instructions li {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .pay-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .pay-btn:hover {
+            transform: translateY(-2px);
+        }
+        .pay-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .success-message {
+            background: #4CAF50;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .success-message.show {
+            display: block;
+        }
+        .note {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border: 1px solid #ffeaa7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI Chatbot Services</h1>
+            <p>Choose your plan and get instant access</p>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            <h3>🎉 Payment Instructions Sent!</h3>
+            <p>Check your email for payment details and access instructions.</p>
+        </div>
+
+        <div class="plans">
+            <div class="plan" onclick="selectPlan('starter')">
+                <h3>Starter</h3>
+                <div class="price">₹3,000<span style="font-size: 1rem;">/month</span></div>
+                <ul class="features">
+                    <li>Basic AI responses</li>
+                    <li>500 conversations/month</li>
+                    <li>Email support</li>
+                    <li>1 chatbot</li>
+                </ul>
+            </div>
+            <div class="plan" onclick="selectPlan('professional')">
+                <h3>Professional</h3>
+                <div class="price">₹10,000<span style="font-size: 1rem;">/month</span></div>
+                <ul class="features">
+                    <li>Advanced AI responses</li>
+                    <li>Unlimited conversations</li>
+                    <li>Priority support</li>
+                    <li>5 chatbots</li>
+                    <li>Analytics</li>
+                </ul>
+            </div>
+            <div class="plan" onclick="selectPlan('enterprise')">
+                <h3>Enterprise</h3>
+                <div class="price">₹25,000<span style="font-size: 1rem;">/month</span></div>
+                <ul class="features">
+                    <li>Custom AI training</li>
+                    <li>Unlimited everything</li>
+                    <li>24/7 phone support</li>
+                    <li>Unlimited chatbots</li>
+                    <li>API access</li>
+                    <li>White label</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="fullName" placeholder="Enter your full name" required>
+        </div>
+
+        <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="email" placeholder="Enter your email address" required>
+        </div>
+
+        <div class="payment-methods">
+            <h3>💳 Payment Methods</h3>
+            
+            <div class="payment-method">
+                <h4>🏦 Bank Transfer (India)</h4>
+                <p><strong>Account Name:</strong> AI CHATBOT SERVICES</p>
+                <p><strong>Account Number:</strong> YOUR_ACCOUNT_NUMBER_HERE</p>
+                <p><strong>IFSC Code:</strong> YOUR_IFSC_CODE_HERE</p>
+                <p><strong>Bank Name:</strong> YOUR_BANK_NAME</p>
+                <p><strong>Branch:</strong> YOUR_BRANCH</p>
+            </div>
+
+            <div class="payment-method">
+                <h4>📱 UPI Payment</h4>
+                <p><strong>UPI ID:</strong> aichatbot@okicici</p>
+                <p>Scan QR code or send money to above UPI ID</p>
+            </div>
+
+            <div class="payment-method">
+                <h4>🌍 PayPal (International)</h4>
+                <p><strong>PayPal Email:</strong> payments@aichatbot.in</p>
+                <p>Send payment to above PayPal email</p>
+            </div>
+
+            <div class="payment-method">
+                <h4>💸 Wise (International)</h4>
+                <p><strong>Wise Email:</strong> payments@aichatbot.in</p>
+                <p>Best for international transfers with low fees</p>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>📋 Payment Instructions</h3>
+            <ol>
+                <li><strong>Choose your plan</strong> above (Starter, Professional, or Enterprise)</li>
+                <li><strong>Fill your details</strong> (Name and Email)</li>
+                <li><strong>Make payment</strong> using any of the payment methods shown</li>
+                <li><strong>Send screenshot</strong> of payment to <strong>payments@aichatbot.in</strong></li>
+                <li><strong>Receive access code</strong> within 2 hours via email</li>
+                <li><strong>Activate your AI chatbot</strong> using the access code</li>
+            </ol>
+        </div>
+
+        <button class="pay-btn" onclick="proceedToPayment()" id="payBtn" disabled>
+            Select a Plan to Proceed
+        </button>
+
+        <div class="note">
+            <strong>⚠️ Important:</strong> Please include your email address in payment description for faster processing. 
+            Access codes are usually sent within 2 hours of payment confirmation.
+        </div>
+    </div>
+
+    <script>
+        let selectedPlan = '';
+        let selectedPrice = 0;
+
+        function selectPlan(plan) {
+            selectedPlan = plan;
+            
+            // Update UI
+            document.querySelectorAll('.plan').forEach(p => p.classList.remove('selected'));
+            event.target.closest('.plan').classList.add('selected');
+            
+            // Update price
+            const prices = {
+                'starter': 3000,
+                'professional': 10000,
+                'enterprise': 25000
+            };
+            selectedPrice = prices[plan];
+            
+            // Update button
+            document.getElementById('payBtn').disabled = false;
+            document.getElementById('payBtn').textContent = `Proceed to Payment - ₹${selectedPrice.toLocaleString()}`;
+        }
+
+        function proceedToPayment() {
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            
+            if (!selectedPlan) {
+                alert('Please select a plan');
+                return;
+            }
+            
+            if (!fullName || !email) {
+                alert('Please fill in all details');
+                return;
+            }
+            
+            // Show success message
+            document.getElementById('successMessage').classList.add('show');
+            
+            // Scroll to payment instructions
+            document.querySelector('.payment-methods').scrollIntoView({ behavior: 'smooth' });
+            
+            // Log for tracking (in production, save to database)
+            console.log('Payment initiated:', {
+                plan: selectedPlan,
+                price: selectedPrice,
+                name: fullName,
+                email: email,
+                timestamp: new Date().toISOString()
+            });
+            
+            // Update button
+            document.getElementById('payBtn').textContent = 'Payment Instructions Sent - Check Email';
+            document.getElementById('payBtn').disabled = true;
+        }
+
+        // Auto-fill from URL parameters
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const plan = urlParams.get('plan');
+            if (plan) {
+                // Auto-select plan if specified in URL
+                const planElement = document.querySelector(`.plan:has([data-plan="${plan}"])`);
+                if (planElement) {
+                    planElement.click();
+                }
+            }
+        }
+    </script>
+</body>
+</html>

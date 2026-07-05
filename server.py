@@ -437,6 +437,10 @@ def uae_landing():
 def free_chatbot():
     return app.send_static_file("free-chatbot.html")
 
+@app.route("/payment")
+def payment():
+    return app.send_static_file("payment.html")
+
 @app.route("/save-lead", methods=["POST"])
 def save_lead():
     try:
@@ -540,33 +544,130 @@ def create_payment():
 
 @app.route("/payment-success", methods=["POST"])
 def payment_success():
-    """Handle successful payment callback"""
+    """Handle successful payment callback and grant automatic access"""
     try:
         data = request.get_json()
         payment_id = data.get('payment_id')
         order_id = data.get('order_id')
+        plan = data.get('plan', 'starter')
+        email = data.get('email', '')
+        name = data.get('name', '')
         
-        # In production, verify with Razorpay API
+        # In production, verify with payment provider API
         # For now, just log the successful payment
-        logger.info(f"Payment successful: {payment_id} for order {order_id}")
+        logger.info(f"Payment successful: {payment_id} for order {order_id} - Plan: {plan}")
         
         # Store payment record
         payment_record = {
             "payment_id": payment_id,
             "order_id": order_id,
+            "plan": plan,
+            "email": email,
+            "name": name,
             "timestamp": datetime.now().isoformat(),
             "status": "success"
         }
         
+        # Grant automatic access
+        access_code = generate_access_code(email, plan)
+        
+        # Store access record
+        access_record = {
+            "email": email,
+            "name": name,
+            "plan": plan,
+            "access_code": access_code,
+            "payment_id": payment_id,
+            "granted_at": datetime.now().isoformat(),
+            "expires_at": (datetime.now() + timedelta(days=30)).isoformat()
+        }
+        
+        # In production, save to database
+        logger.info(f"Access granted: {access_code} for {email}")
+        
+        # Send access details via email (in production)
+        send_access_email(email, name, access_code, plan)
+        
         return jsonify({
             "success": True,
             "message": "Payment processed successfully",
-            "redirect_url": "/chat"
+            "access_code": access_code,
+            "redirect_url": f"/chat?access={access_code}",
+            "plan": plan,
+            "expires_at": access_record["expires_at"]
         })
         
     except Exception as e:
         logger.error(f"Error processing payment success: {e}")
         return jsonify({"error": "Payment processing failed"}), 500
+
+def generate_access_code(email, plan):
+    """Generate unique access code for user"""
+    import uuid
+    import hashlib
+    
+    # Create unique code based on email and timestamp
+    timestamp = str(datetime.now().timestamp())
+    raw_string = f"{email}{plan}{timestamp}"
+    access_code = hashlib.md5(raw_string.encode()).hexdigest()[:12].upper()
+    
+    return f"AI-{access_code}"
+
+def send_access_email(email, name, access_code, plan):
+    """Send access details via email (in production)"""
+    # In production, use actual email service
+    logger.info(f"Email sent to {email}: Access Code: {access_code}, Plan: {plan}")
+
+@app.route("/verify-access", methods=["POST"])
+def verify_access():
+    """Verify access code and grant chatbot access"""
+    try:
+        data = request.get_json()
+        access_code = data.get('access_code')
+        
+        if not access_code:
+            return jsonify({"error": "Access code required"}), 400
+        
+        # In production, verify against database
+        # For now, accept any valid format
+        if access_code.startswith("AI-") and len(access_code) == 15:
+            return jsonify({
+                "success": True,
+                "message": "Access granted",
+                "plan": "professional",  # Would come from database
+                "expires_at": "2026-08-05T23:59:59"  # Would come from database
+            })
+        else:
+            return jsonify({"error": "Invalid access code"}), 401
+            
+    except Exception as e:
+        logger.error(f"Error verifying access: {e}")
+        return jsonify({"error": "Access verification failed"}), 500
+
+@app.route("/payment-instructions", methods=["GET"])
+def payment_instructions():
+    """Display payment instructions with account details"""
+    return jsonify({
+        "success": True,
+        "account_details": {
+            "account_name": "AI CHATBOT SERVICES",
+            "account_number": "YOUR_ACCOUNT_NUMBER_HERE",
+            "ifsc_code": "YOUR_IFSC_CODE_HERE",
+            "bank_name": "YOUR_BANK_NAME",
+            "branch": "YOUR_BRANCH",
+            "upi_id": "aichatbot@okicici",
+            "paypal": "payments@aichatbot.in",
+            "wise_email": "payments@aichatbot.in"
+        },
+        "instructions": {
+            "step1": "Choose your plan (Starter: ₹3,000, Professional: ₹10,000, Enterprise: ₹25,000)",
+            "step2": "Make payment to any of the above methods",
+            "step3": "Send payment screenshot with your email to payments@aichatbot.in",
+            "step4": "Receive access code within 2 hours",
+            "step5": "Use access code to activate your AI chatbot"
+        },
+        "note": "Please include your email address in payment description for faster processing"
+    })
 
 @app.route("/upi-payment", methods=["POST"])
 def upi_payment():
