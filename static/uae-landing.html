@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chatbot UAE - Professional Customer Service Dubai</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            overflow-x: hidden;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #0047AB 0%, #FF6B35 100%);
+            color: white;
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+        .nav-links a:hover { opacity: 0.8; }
+        .lang-toggle {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .cta-button {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            transition: background 0.3s;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        .cta-button:hover { background: rgba(255,255,255,0.3); }
+        
+        .hero {
+            background: linear-gradient(135deg, #0047AB 0%, #FF6B35 100%);
+            color: white;
+            padding: 120px 20px 80px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+            animation: fadeInUp 0.8s ease;
+        }
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            animation: fadeInUp 0.8s ease 0.2s both;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease 0.4s both;
+        }
+        .btn-primary, .btn-secondary {
+            padding: 15px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-block;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+        .btn-primary {
+            background: white;
+            color: #0047AB;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.5);
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .features {
+            padding: 80px 20px;
+            background: #f8f9fa;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #333;
+            font-weight: 700;
+        }
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 60px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 60px;
+        }
+        .feature-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #0047AB 0%, #FF6B35 100%);
+            border-radius: 20px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            color: white;
+        }
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .pricing {
+            padding: 80px 20px;
+            background: white;
+        }
+        .pricing-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .pricing-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+            transition: transform 0.3s;
+        }
+        .pricing-card:hover {
+            transform: translateY(-5px);
+        }
+        .pricing-card.featured {
+            border: 3px solid #0047AB;
+            transform: scale(1.05);
+        }
+        .pricing-card.featured::before {
+            content: 'POPULAR';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0047AB;
+            color: white;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .price {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #0047AB;
+            margin: 20px 0;
+        }
+        .price-currency {
+            font-size: 1.5rem;
+            vertical-align: super;
+        }
+        .price-period {
+            font-size: 1rem;
+            color: #666;
+            font-weight: normal;
+        }
+        .pricing-features {
+            list-style: none;
+            margin: 30px 0;
+        }
+        .pricing-features li {
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+            color: #666;
+        }
+        .pricing-features li:last-child {
+            border-bottom: none;
+        }
+        .pricing-features li::before {
+            content: "✓";
+            color: #0047AB;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .industries {
+            padding: 80px 20px;
+            background: #f8f9fa;
+        }
+        .industries-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .industry-card {
+            background: white;
+            padding: 30px 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .industry-card:hover {
+            transform: translateY(-5px);
+        }
+        .industry-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .industry-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .demo {
+            padding: 80px 20px;
+            background: white;
+            text-align: center;
+        }
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .demo-frame {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            margin: 40px 0;
+        }
+        .demo-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .payment-info {
+            background: linear-gradient(135deg, #0047AB 0%, #FF6B35 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        .payment-methods {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        .payment-method {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 15px;
+            min-width: 150px;
+        }
+        .payment-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        
+        .contact {
+            background: linear-gradient(135deg, #0047AB 0%, #FF6B35 100%);
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+        }
+        .contact-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .contact-content h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        .contact-content p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        .contact-info {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+        
+        .footer {
+            background: #0047AB;
+            color: white;
+            padding: 40px 20px 20px;
+            text-align: center;
+        }
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+        .footer-links a:hover { opacity: 1; }
+        
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .hero p { font-size: 1.1rem; }
+            .nav-links { display: none; }
+            .hero-buttons { flex-direction: column; align-items: center; }
+            .btn-primary, .btn-secondary { width: 200px; }
+            .pricing-card.featured { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">🤖</div>
+                <span id="logoText">AI Chatbot UAE</span>
+            </div>
+            <div class="nav-links">
+                <a href="#features" id="featuresLink">Features</a>
+                <a href="#pricing" id="pricingLink">Pricing</a>
+                <a href="#industries" id="industriesLink">Industries</a>
+                <button class="lang-toggle" onclick="toggleLanguage()">العربية</button>
+                <a href="#contact" class="cta-button" id="contactLink">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1 id="heroTitle">AI Chatbot for UAE Business</h1>
+            <p id="heroSubtitle">Professional customer service automation for Dubai, Abu Dhabi, and Sharjah. Arabic, English, and Hindi support available.</p>
+            <div class="hero-buttons">
+                <a href="/lead-capture.html" class="btn-primary" id="demoBtn">Try Live Demo</a>
+                <a href="#pricing" class="btn-secondary" id="pricingBtn">View Pricing</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="container">
+            <h2 class="section-title" id="featuresTitle">Advanced Features for UAE Business</h2>
+            <p class="section-subtitle" id="featuresSubtitle">Everything you need to automate customer support and increase sales in the UAE market</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🇦🇪</div>
+                    <h3 id="langFeature">Arabic & English Support</h3>
+                    <p id="langDesc">Native Arabic and English support with Hindi for expatriate customers. Perfect for UAE's diverse market.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3 id="leadFeature">Lead Capture System</h3>
+                    <p id="leadDesc">Automatically collect customer information and phone numbers. Build your customer database effortlessly.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">💰</div>
+                    <h3 id="priceFeature">UAE Market Pricing</h3>
+                    <p id="priceDesc">Competitive pricing in AED for UAE businesses. No hidden charges, transparent billing.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🏪</div>
+                    <h3 id="retailFeature">Retail Excellence</h3>
+                    <p id="retailDesc">Perfect for Dubai malls, boutiques, and retail chains. Product info, inventory, and customer support.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🏨</div>
+                    <h3 id="hotelFeature">Hospitality Ready</h3>
+                    <p id="hotelDesc">Ideal for hotels, restaurants, and tourism. Booking management, menu display, and guest services.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3 id="whatsappFeature">WhatsApp Integration</h3>
+                    <p id="whatsappDesc">Connect with customers on WhatsApp. Automated responses and lead management for UAE customers.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <h2 class="section-title" id="pricingTitle">Competitive Pricing for UAE Business</h2>
+            <p class="section-subtitle" id="pricingSubtitle">Choose the plan that fits your business needs</p>
+            
+            <div class="pricing-cards">
+                <div class="pricing-card">
+                    <h3 id="starterPlan">Starter</h3>
+                    <div class="price">
+                        <span class="price-currency" id="currency">AED</span> <span id="starterPrice">499</span>
+                        <span class="price-period" id="period">/month</span>
+                    </div>
+                    <ul class="pricing-features">
+                        <li id="starterFeature1">Up to 500 conversations/month</li>
+                        <li id="starterFeature2">Basic AI responses</li>
+                        <li id="starterFeature3">Lead capture form</li>
+                        <li id="starterFeature4">2 languages support</li>
+                        <li id="starterFeature5">Email support</li>
+                        <li id="starterFeature6">Basic analytics</li>
+                    </ul>
+                    <button class="btn-primary" style="width: 100%;" onclick="openPaymentModal('starter')" id="starterBtn">Get Started</button>
+                </div>
+                
+                <div class="pricing-card featured">
+                    <h3 id="proPlan">Professional</h3>
+                    <div class="price">
+                        <span class="price-currency">AED</span> <span id="proPrice">1,499</span>
+                        <span class="price-period">/month</span>
+                    </div>
+                    <ul class="pricing-features">
+                        <li id="proFeature1">Unlimited conversations</li>
+                        <li id="proFeature2">Advanced AI with document upload</li>
+                        <li id="proFeature3">Lead capture + CRM integration</li>
+                        <li id="proFeature4">All languages support</li>
+                        <li id="proFeature5">Priority support</li>
+                        <li id="proFeature6">Advanced analytics & reports</li>
+                        <li id="proFeature7">WhatsApp integration</li>
+                        <li id="proFeature8">Custom branding</li>
+                    </ul>
+                    <button class="btn-primary" style="width: 100%;" onclick="openPaymentModal('professional')" id="proBtn">Get Started</button>
+                </div>
+                
+                <div class="pricing-card">
+                    <h3 id="enterprisePlan">Enterprise</h3>
+                    <div class="price">
+                        <span class="price-currency">AED</span> <span id="enterprisePrice">3,499</span>
+                        <span class="price-period">/month</span>
+                    </div>
+                    <ul class="pricing-features">
+                        <li id="enterpriseFeature1">Everything in Professional</li>
+                        <li id="enterpriseFeature2">Multiple chatbots</li>
+                        <li id="enterpriseFeature3">API access</li>
+                        <li id="enterpriseFeature4">Dedicated account manager</li>
+                        <li id="enterpriseFeature5">Custom AI training</li>
+                        <li id="enterpriseFeature6">White-label option</li>
+                        <li id="enterpriseFeature7">SLA guarantee</li>
+                    </ul>
+                    <a href="#contact" class="btn-secondary" style="width: 100%;" id="enterpriseBtn">Contact Sales</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="industries" id="industries">
+        <div class="container">
+            <h2 class="section-title" id="industriesTitle">Perfect for UAE Industries</h2>
+            <p class="section-subtitle" id="industriesSubtitle">Trusted by businesses across Dubai, Abu Dhabi, and Sharjah</p>
+            
+            <div class="industries-grid">
+                <div class="industry-card">
+                    <div class="industry-icon">🏪</div>
+                    <h3 id="retailTitle">Retail</h3>
+                    <p id="retailIndustry">Malls, boutiques, shops</p>
+                </div>
+                
+                <div class="industry-card">
+                    <div class="industry-icon">🏨</div>
+                    <h3 id="hospitalityTitle">Hospitality</h3>
+                    <p id="hospitalityIndustry">Hotels, restaurants, cafes</p>
+                </div>
+                
+                <div class="industry-card">
+                    <div class="industry-icon">🏢</div>
+                    <h3 id="realestateTitle">Real Estate</h3>
+                    <p id="realestateIndustry">Property sales, rentals</p>
+                </div>
+                
+                <div class="industry-card">
+                    <div class="industry-icon">🚗</div>
+                    <h3 id="automotiveTitle">Automotive</h3>
+                    <p id="automotiveIndustry">Car dealerships, services</p>
+                </div>
+                
+                <div class="industry-card">
+                    <div class="industry-icon">💼</div>
+                    <h3 id="servicesTitle">Professional Services</h3>
+                    <p id="servicesIndustry">Consulting, legal, finance</p>
+                </div>
+                
+                <div class="industry-card">
+                    <div class="industry-icon">🎓</div>
+                    <h3 id="educationTitle">Education</h3>
+                    <p id="educationIndustry">Schools, training centers</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="demo" id="demo">
+        <div class="demo-container">
+            <h2 class="section-title" id="demoTitle">Try It Now</h2>
+            <p class="section-subtitle" id="demoSubtitle">Experience our AI chatbot in action</p>
+            
+            <div class="demo-frame">
+                <iframe src="/demo.html" style="width: 100%; height: 500px; border: none; border-radius: 10px;"></iframe>
+            </div>
+            
+            <div class="demo-buttons">
+                <a href="/lead-capture.html" class="btn-primary" id="demoProBtn">Try Professional Version</a>
+                <a href="/demo.html" class="btn-secondary" target="_blank" id="demoNewBtn">Open in New Tab</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="payment-info">
+        <div class="container">
+            <h2 class="section-title" id="paymentTitle">International Payment Options</h2>
+            <p class="section-subtitle" id="paymentSubtitle">Multiple payment methods for your convenience</p>
+            
+            <div class="payment-methods">
+                <div class="payment-method">
+                    <div class="payment-icon">💳</div>
+                    <h4 id="wiseTitle">Wise Transfer</h4>
+                    <p id="wiseDesc">International bank transfer</p>
+                </div>
+                
+                <div class="payment-method">
+                    <div class="payment-icon">🌍</div>
+                    <h4 id="paypalTitle">PayPal</h4>
+                    <p id="paypalDesc">Secure online payments</p>
+                </div>
+                
+                <div class="payment-method">
+                    <div class="payment-icon">💰</div>
+                    <h4 id="stripeTitle">Stripe</h4>
+                    <p id="stripeDesc">Credit/Debit cards</p>
+                </div>
+                
+                <div class="payment-method">
+                    <div class="payment-icon">🏦</div>
+                    <h4 id="bankTitle">Bank Transfer</h4>
+                    <p id="bankDesc">Direct to India account</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="contact" id="contact">
+        <div class="contact-content">
+            <h2 id="contactTitle">Ready to Transform Your Business?</h2>
+            <p id="contactSubtitle">Join hundreds of UAE businesses already using AI Chatbot to increase customer satisfaction and sales.</p>
+            
+            <div class="hero-buttons">
+                <a href="/lead-capture.html" class="btn-primary" id="trialBtn">Start Free Trial</a>
+                <a href="mailto:contact@aichatbot.ae" class="btn-secondary" id="emailBtn">Email Us</a>
+            </div>
+            
+            <div class="contact-info">
+                <p><strong>📧 Email:</strong> contact@aichatbot.ae</p>
+                <p><strong>📱 Phone/WhatsApp:</strong> +971 5X XXX XXXX</p>
+                <p><strong>🏢 Based in:</strong> Dubai, United Arab Emirates</p>
+                <p><strong>⏰ Support:</strong> Sat-Thu, 9AM-7PM GST</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="#features" id="footerFeatures">Features</a>
+                <a href="#pricing" id="footerPricing">Pricing</a>
+                <a href="#industries" id="footerIndustries">Industries</a>
+                <a href="/privacy.html" id="footerPrivacy">Privacy Policy</a>
+                <a href="/terms.html" id="footerTerms">Terms of Service</a>
+            </div>
+            <p id="footerText">&copy; 2026 AI Chatbot UAE. All rights reserved. | Serving Dubai, Abu Dhabi, Sharjah | 🇦🇪</p>
+        </div>
+    </footer>
+
+    <script>
+        // Language toggle functionality
+        let currentLang = 'en';
+        
+        const translations = {
+            en: {
+                logoText: "AI Chatbot UAE",
+                heroTitle: "AI Chatbot for UAE Business",
+                heroSubtitle: "Professional customer service automation for Dubai, Abu Dhabi, and Sharjah. Arabic, English, and Hindi support available.",
+                demoBtn: "Try Live Demo",
+                pricingBtn: "View Pricing",
+                featuresTitle: "Advanced Features for UAE Business",
+                featuresSubtitle: "Everything you need to automate customer support and increase sales in the UAE market",
+                langFeature: "Arabic & English Support",
+                langDesc: "Native Arabic and English support with Hindi for expatriate customers. Perfect for UAE's diverse market.",
+                leadFeature: "Lead Capture System",
+                leadDesc: "Automatically collect customer information and phone numbers. Build your customer database effortlessly.",
+                priceFeature: "UAE Market Pricing",
+                priceDesc: "Competitive pricing in AED for UAE businesses. No hidden charges, transparent billing.",
+                retailFeature: "Retail Excellence",
+                retailDesc: "Perfect for Dubai malls, boutiques, and retail chains. Product info, inventory, and customer support.",
+                hotelFeature: "Hospitality Ready",
+                hotelDesc: "Ideal for hotels, restaurants, and tourism. Booking management, menu display, and guest services.",
+                whatsappFeature: "WhatsApp Integration",
+                whatsappDesc: "Connect with customers on WhatsApp. Automated responses and lead management for UAE customers.",
+                pricingTitle: "Competitive Pricing for UAE Business",
+                pricingSubtitle: "Choose the plan that fits your business needs",
+                starterPlan: "Starter",
+                proPlan: "Professional",
+                enterprisePlan: "Enterprise",
+                period: "/month",
+                starterBtn: "Get Started",
+                proBtn: "Get Started",
+                enterpriseBtn: "Contact Sales",
+                industriesTitle: "Perfect for UAE Industries",
+                industriesSubtitle: "Trusted by businesses across Dubai, Abu Dhabi, and Sharjah",
+                retailTitle: "Retail",
+                retailIndustry: "Malls, boutiques, shops",
+                hospitalityTitle: "Hospitality",
+                hospitalityIndustry: "Hotels, restaurants, cafes",
+                realestateTitle: "Real Estate",
+                realestateIndustry: "Property sales, rentals",
+                automotiveTitle: "Automotive",
+                automotiveIndustry: "Car dealerships, services",
+                servicesTitle: "Professional Services",
+                servicesIndustry: "Consulting, legal, finance",
+                educationTitle: "Education",
+                educationIndustry: "Schools, training centers",
+                demoTitle: "Try It Now",
+                demoSubtitle: "Experience our AI chatbot in action",
+                demoProBtn: "Try Professional Version",
+                demoNewBtn: "Open in New Tab",
+                paymentTitle: "International Payment Options",
+                paymentSubtitle: "Multiple payment methods for your convenience",
+                wiseTitle: "Wise Transfer",
+                wiseDesc: "International bank transfer",
+                paypalTitle: "PayPal",
+                paypalDesc: "Secure online payments",
+                stripeTitle: "Stripe",
+                stripeDesc: "Credit/Debit cards",
+                bankTitle: "Bank Transfer",
+                bankDesc: "Direct to India account",
+                contactTitle: "Ready to Transform Your Business?",
+                contactSubtitle: "Join hundreds of UAE businesses already using AI Chatbot to increase customer satisfaction and sales.",
+                trialBtn: "Start Free Trial",
+                emailBtn: "Email Us",
+                footerFeatures: "Features",
+                footerPricing: "Pricing",
+                footerIndustries: "Industries",
+                footerPrivacy: "Privacy Policy",
+                footerTerms: "Terms of Service",
+                footerText: "&copy; 2026 AI Chatbot UAE. All rights reserved. | Serving Dubai, Abu Dhabi, Sharjah | 🇦🇪"
+            },
+            ar: {
+                logoText: "روبوت الدردشة الإمارات",
+                heroTitle: "روبوت الدردشة لأعمال الإمارات",
+                heroSubtitle: "أتمتة خدمة العملاء الاحترافية لدبي وأبوظبي والشارقة. دعم باللغة العربية والإنجليزية والهندية متاح.",
+                demoBtn: "جرب العرض التوضيحي",
+                pricingBtn: "عرض الأسعار",
+                featuresTitle: "ميزات متقدمة لأعمال الإمارات",
+                featuresSubtitle: "كل ما تحتاجه لأتمتة دعم العملاء وزيادة المبيعات في سوق الإمارات",
+                langFeature: "دعم العربية والإنجليزية",
+                langDesc: "دعم أصيل باللغة العربية والإنجليزية مع الهندية للعملاء المغتربين. مثالي لسوق الإمارات المتنوع.",
+                leadFeature: "نظام التقاط العملاء المحتملين",
+                leadDesc: "جمع معلومات العملاء وأرقام الهواتف تلقائياً. بناء قاعدة بيانات العملاء الخاصة بك بسهولة.",
+                priceFeature: "تسعير سوق الإمارات",
+                priceDesc: "تسعير تنافسي بالدرهم الإماراتي لأعمال الإمارات. لا توجد رسوم خفية، فواتير شفافة.",
+                retailFeature: "تفوق التجزئة",
+                retailDesc: "مثالي لمراكز التسوق ودور الأزياء وسلاسل البيع بالتجزئة في دبي. معلومات المنتج والمخزون ودعم العملاء.",
+                hotelFeature: "جاهز للضيافة",
+                hotelDesc: "مثالي للفنادق والمطاعم والسياحة. إدارة الحجوزات وعرض القائمة والخدمات الضيوف.",
+                whatsappFeature: "تكامل واتساب",
+                whatsappDesc: "التواصل مع العملاء على واتساب. استجابات آلية وإدارة العملاء المحتملين لعملاء الإمارات.",
+                pricingTitle: "تسعير تنافسي لأعمال الإمارات",
+                pricingSubtitle: "اختر الخطة التي تناسب احتياجات عملك",
+                starterPlan: "البداية",
+                proPlan: "احترافي",
+                enterprisePlan: "مؤسسي",
+                period: "/شهر",
+                starterBtn: "ابدأ الآن",
+                proBtn: "ابدأ الآن",
+                enterpriseBtn: "تواصل مع المبيعات",
+                industriesTitle: "مثالي لصناعات الإمارات",
+                industriesSubtitle: "موثوق به من قبل الشركات في جميع أنحاء دبي وأبوظبي والشارقة",
+                retailTitle: "تجزئة",
+                retailIndustry: "مراكز التسوق، دور الأزياء، المتاجر",
+                hospitalityTitle: "ضيافة",
+                hospitalityIndustry: "فنادق، مطاعم، مقاهي",
+                realestateTitle: "عقارات",
+                realestateIndustry: "مبيعات العقارات، إيجارات",
+                automotiveTitle: "سيارات",
+                automotiveIndustry: "وكلاء السيارات، خدمات",
+                servicesTitle: "خدمات احترافية",
+                servicesIndustry: "استشارات، قانونية، مالية",
+                educationTitle: "تعليم",
+                educationIndustry: "مدارس، مراكز تدريب",
+                demoTitle: "جربه الآن",
+                demoSubtitle: "اختبر روبوت الدردشة الذكي الخاص بنا في العمل",
+                demoProBtn: "جرب النسخة الاحترافية",
+                demoNewBtn: "فتح في علامة تبويب جديدة",
+                paymentTitle: "خيارات الدفع الدولية",
+                paymentSubtitle: "طرق دفع متعددة لراحتك",
+                wiseTitle: "تحويل وايز",
+                wiseDesc: "تحويل بنكي دولي",
+                paypalTitle: "باي بال",
+                paypalDesc: "مدفوعات آمنة عبر الإنترنت",
+                stripeTitle: "سترايب",
+                stripeDesc: "بطاقات الائتمان/ الخصم",
+                bankTitle: "تحويل بنكي",
+                bankDesc: "مباشر إلى حساب الهند",
+                contactTitle: "هل أنت مستعد لتحويل أعمالك؟",
+                contactSubtitle: "انضم إلى مئات الشركات في الإمارات التي تستخدم بالفعل روبوت الدردشة لزيادة رضا العملاء والمبيعات.",
+                trialBtn: "ابدأ التجربة المجانية",
+                emailBtn: "راسلنا عبر البريد الإلكتروني",
+                footerFeatures: "الميزات",
+                footerPricing: "الأسعار",
+                footerIndustries: "الصناعات",
+                footerPrivacy: "سياسة الخصوصية",
+                footerTerms: "شروط الخدمة",
+                footerText: "&copy; 2026 روبوت الدردشة الإمارات. جميع الحقوق محفوظة. | خدمة دبي وأبوظبي والشارقة | 🇦🇪"
+            }
+        };
+        
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'ar' : 'en';
+            const lang = currentLang;
+            const trans = translations[lang];
+            
+            // Update all text elements
+            document.getElementById('logoText').textContent = trans.logoText;
+            document.getElementById('heroTitle').textContent = trans.heroTitle;
+            document.getElementById('heroSubtitle').textContent = trans.heroSubtitle;
+            document.getElementById('demoBtn').textContent = trans.demoBtn;
+            document.getElementById('pricingBtn').textContent = trans.pricingBtn;
+            document.getElementById('featuresTitle').textContent = trans.featuresTitle;
+            document.getElementById('featuresSubtitle').textContent = trans.featuresSubtitle;
+            document.getElementById('langFeature').textContent = trans.langFeature;
+            document.getElementById('langDesc').textContent = trans.langDesc;
+            document.getElementById('leadFeature').textContent = trans.leadFeature;
+            document.getElementById('leadDesc').textContent = trans.leadDesc;
+            document.getElementById('priceFeature').textContent = trans.priceFeature;
+            document.getElementById('priceDesc').textContent = trans.priceDesc;
+            document.getElementById('retailFeature').textContent = trans.retailFeature;
+            document.getElementById('retailDesc').textContent = trans.retailDesc;
+            document.getElementById('hotelFeature').textContent = trans.hotelFeature;
+            document.getElementById('hotelDesc').textContent = trans.hotelDesc;
+            document.getElementById('whatsappFeature').textContent = trans.whatsappFeature;
+            document.getElementById('whatsappDesc').textContent = trans.whatsappDesc;
+            document.getElementById('pricingTitle').textContent = trans.pricingTitle;
+            document.getElementById('pricingSubtitle').textContent = trans.pricingSubtitle;
+            document.getElementById('starterPlan').textContent = trans.starterPlan;
+            document.getElementById('proPlan').textContent = trans.proPlan;
+            document.getElementById('enterprisePlan').textContent = trans.enterprisePlan;
+            document.getElementById('period').textContent = trans.period;
+            document.getElementById('starterBtn').textContent = trans.starterBtn;
+            document.getElementById('proBtn').textContent = trans.proBtn;
+            document.getElementById('enterpriseBtn').textContent = trans.enterpriseBtn;
+            document.getElementById('industriesTitle').textContent = trans.industriesTitle;
+            document.getElementById('industriesSubtitle').textContent = trans.industriesSubtitle;
+            document.getElementById('retailTitle').textContent = trans.retailTitle;
+            document.getElementById('retailIndustry').textContent = trans.retailIndustry;
+            document.getElementById('hospitalityTitle').textContent = trans.hospitalityTitle;
+            document.getElementById('hospitalityIndustry').textContent = trans.hospitalityIndustry;
+            document.getElementById('realestateTitle').textContent = trans.realestateTitle;
+            document.getElementById('realestateIndustry').textContent = trans.realestateIndustry;
+            document.getElementById('automotiveTitle').textContent = trans.automotiveTitle;
+            document.getElementById('automotiveIndustry').textContent = trans.automotiveIndustry;
+            document.getElementById('servicesTitle').textContent = trans.servicesTitle;
+            document.getElementById('servicesIndustry').textContent = trans.servicesIndustry;
+            document.getElementById('educationTitle').textContent = trans.educationTitle;
+            document.getElementById('educationIndustry').textContent = trans.educationIndustry;
+            document.getElementById('demoTitle').textContent = trans.demoTitle;
+            document.getElementById('demoSubtitle').textContent = trans.demoSubtitle;
+            document.getElementById('demoProBtn').textContent = trans.demoProBtn;
+            document.getElementById('demoNewBtn').textContent = trans.demoNewBtn;
+            document.getElementById('paymentTitle').textContent = trans.paymentTitle;
+            document.getElementById('paymentSubtitle').textContent = trans.paymentSubtitle;
+            document.getElementById('wiseTitle').textContent = trans.wiseTitle;
+            document.getElementById('wiseDesc').textContent = trans.wiseDesc;
+            document.getElementById('paypalTitle').textContent = trans.paypalTitle;
+            document.getElementById('paypalDesc').textContent = trans.paypalDesc;
+            document.getElementById('stripeTitle').textContent = trans.stripeTitle;
+            document.getElementById('stripeDesc').textContent = trans.stripeDesc;
+            document.getElementById('bankTitle').textContent = trans.bankTitle;
+            document.getElementById('bankDesc').textContent = trans.bankDesc;
+            document.getElementById('contactTitle').textContent = trans.contactTitle;
+            document.getElementById('contactSubtitle').textContent = trans.contactSubtitle;
+            document.getElementById('trialBtn').textContent = trans.trialBtn;
+            document.getElementById('emailBtn').textContent = trans.emailBtn;
+            document.getElementById('footerFeatures').textContent = trans.footerFeatures;
+            document.getElementById('footerPricing').textContent = trans.footerPricing;
+            document.getElementById('footerIndustries').textContent = trans.footerIndustries;
+            document.getElementById('footerPrivacy').textContent = trans.footerPrivacy;
+            document.getElementById('footerTerms').textContent = trans.footerTerms;
+            document.getElementById('footerText').innerHTML = trans.footerText;
+            
+            // Update language toggle button
+            document.querySelector('.lang-toggle').textContent = lang === 'en' ? 'العربية' : 'English';
+            
+            // Update text direction for Arabic
+            document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        }
+
+        // Payment modal placeholder
+        function openPaymentModal(plan) {
+            alert(`Payment modal for ${plan} plan. In production, this would open payment options.`);
+        }
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

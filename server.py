@@ -429,6 +429,10 @@ def india_landing():
 def boss_demo():
     return app.send_static_file("boss-demo.html")
 
+@app.route("/uae")
+def uae_landing():
+    return app.send_static_file("uae-landing.html")
+
 @app.route("/save-lead", methods=["POST"])
 def save_lead():
     try:
