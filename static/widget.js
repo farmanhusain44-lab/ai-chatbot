@@ -6,10 +6,10 @@
     const scripts = document.getElementsByTagName('script');
     const currentScript = scripts[scripts.length - 1];
     const baseUrl = currentScript.src.replace('/widget.js', '');
-    const agentName = currentScript.getAttribute('data-agent') || 'AI Agent';
-    const welcomeText = currentScript.getAttribute('data-welcome') || 'Hello! How can I help you today?';
+    const agentName = currentScript.getAttribute('data-agent') || 'Al Faredah Assistant';
+    const welcomeText = currentScript.getAttribute('data-welcome') || 'Welcome to Al Faredah';
     const position = currentScript.getAttribute('data-position') || 'bottom-right';
-    const color = currentScript.getAttribute('data-color') || '#667eea';
+    const color = currentScript.getAttribute('data-color') || '#d81b60';
 
     const widgetId = 'ai-chatbot-widget-' + Date.now();
 
@@ -125,6 +125,14 @@
     // Close when clicking outside
     document.addEventListener('click', function(e) {
         if (isOpen && !container.contains(e.target)) {
+            isOpen = false;
+            panel.classList.remove('open');
+        }
+    });
+
+    // Close widget from iframe close button
+    window.addEventListener('message', function(event) {
+        if (event.data && event.data.action === 'close-widget') {
             isOpen = false;
             panel.classList.remove('open');
         }

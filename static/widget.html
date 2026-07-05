@@ -40,7 +40,27 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            margin-right: 8px;
         }
+        .widget-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .close-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .close-btn:hover { background: rgba(255,255,255,0.35); }
         .status-dot {
             width: 8px;
             height: 8px;
@@ -238,9 +258,29 @@
         .chat-input { position: relative; }
         .welcome-msg {
             text-align: center;
-            padding: 20px;
-            color: #888;
-            font-size: 13px;
+            padding: 24px 16px;
+            color: #555;
+            font-size: 14px;
+            min-height: 80px;
+        }
+        .welcome-line {
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            margin: 4px 0;
+        }
+        .welcome-line.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .welcome-line.en {
+            font-weight: 500;
+            color: #667eea;
+        }
+        .welcome-line.ar {
+            font-size: 15px;
+            color: #764ba2;
+            direction: rtl;
         }
         .spinner {
             display: inline-block;
@@ -257,11 +297,20 @@
 <body>
     <div class="widget-container">
         <div class="widget-header">
-            <h3><span class="status-dot"></span><span id="agentName">AI Agent</span></h3>
+            <h3><span class="status-dot"></span><span id="agentName">Al Faredah Assistant</span></h3>
+            <div class="widget-header-actions">
+                <button type="button" class="close-btn" id="closeBtn" onclick="closeWidget()" aria-label="Close chat" title="Close chat">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
         </div>
         <div class="messages" id="messages">
             <div class="welcome-msg" id="welcomeMsg">
-                Hello! How can I help you today? Type or speak your message.
+                <div class="welcome-line en" id="welcomeEn">Welcome to Al Faredah</div>
+                <div class="welcome-line ar" id="welcomeAr">تحدث معنا</div>
             </div>
         </div>
         <div id="typing" class="typing">AI is typing...</div>
@@ -275,15 +324,6 @@
                 </svg>
             </button>
             <input type="file" id="fileInput" style="display:none" accept=".pdf,.docx,.doc,.txt,.md,.csv,.json" onchange="uploadDocument(this)">
-            <button type="button" class="mic-btn" id="micBtn" onclick="toggleVoiceInput()" aria-label="Voice input">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                    <line x1="12" y1="19" x2="12" y2="23"></line>
-                    <line x1="8" y1="23" x2="16" y2="23"></line>
-                </svg>
-            </button>
-            <div class="voice-hint" id="voiceHint">Listening...</div>
             <button type="button" class="send-btn" onclick="sendMessage()">➤</button>
         </div>
     </div>
@@ -337,6 +377,14 @@
             if (!msg) return '';
             const textEl = msg.querySelector('.bot-text');
             return textEl ? textEl.textContent : '';
+        }
+
+        function closeWidget() {
+            try {
+                window.parent.postMessage({ action: 'close-widget' }, '*');
+            } catch (e) {
+                console.error('Close widget error:', e);
+            }
         }
 
         function stripEmojis(text) {
@@ -775,10 +823,18 @@
 
         // Apply configuration from URL params
         const urlParams = new URLSearchParams(window.location.search);
-        const agentName = urlParams.get('name') || 'AI Agent';
-        const welcomeText = urlParams.get('welcome') || 'Hello! How can I help you today? Type or speak your message.';
+        const agentName = urlParams.get('name') || 'Al Faredah Assistant';
+        const welcomeText = urlParams.get('welcome') || 'Welcome to Al Faredah';
         document.getElementById('agentName').textContent = agentName;
-        document.getElementById('welcomeMsg').textContent = welcomeText;
+        document.getElementById('welcomeEn').textContent = welcomeText;
+
+        // Animate welcome message: English first, then Arabic
+        setTimeout(() => {
+            document.getElementById('welcomeEn').classList.add('show');
+        }, 300);
+        setTimeout(() => {
+            document.getElementById('welcomeAr').classList.add('show');
+        }, 900);
     </script>
 </body>
 </html>
