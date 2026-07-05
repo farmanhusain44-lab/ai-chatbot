@@ -196,6 +196,18 @@ def get_system_prompt(language="en", timezone=None):
 def home():
     return app.send_static_file("index.html")
 
+@app.route("/widget.js")
+def widget_js():
+    return app.send_static_file("widget.js")
+
+@app.route("/widget.html")
+def widget_html():
+    return app.send_static_file("widget.html")
+
+@app.route("/demo.html")
+def demo_page():
+    return app.send_static_file("demo.html")
+
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json(silent=True)
