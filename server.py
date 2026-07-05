@@ -650,12 +650,13 @@ def payment_instructions():
     return jsonify({
         "success": True,
         "account_details": {
-            "account_name": "AI CHATBOT SERVICES",
-            "account_number": "YOUR_ACCOUNT_NUMBER_HERE",
-            "ifsc_code": "YOUR_IFSC_CODE_HERE",
-            "bank_name": "YOUR_BANK_NAME",
-            "branch": "YOUR_BRANCH",
-            "upi_id": "aichatbot@okicici",
+            "account_name": "Farman Husain",
+            "account_number": "43229135452",
+            "account_type": "Savings Account",
+            "ifsc_code": "SBIN0018417",
+            "bank_name": "State Bank of India",
+            "branch": "Nasirabad",
+            "upi_id": "43229135452@sbi",
             "paypal": "payments@aichatbot.in",
             "wise_email": "payments@aichatbot.in"
         },
