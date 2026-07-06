@@ -117,12 +117,6 @@ footer{background:#1a1a2e;padding:40px 5%}
 .footer-bottom{border-top:1px solid rgba(255,255,255,.06);padding-top:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
 .footer-bottom p{font-size:.78rem;color:#334155}
 
-/* ═══ BOT PLACEHOLDER ═══ */
-.bot-placeholder{position:fixed;bottom:28px;right:28px;z-index:9999}
-.bot-placeholder-btn{width:60px;height:60px;background:#e5e7eb;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.15);border:2px dashed #9ca3af;transition:.2s;position:relative}
-.bot-placeholder-btn:hover{background:#f3f4f6}
-.bot-placeholder-label{position:absolute;bottom:68px;right:0;background:#1a1a2e;color:#fff;font-size:.72rem;font-weight:600;padding:6px 12px;border-radius:8px;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.2)}
-.bot-placeholder-label::after{content:'';position:absolute;bottom:-6px;right:18px;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid #1a1a2e}
 
 /* MOBILE */
 @media(max-width:768px){
@@ -416,17 +410,8 @@ footer{background:#1a1a2e;padding:40px 5%}
   </div>
 </footer>
 
-<!-- ═══ AI BOT YAHAN LAGTA HAI ═══ -->
-<!-- 
-    FARMAN BHAI — YAHAN BOT LAGEGA!
-    Client ko yeh ek line paste karni hogi:
-    <script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-access="CLIENT-CODE"></script>
-    Bas itna — bot neeche right corner mein aa jaata hai!
--->
-<div class="bot-placeholder">
-    <div class="bot-placeholder-label">🤖 AI Bot yahan lagega!</div>
-    <div class="bot-placeholder-btn">🤖</div>
-</div>
+<!-- ═══ AI BOT LIVE ═══ -->
+<script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-agent="Botify Store Assistant" data-welcome="Assalam o Alaikum! 👋 Botify Store mein aapka swagat hai. Kya order karna hai?" data-color="#f97316"></script>
 
 <script>
 // Cart functionality (simple demo)
@@ -444,11 +429,6 @@ document.querySelectorAll('.add-btn').forEach(btn => {
     });
 });
 
-// Hide placeholder label after 5 seconds
-setTimeout(() => {
-    const label = document.querySelector('.bot-placeholder-label');
-    if (label) label.style.opacity = '0';
-}, 5000);
 </script>
 </body>
 </html>
