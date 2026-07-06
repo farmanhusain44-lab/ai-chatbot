@@ -196,6 +196,35 @@
             display: inline-block;
             margin-left: 10px;
         }
+        .embed-section {
+            background: linear-gradient(135deg,#0a0a1a,#1a1040);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(167,139,250,.3);
+        }
+        .embed-section h3 { color:#a78bfa; margin-bottom:6px; font-size:1.2rem; }
+        .embed-section p  { color:#94a3b8; font-size:.9rem; margin-bottom:16px; }
+        .embed-code-box {
+            background:#0d0d1f; border:1px solid rgba(167,139,250,.2);
+            border-radius:10px; padding:16px; font-family:monospace;
+            font-size:.82rem; color:#60a5fa; word-break:break-all;
+            margin-bottom:14px; line-height:1.6;
+        }
+        .copy-btn {
+            background:linear-gradient(135deg,#a78bfa,#60a5fa);
+            color:#fff; border:none; padding:11px 24px;
+            border-radius:8px; cursor:pointer; font-weight:700;
+            font-size:.9rem; margin-right:10px;
+        }
+        .copy-btn:active { opacity:.8; }
+        .steps-mini { display:flex; gap:12px; flex-wrap:wrap; margin-top:18px; }
+        .step-mini {
+            background:rgba(167,139,250,.08); border:1px solid rgba(167,139,250,.15);
+            border-radius:10px; padding:12px 16px; flex:1; min-width:160px;
+        }
+        .step-mini .sn { color:#a78bfa; font-weight:800; font-size:1.1rem; margin-bottom:4px; }
+        .step-mini .st { color:#94a3b8; font-size:.8rem; }
     </style>
 </head>
 <body>
@@ -237,6 +266,21 @@
             </div>
         </div>
 
+        <!-- ── EMBED CODE SECTION ── -->
+        <div class="embed-section">
+            <h3>🚀 Add AI Bot to Your Website</h3>
+            <p>Copy this one line of code and paste it in your website's HTML (before <code style="color:#a78bfa">&lt;/body&gt;</code> tag). That's it!</p>
+            <div class="embed-code-box" id="embedCodeBox">Loading...</div>
+            <button class="copy-btn" onclick="copyEmbed()">📋 Copy Code</button>
+            <span id="copyMsg" style="color:#34d399;font-size:.85rem;display:none;">✅ Copied!</span>
+            <div class="steps-mini">
+                <div class="step-mini"><div class="sn">1</div><div class="st">Copy the code above</div></div>
+                <div class="step-mini"><div class="sn">2</div><div class="st">Open your website HTML</div></div>
+                <div class="step-mini"><div class="sn">3</div><div class="st">Paste before &lt;/body&gt;</div></div>
+                <div class="step-mini"><div class="sn">4</div><div class="st">AI bot appears on site ✅</div></div>
+            </div>
+        </div>
+
         <div class="dashboard-grid">
             <div class="dashboard-card">
                 <h3>🤖 Create New Chatbot</h3>
@@ -245,32 +289,14 @@
             </div>
 
             <div class="dashboard-card">
-                <h3>📊 View Analytics</h3>
-                <p>Track your chatbot performance, user interactions, and engagement metrics.</p>
-                <button onclick="viewAnalytics()">View Analytics</button>
-            </div>
-
-            <div class="dashboard-card">
-                <h3>⚙️ Manage Settings</h3>
-                <p>Configure your chatbot responses, appearance, and integration settings.</p>
-                <button onclick="manageSettings()">Manage Settings</button>
-            </div>
-
-            <div class="dashboard-card">
-                <h3>📱 Get Embed Code</h3>
-                <p>Copy the embed code to add your AI chatbot to any website.</p>
-                <button onclick="getEmbedCode()">Get Embed Code</button>
-            </div>
-
-            <div class="dashboard-card">
                 <h3>💬 Test Chatbot</h3>
-                <p>Test your AI chatbot with a live preview before deploying.</p>
+                <p>Test your AI chatbot with a live preview before deploying to your website.</p>
                 <button onclick="testChatbot()">Test Chatbot</button>
             </div>
 
             <div class="dashboard-card">
                 <h3>📞 Support</h3>
-                <p>Get help with setup, troubleshooting, and best practices.</p>
+                <p>Need help? We deploy your bot for you — just share your website access.</p>
                 <button onclick="contactSupport()">Contact Support</button>
             </div>
         </div>
@@ -359,22 +385,16 @@
         }
 
         function getEmbedCode() {
-            const embedCode = `<script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-access-code="${document.getElementById('accessCode').textContent}"></script>`;
-            
-            // Create a modal or alert with the embed code
-            const modal = document.createElement('div');
-            modal.style.cssText = `
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center;
-            `;
-            modal.innerHTML = `
-                <div style="background: white; padding: 30px; border-radius: 15px; max-width: 600px; width: 90%;">
-                    <h3>📱 Your Embed Code</h3>
-                    <p>Copy this code and paste it into your website's HTML:</p>
-                    <textarea style="width: 100%; height: 100px; margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">${embedCode}</textarea>
-                    <button onclick="this.parentElement.parentElement.remove()" style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Close</button>
-                </div>
-            `;
-            document.body.appendChild(modal);
+            return `<script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-agent="AI Assistant" data-welcome="Hello! How can I help you?"><\/script>`;
+        }
+
+        function copyEmbed() {
+            const code = document.getElementById('embedCodeBox').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const msg = document.getElementById('copyMsg');
+                msg.style.display = 'inline';
+                setTimeout(() => { msg.style.display = 'none'; }, 2500);
+            });
         }
 
         function testChatbot() {
@@ -408,6 +428,9 @@
         // Initialize dashboard
         window.onload = function() {
             getAccessCode();
+            const code = document.getElementById('accessCode').textContent;
+            document.getElementById('embedCodeBox').textContent =
+                `<script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-agent="AI Assistant" data-welcome="Hello! How can I help you?" data-access="${code}"><\/script>`;
             
             // Update stats every 5 seconds
             setInterval(updateStats, 5000);

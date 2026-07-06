@@ -178,6 +178,7 @@
                         <th>Access Code</th>
                         <th>Paid At</th>
                         <th>Status</th>
+                        <th>Embed Code</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -265,6 +266,11 @@
                 <td>${c.paid_at ? c.paid_at.substring(0,16).replace('T',' ') : '—'}</td>
                 <td><span class="badge badge-${c.deployed ? 'done' : 'pending'}">${c.deployed ? '✅ Deployed' : '⏳ Pending'}</span></td>
                 <td>
+                    <button class="deploy-btn" style="background:rgba(96,165,250,.15);color:#60a5fa;border:1px solid #60a5fa44;" onclick="copyEmbed('${c.access_code}')">
+                        📋 Copy
+                    </button>
+                </td>
+                <td>
                     <button class="deploy-btn" onclick="openDeploy('${c.access_code}','${c.website || ''}')"
                         ${c.deployed ? 'disabled' : ''}>
                         ${c.deployed ? 'Done' : 'Deploy Bot'}
@@ -295,6 +301,11 @@
     function closeModal() {
         document.getElementById('deployModal').classList.remove('show');
         currentCode = '';
+    }
+
+    function copyEmbed(accessCode) {
+        const code = `<script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-agent="AI Assistant" data-welcome="Hello! How can I help you?" data-access="${accessCode}"><\/script>`;
+        navigator.clipboard.writeText(code).then(() => alert('✅ Embed code copied!\n\nSend this to your client — they paste it before </body> in their website HTML.'));
     }
 
     function confirmDeploy() {
