@@ -491,14 +491,16 @@
         if (!selectedPlan) { alert('Please select a plan first.'); return; }
         if (!validate())   { return; }
 
-        const name    = document.getElementById('fName').value.trim();
-        const email   = document.getElementById('fEmail').value.trim();
-        const website = document.getElementById('fWebsite').value.trim();
+        const name     = document.getElementById('fName').value.trim();
+        const email    = document.getElementById('fEmail').value.trim();
+        const website  = document.getElementById('fWebsite').value.trim();
+        const platform = document.getElementById('fPlatform').value || 'unknown';
 
-        localStorage.setItem('clientName',    name);
-        localStorage.setItem('clientEmail',   email);
-        localStorage.setItem('clientWebsite', website);
-        localStorage.setItem('clientPlan',    selectedPlan);
+        localStorage.setItem('clientName',     name);
+        localStorage.setItem('clientEmail',    email);
+        localStorage.setItem('clientWebsite',  website);
+        localStorage.setItem('clientPlatform', platform);
+        localStorage.setItem('clientPlan',     selectedPlan);
 
         const btn = document.getElementById('payBtn');
         btn.classList.add('loading');
@@ -515,7 +517,7 @@
             Paddle.Checkout.open({
                 items: [{ priceId: priceId, quantity: 1 }],
                 customer: { email: email },
-                customData: { plan: selectedPlan, name: name, website: website },
+                customData: { plan: selectedPlan, name: name, website: website, platform: platform },
                 settings: {
                     displayMode: 'overlay',
                     theme: 'dark',

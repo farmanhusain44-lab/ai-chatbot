@@ -756,6 +756,70 @@ def send_welcome_email(to_email, name, access_code, plan):
     except Exception as e:
         logger.error(f'Failed to send welcome email to {to_email}: {e}')
 
+def notify_owner(name, email, website, plan, access_code):
+    """Notify owner via WhatsApp + email when a new client pays"""
+    plan_prices = {'starter':'AED 499','professional':'AED 1,499','enterprise':'AED 3,499'}
+    price = plan_prices.get(plan, '')
+    owner_phone = os.environ.get('OWNER_WHATSAPP', '')
+    twilio_sid  = os.environ.get('TWILIO_ACCOUNT_SID', '')
+    twilio_tok  = os.environ.get('TWILIO_AUTH_TOKEN', '')
+    twilio_wa   = os.environ.get('TWILIO_WHATSAPP_NUMBER', 'whatsapp:+14155238886')
+
+    # WhatsApp notification
+    if owner_phone and twilio_sid and twilio_tok:
+        try:
+            from twilio.rest import Client as TwilioClient
+            tc = TwilioClient(twilio_sid, twilio_tok)
+            tc.messages.create(
+                body=(
+                    f"🎉 NEW CLIENT PAID!\n\n"
+                    f"👤 Name: {name}\n"
+                    f"📧 Email: {email}\n"
+                    f"🌐 Website: {website or 'Not provided'}\n"
+                    f"📦 Plan: {plan.title()} — {price}/month\n"
+                    f"🔑 Code: {access_code}\n\n"
+                    f"👉 Admin: https://ai-chatbot-production-2f3a.up.railway.app/admin"
+                ),
+                from_=twilio_wa,
+                to=f'whatsapp:{owner_phone}'
+            )
+            logger.info(f'Owner WhatsApp notification sent for {email}')
+        except Exception as e:
+            logger.error(f'Owner WhatsApp notify failed: {e}')
+
+    # Email notification to owner
+    gmail_user = os.environ.get('GMAIL_USER', '')
+    gmail_pass = os.environ.get('GMAIL_APP_PASSWORD', '')
+    owner_email = os.environ.get('OWNER_EMAIL', gmail_user)
+    if gmail_user and gmail_pass and owner_email:
+        try:
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = f'🎉 New Client Paid — {plan.title()} Plan — {name}'
+            msg['From']    = f'AI Chatbot <{gmail_user}>'
+            msg['To']      = owner_email
+            body = f"""
+            <div style="font-family:Arial;padding:20px;background:#0a0a1a;color:#e2e8f0;">
+            <h2 style="color:#34d399;">🎉 New Client Paid!</h2>
+            <table style="border-collapse:collapse;width:100%;">
+              <tr><td style="padding:8px;color:#94a3b8;">Name</td><td style="padding:8px;color:#fff;font-weight:600;">{name}</td></tr>
+              <tr><td style="padding:8px;color:#94a3b8;">Email</td><td style="padding:8px;color:#60a5fa;">{email}</td></tr>
+              <tr><td style="padding:8px;color:#94a3b8;">Website</td><td style="padding:8px;color:#60a5fa;">{website or '—'}</td></tr>
+              <tr><td style="padding:8px;color:#94a3b8;">Plan</td><td style="padding:8px;color:#a78bfa;font-weight:700;">{plan.title()} — {price}/month</td></tr>
+              <tr><td style="padding:8px;color:#94a3b8;">Access Code</td><td style="padding:8px;font-family:monospace;color:#a78bfa;">{access_code}</td></tr>
+            </table>
+            <br>
+            <a href="https://ai-chatbot-production-2f3a.up.railway.app/admin" style="background:linear-gradient(135deg,#a78bfa,#60a5fa);color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;">Open Admin Panel →</a>
+            </div>
+            """
+            msg.attach(MIMEText(body, 'html'))
+            with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+                server.login(gmail_user, gmail_pass)
+                server.sendmail(gmail_user, owner_email, msg.as_string())
+            logger.info(f'Owner email notification sent for {email}')
+        except Exception as e:
+            logger.error(f'Owner email notify failed: {e}')
+
+
 @app.route("/verify-access", methods=["POST"])
 def verify_access():
     """Verify access code and grant chatbot access"""
