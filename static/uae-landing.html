@@ -994,11 +994,11 @@
 
         // ── Paddle Product IDs (replace with your real IDs after Paddle signup) ──
         // Format: paddle.com → Products → create 3 products → copy IDs here
-        const PADDLE_VENDOR_ID = 'YOUR_PADDLE_VENDOR_ID'; // e.g. 12345
+        const PADDLE_CLIENT_TOKEN = 'live_6d6e0e8ad2f98a3484b135ed7b4';
         const paddleProducts = {
-            starter:      'YOUR_STARTER_PRODUCT_ID',      // e.g. pro_01abc...
-            professional: 'YOUR_PRO_PRODUCT_ID',
-            enterprise:   'YOUR_ENTERPRISE_PRODUCT_ID'
+            starter:      'pri_01kwwbkbc20nay4d483fxzqs3z',
+            professional: 'pri_01kwwc0jm95gs7k6sn8svf4cw4',
+            enterprise:   'pri_01kwwc3ct86t4hw0msxe4vj3re'
         };
 
         const planPrices = { starter: 499, professional: 1499, enterprise: 3499 };
@@ -1062,14 +1062,16 @@
             const productId = paddleProducts[plan];
             const isConfigured = !productId.startsWith('YOUR_');
 
-            if (isConfigured && typeof Paddle !== 'undefined') {
+            if (typeof Paddle !== 'undefined') {
                 // ── LIVE Paddle Checkout ──
+                Paddle.Initialize({ token: PADDLE_CLIENT_TOKEN });
                 Paddle.Checkout.open({
-                    product: productId,
-                    email: clientEmail,
-                    passthrough: JSON.stringify({ plan, name: clientName }),
+                    items: [{ priceId: productId, quantity: 1 }],
+                    customer: { email: clientEmail },
+                    customData: { plan, name: clientName, website: clientWebsite },
+                    settings: { displayMode: 'overlay', theme: 'light', locale: 'en' },
                     successCallback: function(data) {
-                        const code = 'AI-' + data.checkout.id.replace(/[^A-Z0-9]/gi,'').substring(0,12).toUpperCase();
+                        const code = 'AI-' + btoa(clientEmail + plan + Date.now()).replace(/[^A-Z0-9]/gi,'').substring(0,12).toUpperCase();
                         localStorage.setItem('accessCode', code);
                         document.getElementById('payOverlay').remove();
                         window.location.href = '/dashboard?access=' + code + '&plan=' + plan;

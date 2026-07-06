@@ -385,11 +385,11 @@
 
 <script>
     // ── Paddle Config (replace with real IDs after signup at paddle.com) ──
-    const PADDLE_VENDOR = 'YOUR_PADDLE_VENDOR_ID';
+    const PADDLE_CLIENT_TOKEN = 'live_6d6e0e8ad2f98a3484b135ed7b4';
     const PADDLE_PRODUCTS = {
-        starter:      'YOUR_STARTER_PRODUCT_ID',
-        professional: 'YOUR_PRO_PRODUCT_ID',
-        enterprise:   'YOUR_ENTERPRISE_PRODUCT_ID'
+        starter:      'pri_01kwwbkbc20nay4d483fxzqs3z',
+        professional: 'pri_01kwwc0jm95gs7k6sn8svf4cw4',
+        enterprise:   'pri_01kwwc3ct86t4hw0msxe4vj3re'
     };
 
     const PLAN_LABELS  = { starter:'Starter', professional:'Professional', enterprise:'Enterprise' };
@@ -443,15 +443,22 @@
         btn.disabled = true;
         btn.textContent = 'Opening secure payment';
 
-        const productId   = PADDLE_PRODUCTS[selectedPlan];
-        const isConfigured = !productId.startsWith('YOUR_');
+        const priceId = PADDLE_PRODUCTS[selectedPlan];
 
-        if (isConfigured && typeof Paddle !== 'undefined') {
-            // ── Real Paddle checkout ──
+        if (typeof Paddle !== 'undefined') {
+            // ── Initialize Paddle with client token ──
+            Paddle.Initialize({ token: PADDLE_CLIENT_TOKEN });
+
+            // ── Open Paddle Checkout ──
             Paddle.Checkout.open({
-                product:   productId,
-                email:     email,
-                passthrough: JSON.stringify({ plan: selectedPlan, name, website }),
+                items: [{ priceId: priceId, quantity: 1 }],
+                customer: { email: email },
+                customData: { plan: selectedPlan, name: name, website: website },
+                settings: {
+                    displayMode: 'overlay',
+                    theme: 'dark',
+                    locale: 'en'
+                },
                 successCallback: function(data) {
                     const code = generateCode(email, selectedPlan);
                     showSuccess(code, email, selectedPlan, name, website);
@@ -463,7 +470,7 @@
                 }
             });
         } else {
-            // ── Demo mode until Paddle IDs are added ──
+            // ── Fallback demo mode ──
             setTimeout(() => {
                 const code = generateCode(email, selectedPlan);
                 showSuccess(code, email, selectedPlan, name, website);
