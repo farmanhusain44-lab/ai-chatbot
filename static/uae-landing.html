@@ -989,9 +989,85 @@
             document.body.dir = lang === 'ar' ? 'rtl' : 'ltr';
         }
 
-        // Payment modal placeholder
+        // Pricing (AED)
+        const planPrices = { starter: 499, professional: 1499, enterprise: 3499 };
+        const planNames  = { starter: 'Starter', professional: 'Professional', enterprise: 'Enterprise' };
+
         function openPaymentModal(plan) {
-            alert(`Payment modal for ${plan} plan. In production, this would open payment options.`);
+            const price = planPrices[plan];
+            const name  = planNames[plan];
+
+            // Build modal
+            const overlay = document.createElement('div');
+            overlay.id = 'payOverlay';
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+            overlay.innerHTML = `
+              <div style="background:#fff;border-radius:20px;padding:36px;max-width:460px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);font-family:Segoe UI,sans-serif;">
+                <h2 style="margin:0 0 6px;color:#0047AB;">🤖 ${name} Plan</h2>
+                <p style="margin:0 0 20px;color:#555;font-size:1rem;">AED ${price} / month &nbsp;•&nbsp; Cancel anytime</p>
+                <div style="margin-bottom:18px;">
+                  <label style="display:block;font-weight:600;margin-bottom:6px;color:#333;">Full Name</label>
+                  <input id="pmName" type="text" placeholder="Ahmed Al Mansoori" style="width:100%;padding:11px 14px;border:2px solid #ddd;border-radius:8px;font-size:1rem;outline:none;" onfocus="this.style.borderColor='#0047AB'" onblur="this.style.borderColor='#ddd'">
+                </div>
+                <div style="margin-bottom:24px;">
+                  <label style="display:block;font-weight:600;margin-bottom:6px;color:#333;">Email Address</label>
+                  <input id="pmEmail" type="email" placeholder="ahmed@business.ae" style="width:100%;padding:11px 14px;border:2px solid #ddd;border-radius:8px;font-size:1rem;outline:none;" onfocus="this.style.borderColor='#0047AB'" onblur="this.style.borderColor='#ddd'">
+                </div>
+                <p style="font-size:.85rem;color:#888;margin-bottom:14px;text-align:center;">Your access credentials will be sent to this email</p>
+                <button onclick="proceedPayment('${plan}')" style="width:100%;background:linear-gradient(135deg,#0047AB,#FF6B35);color:#fff;border:none;padding:15px;border-radius:10px;font-size:1.1rem;font-weight:700;cursor:pointer;margin-bottom:12px;">
+                  💳 Pay AED ${price} — Card / Apple Pay / Google Pay
+                </button>
+                <button onclick="document.getElementById('payOverlay').remove()" style="width:100%;background:#f5f5f5;color:#555;border:none;padding:11px;border-radius:10px;font-size:.95rem;cursor:pointer;">
+                  Cancel
+                </button>
+                <div style="display:flex;justify-content:center;gap:16px;margin-top:16px;opacity:.6;font-size:.8rem;">
+                  <span>🔒 SSL Secured</span><span>💳 Visa / Mastercard</span><span>🍎 Apple Pay</span><span>📱 Google Pay</span>
+                </div>
+              </div>`;
+            document.body.appendChild(overlay);
+            // Close on backdrop click
+            overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+        }
+
+        function proceedPayment(plan) {
+            const name  = document.getElementById('pmName').value.trim();
+            const email = document.getElementById('pmEmail').value.trim();
+            if (!name) { document.getElementById('pmName').style.borderColor = 'red'; return; }
+            if (!email || !email.includes('@')) { document.getElementById('pmEmail').style.borderColor = 'red'; return; }
+
+            // Store for dashboard
+            localStorage.setItem('clientName',  name);
+            localStorage.setItem('clientEmail', email);
+            localStorage.setItem('clientPlan',  plan);
+
+            // Show processing state
+            const btn = document.querySelector('#payOverlay button');
+            btn.textContent = '⏳ Connecting to Stripe...';
+            btn.disabled = true;
+
+            // Create Stripe checkout session on backend
+            fetch('/stripe-checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ plan, name, email, currency: 'aed' })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.checkout_url) {
+                    window.location.href = data.checkout_url;
+                } else {
+                    // Stripe not yet configured — redirect to dashboard directly for demo
+                    const code = 'AI-' + btoa(email + plan).replace(/[^A-Z0-9]/gi,'').substring(0,12).toUpperCase();
+                    localStorage.setItem('accessCode', code);
+                    window.location.href = '/dashboard?access=' + code + '&plan=' + plan;
+                }
+            })
+            .catch(() => {
+                // Fallback: generate access code and go to dashboard
+                const code = 'AI-' + btoa(email + plan).replace(/[^A-Z0-9]/gi,'').substring(0,12).toUpperCase();
+                localStorage.setItem('accessCode', code);
+                window.location.href = '/dashboard?access=' + code + '&plan=' + plan;
+            });
         }
 
         // Smooth scrolling for navigation links

@@ -836,6 +836,55 @@ def paypal_payment():
         logger.error(f"Error creating PayPal payment: {e}")
         return jsonify({"error": "Failed to create PayPal payment"}), 500
 
+@app.route("/stripe-checkout", methods=["POST"])
+def stripe_checkout():
+    """Create Stripe Checkout session and return URL"""
+    try:
+        data = request.get_json()
+        plan     = data.get('plan', 'starter')
+        name     = data.get('name', '')
+        email    = data.get('email', '')
+        currency = data.get('currency', 'aed')
+
+        # AED pricing (in fils = AED * 100)
+        aed_prices = {'starter': 49900, 'professional': 149900, 'enterprise': 349900}
+        inr_prices = {'starter': 300000, 'professional': 1000000, 'enterprise': 2500000}
+
+        stripe_key = os.environ.get("STRIPE_SECRET_KEY", "")
+
+        if stripe_key:
+            import stripe as stripe_lib
+            stripe_lib.api_key = stripe_key
+            amount   = aed_prices.get(plan, 49900) if currency == 'aed' else inr_prices.get(plan, 300000)
+            cur_code = 'aed' if currency == 'aed' else 'inr'
+            session  = stripe_lib.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[{
+                    'price_data': {
+                        'currency': cur_code,
+                        'unit_amount': amount,
+                        'product_data': {
+                            'name': f'AI Chatbot {plan.title()} Plan',
+                            'description': f'Monthly subscription — {plan.title()} plan'
+                        },
+                    },
+                    'quantity': 1,
+                }],
+                mode='payment',
+                customer_email=email,
+                metadata={'plan': plan, 'name': name, 'email': email},
+                success_url=request.url_root + f'dashboard?access={{CHECKOUT_SESSION_ID}}&plan={plan}&name={name}&email={email}',
+                cancel_url=request.url_root + 'uae',
+            )
+            return jsonify({"success": True, "checkout_url": session.url})
+        else:
+            # Stripe key not set yet — return empty so frontend falls back
+            return jsonify({"success": False, "checkout_url": None})
+
+    except Exception as e:
+        logger.error(f"Stripe checkout error: {e}")
+        return jsonify({"success": False, "checkout_url": None})
+
 @app.route("/stripe-payment", methods=["POST"])
 def stripe_payment():
     """Handle Stripe payment session creation"""
