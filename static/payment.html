@@ -1,587 +1,321 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Get Your AI Chatbot — Plans & Pricing</title>
-    <script src="https://cdn.paddle.com/paddle/paddle.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #0a0a1a;
-            min-height: 100vh;
-            color: #fff;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Checkout — BotifyAI</title>
+<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#070714;color:#e2e8f0;min-height:100vh;display:flex;flex-direction:column}
+a{text-decoration:none;color:inherit}
 
-        /* ── Hero ── */
-        .hero {
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            padding: 60px 20px 40px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        .hero::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(ellipse at 50% 0%, rgba(102,126,234,.35) 0%, transparent 70%);
-        }
-        .hero-content { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; }
+nav{padding:16px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.06)}
+.nav-logo{font-size:1rem;font-weight:800;background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nav-back{color:#475569;font-size:.85rem;display:flex;align-items:center;gap:6px;transition:.2s}
+.nav-back:hover{color:#94a3b8}
 
-        /* ── AI Robot SVG ── */
-        .ai-robot {
-            width: 120px; height: 120px;
-            margin: 0 auto 24px;
-            animation: float 3s ease-in-out infinite;
-        }
-        @keyframes float {
-            0%,100% { transform: translateY(0); }
-            50%      { transform: translateY(-12px); }
-        }
-        .hero h1 { font-size: clamp(1.8rem,4vw,2.8rem); font-weight: 800; margin-bottom: 12px;
-            background: linear-gradient(135deg,#a78bfa,#60a5fa,#34d399);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .hero p { color: #94a3b8; font-size: 1.1rem; }
+.page{flex:1;display:grid;grid-template-columns:1fr 1fr;max-width:1000px;margin:0 auto;width:100%;padding:40px 20px;gap:50px;align-items:start}
 
-        /* ── Plans ── */
-        .plans-section { padding: 50px 20px; max-width: 1100px; margin: 0 auto; }
-        .plans-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 24px;
-            margin-bottom: 50px;
-        }
-        .plan-card {
-            background: rgba(255,255,255,.05);
-            border: 1px solid rgba(255,255,255,.1);
-            border-radius: 20px;
-            padding: 32px 28px;
-            cursor: pointer;
-            transition: all .3s;
-            position: relative;
-            backdrop-filter: blur(10px);
-        }
-        .plan-card:hover { border-color: #a78bfa; transform: translateY(-6px);
-            box-shadow: 0 20px 60px rgba(167,139,250,.2); }
-        .plan-card.selected {
-            border-color: #a78bfa;
-            background: rgba(167,139,250,.12);
-            box-shadow: 0 0 0 2px #a78bfa, 0 20px 60px rgba(167,139,250,.3);
-        }
-        .plan-card.popular::before {
-            content: '🔥 Most Popular';
-            position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
-            background: linear-gradient(135deg,#a78bfa,#60a5fa);
-            color: #fff; padding: 4px 18px; border-radius: 20px; font-size: .78rem; font-weight: 700;
-            white-space: nowrap;
-        }
-        .plan-name { font-size: 1.2rem; font-weight: 700; color: #e2e8f0; margin-bottom: 8px; }
-        .plan-price { font-size: 2.4rem; font-weight: 800; margin: 12px 0;
-            background: linear-gradient(135deg,#a78bfa,#60a5fa);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .plan-price span { font-size: 1rem; font-weight: 400; color: #64748b; -webkit-text-fill-color: #64748b; }
-        .plan-features { list-style: none; margin: 18px 0 24px; }
-        .plan-features li { padding: 6px 0; color: #94a3b8; font-size: .9rem; display: flex; align-items: center; gap: 8px; }
-        .plan-features li::before { content: '✓'; color: #34d399; font-weight: 700; }
-        .select-btn {
-            width: 100%; padding: 12px; border-radius: 10px; border: none; cursor: pointer;
-            font-size: 1rem; font-weight: 600; transition: all .3s;
-            background: rgba(167,139,250,.2); color: #a78bfa; border: 1px solid #a78bfa;
-        }
-        .plan-card.selected .select-btn {
-            background: linear-gradient(135deg,#a78bfa,#60a5fa); color: #fff; border-color: transparent;
-        }
+/* LEFT — summary */
+.summary h2{font-size:1.4rem;font-weight:800;margin-bottom:6px}
+.summary .sub{color:#475569;font-size:.85rem;margin-bottom:30px}
+.plan-select{display:flex;flex-direction:column;gap:10px;margin-bottom:30px}
+.ps-item{border:2px solid rgba(255,255,255,.07);border-radius:14px;padding:16px 18px;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:space-between}
+.ps-item:hover{border-color:rgba(167,139,250,.3)}
+.ps-item.active{border-color:#a78bfa;background:rgba(167,139,250,.07)}
+.ps-item .ps-left h4{font-size:.9rem;font-weight:700;color:#e2e8f0;margin-bottom:3px}
+.ps-item .ps-left p{font-size:.75rem;color:#475569}
+.ps-item .ps-price{font-size:1rem;font-weight:800;color:#a78bfa}
+.ps-radio{width:18px;height:18px;border-radius:50%;border:2px solid #334155;display:flex;align-items:center;justify-content:center;margin-right:14px;flex-shrink:0;transition:.2s}
+.ps-item.active .ps-radio{border-color:#a78bfa;background:#a78bfa}
+.ps-item.active .ps-radio::after{content:'';width:7px;height:7px;border-radius:50%;background:#fff}
+.ps-row{display:flex;align-items:center}
 
-        /* ── Checkout Form ── */
-        .checkout-box {
-            background: rgba(255,255,255,.05);
-            border: 1px solid rgba(255,255,255,.12);
-            border-radius: 24px;
-            padding: 40px;
-            max-width: 600px;
-            margin: 0 auto;
-            backdrop-filter: blur(10px);
-        }
-        .checkout-box h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 24px; color: #e2e8f0; text-align: center; }
-        .selected-plan-badge {
-            background: linear-gradient(135deg,#a78bfa22,#60a5fa22);
-            border: 1px solid #a78bfa55;
-            border-radius: 12px;
-            padding: 14px 20px;
-            margin-bottom: 24px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .selected-plan-badge .badge-name { color: #e2e8f0; font-weight: 600; }
-        .selected-plan-badge .badge-price { color: #a78bfa; font-weight: 800; font-size: 1.2rem; }
-        .field { margin-bottom: 18px; }
-        .field label { display: block; color: #94a3b8; font-size: .85rem; font-weight: 600;
-            margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px; }
-        .field input {
-            width: 100%; padding: 13px 16px;
-            background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.15);
-            border-radius: 10px; color: #fff; font-size: 1rem; outline: none; transition: border .2s;
-        }
-        .field input::placeholder { color: #475569; }
-        .field input:focus { border-color: #a78bfa; background: rgba(167,139,250,.08); }
-        .field input.error { border-color: #f87171; }
+.divider{border:none;border-top:1px solid rgba(255,255,255,.06);margin:24px 0}
 
-        .divider { display: flex; align-items: center; gap: 12px; margin: 24px 0; color: #475569; font-size: .85rem; }
-        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,.1); }
+.what-you-get h3{font-size:.82rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px}
+.wyg-item{display:flex;align-items:center;gap:10px;font-size:.85rem;color:#94a3b8;margin-bottom:10px}
+.wyg-item .ck{color:#34d399;font-weight:700}
 
-        .pay-btn {
-            width: 100%; padding: 16px; border: none; border-radius: 12px; cursor: pointer;
-            font-size: 1.05rem; font-weight: 700; transition: all .3s;
-            background: linear-gradient(135deg,#a78bfa,#60a5fa);
-            color: #fff; letter-spacing: .3px;
-            box-shadow: 0 8px 30px rgba(167,139,250,.4);
-        }
-        .pay-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(167,139,250,.5); }
-        .pay-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-        .pay-btn.loading::after {
-            content: ''; display: inline-block; width: 14px; height: 14px;
-            border: 2px solid #fff; border-top-color: transparent; border-radius: 50%;
-            animation: spin .7s linear infinite; margin-left: 10px; vertical-align: middle;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
+.trust-row{display:flex;gap:16px;flex-wrap:wrap;margin-top:24px}
+.trust-item{display:flex;align-items:center;gap:6px;font-size:.75rem;color:#334155}
+.trust-item span{font-size:.9rem}
 
-        .trust-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .trust-badge {
-            background: rgba(255,255,255,.04);
-            border: 1px solid rgba(255,255,255,.08);
-            border-radius: 10px;
-            padding: 10px 8px;
-            text-align: center;
-            font-size: .78rem;
-            color: #64748b;
-            display: flex; flex-direction: column; align-items: center; gap: 5px;
-        }
-        .trust-badge .icon { font-size: 1.3rem; display:flex; align-items:center; justify-content:center; min-height:28px; }
-        .trust-badge .name { color: #94a3b8; font-weight: 500; font-size: .78rem; }
-        .trust-badge .sub  { color: #475569; font-size: .68rem; }
-        .divider-pay {
-            display: flex; align-items: center; gap: 10px; margin: 22px 0 18px;
-        }
-        .divider-pay::before, .divider-pay::after {
-            content:''; flex:1; height:1px; background:rgba(255,255,255,.07);
-        }
-        .divider-pay span {
-            display: flex; align-items: center; gap: 7px;
-            background: rgba(167,139,250,.08); border: 1px solid rgba(167,139,250,.2);
-            border-radius: 20px; padding: 5px 14px;
-            color: #a78bfa; font-size: .78rem; font-weight: 600;
-        }
+/* RIGHT — form */
+.form-box{background:#0f0f23;border:1px solid rgba(255,255,255,.07);border-radius:20px;padding:32px}
+.form-box h3{font-size:1.1rem;font-weight:700;margin-bottom:24px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:.78rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+.field input,.field select{width:100%;padding:13px 16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#e2e8f0;font-size:.92rem;outline:none;transition:.2s;font-family:'Inter',sans-serif}
+.field input:focus,.field select:focus{border-color:#a78bfa;background:rgba(167,139,250,.05)}
+.field input.err{border-color:#f87171}
+.field select option{background:#0f0f23}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 
-        /* ── How it works ── */
-        .how-section { padding: 60px 20px; max-width: 900px; margin: 0 auto; text-align: center; }
-        .how-section h2 { font-size: 1.8rem; font-weight: 700; margin-bottom: 40px;
-            background: linear-gradient(135deg,#a78bfa,#60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .steps { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 20px; }
-        .step {
-            background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
-            border-radius: 16px; padding: 28px 20px; text-align: center;
-        }
-        .step-num {
-            width: 48px; height: 48px; border-radius: 50%;
-            background: linear-gradient(135deg,#a78bfa,#60a5fa);
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 800; font-size: 1.1rem; margin: 0 auto 14px;
-        }
-        .step h3 { font-size: 1rem; font-weight: 600; margin-bottom: 8px; color: #e2e8f0; }
-        .step p { font-size: .85rem; color: #64748b; line-height: 1.5; }
+.pay-btn{width:100%;padding:15px;border-radius:12px;border:none;background:linear-gradient(135deg,#a78bfa,#60a5fa);color:#fff;font-weight:800;font-size:1rem;cursor:pointer;transition:.2s;margin-top:8px;position:relative}
+.pay-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 12px 32px rgba(167,139,250,.3)}
+.pay-btn:disabled{opacity:.6;cursor:not-allowed}
+.pay-btn.loading::after{content:'';position:absolute;right:18px;top:50%;transform:translateY(-50%);width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:translateY(-50%) rotate(360deg)}}
 
-        /* ── Success overlay ── */
-        #successOverlay {
-            display: none; position: fixed; inset: 0; background: rgba(10,10,26,.95);
-            z-index: 9999; align-items: center; justify-content: center;
-        }
-        #successOverlay.show { display: flex; }
-        .success-card {
-            background: linear-gradient(135deg,#0f0c29,#302b63);
-            border: 1px solid #a78bfa55; border-radius: 24px;
-            padding: 50px 40px; max-width: 500px; width: 90%; text-align: center;
-        }
-        .success-card .tick { font-size: 4rem; margin-bottom: 16px; animation: pop .4s ease; }
-        @keyframes pop { 0% { transform: scale(0); } 80% { transform: scale(1.2); } 100% { transform: scale(1); } }
-        .success-card h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 12px; color: #34d399; }
-        .success-card p { color: #94a3b8; margin-bottom: 24px; }
-        .access-code-box {
-            background: rgba(167,139,250,.1); border: 1px solid #a78bfa;
-            border-radius: 12px; padding: 16px; margin-bottom: 24px;
-        }
-        .access-code-box .label { font-size: .75rem; color: #a78bfa; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-        .access-code-box .code { font-size: 1.6rem; font-weight: 800; color: #fff; letter-spacing: 3px; }
-        .go-btn {
-            display: inline-block; padding: 14px 40px;
-            background: linear-gradient(135deg,#a78bfa,#60a5fa);
-            color: #fff; font-weight: 700; font-size: 1rem; border-radius: 12px;
-            text-decoration: none; border: none; cursor: pointer;
-        }
+.secure-note{text-align:center;color:#334155;font-size:.75rem;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:6px}
 
-        @media(max-width:600px) {
-            .checkout-box { padding: 24px 18px; }
-            .plans-grid { grid-template-columns: 1fr; }
-        }
-    </style>
+/* SUCCESS */
+#successScreen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;text-align:center;padding:40px 20px}
+.success-icon{font-size:4rem;margin-bottom:20px;animation:pop .4s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
+#successScreen h2{font-size:1.8rem;font-weight:800;margin-bottom:10px;background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+#successScreen p{color:#475569;margin-bottom:28px;line-height:1.6}
+.access-box{background:#0f0f23;border:1px solid rgba(167,139,250,.3);border-radius:14px;padding:20px 28px;margin-bottom:24px;text-align:center}
+.access-box .label{font-size:.75rem;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.access-box .code{font-family:monospace;font-size:1.6rem;color:#a78bfa;letter-spacing:3px;font-weight:700}
+.success-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.s-btn{padding:13px 28px;border-radius:10px;font-weight:700;font-size:.92rem;border:none;cursor:pointer}
+.s-btn.primary{background:linear-gradient(135deg,#a78bfa,#60a5fa);color:#fff}
+.s-btn.secondary{background:rgba(255,255,255,.06);color:#94a3b8;border:1px solid rgba(255,255,255,.1)}
+
+@media(max-width:700px){
+    .page{grid-template-columns:1fr;gap:28px}
+    .field-row{grid-template-columns:1fr}
+}
+</style>
 </head>
 <body>
 
-<!-- Hero -->
-<div class="hero">
-    <div class="hero-content">
-        <!-- Modern AI Robot SVG -->
-        <div class="ai-robot">
-            <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stop-color="#a78bfa"/>
-                        <stop offset="100%" stop-color="#60a5fa"/>
-                    </linearGradient>
-                    <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stop-color="#34d399"/>
-                        <stop offset="100%" stop-color="#60a5fa"/>
-                    </linearGradient>
-                </defs>
-                <!-- Body -->
-                <rect x="20" y="45" width="80" height="60" rx="16" fill="url(#g1)" opacity=".9"/>
-                <!-- Head -->
-                <rect x="28" y="12" width="64" height="46" rx="14" fill="url(#g1)"/>
-                <!-- Antenna -->
-                <rect x="57" y="2" width="6" height="14" rx="3" fill="#a78bfa"/>
-                <circle cx="60" cy="2" r="5" fill="#60a5fa"/>
-                <!-- Eyes -->
-                <circle cx="45" cy="33" r="8" fill="#0f0c29"/>
-                <circle cx="75" cy="33" r="8" fill="#0f0c29"/>
-                <circle cx="47" cy="31" r="3" fill="url(#g2)"/>
-                <circle cx="77" cy="31" r="3" fill="url(#g2)"/>
-                <!-- Mouth / smile -->
-                <path d="M46 46 Q60 54 74 46" stroke="#fff" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-                <!-- Chest screen -->
-                <rect x="34" y="60" width="52" height="28" rx="8" fill="rgba(0,0,0,.3)"/>
-                <rect x="39" y="65" width="18" height="5" rx="2.5" fill="#34d399" opacity=".8"/>
-                <rect x="39" y="74" width="30" height="4" rx="2" fill="#60a5fa" opacity=".6"/>
-                <rect x="39" y="82" width="22" height="4" rx="2" fill="#a78bfa" opacity=".5"/>
-                <!-- Arms -->
-                <rect x="3" y="50" width="18" height="38" rx="9" fill="url(#g1)" opacity=".8"/>
-                <rect x="99" y="50" width="18" height="38" rx="9" fill="url(#g1)" opacity=".8"/>
-                <!-- Legs -->
-                <rect x="32" y="102" width="22" height="16" rx="8" fill="url(#g1)" opacity=".7"/>
-                <rect x="66" y="102" width="22" height="16" rx="8" fill="url(#g1)" opacity=".7"/>
-            </svg>
-        </div>
-        <h1>Get Your AI Chatbot</h1>
-        <p>Pay once — your AI bot goes live on your website instantly</p>
-    </div>
-</div>
+<nav>
+    <div class="nav-logo">🤖 BotifyAI</div>
+    <a class="nav-back" href="/uae-landing">← Back</a>
+</nav>
 
-<!-- Plans -->
-<div class="plans-section">
-    <div class="plans-grid">
-        <div class="plan-card" onclick="selectPlan('starter',this)">
-            <div class="plan-name">Starter</div>
-            <div class="plan-price">AED 499 <span>/ month</span></div>
-            <ul class="plan-features">
-                <li>500 AI conversations / month</li>
-                <li>1 chatbot on your website</li>
-                <li>Arabic + English support</li>
-                <li>Email support</li>
-                <li>We deploy it for you</li>
-            </ul>
-            <button class="select-btn">Select Plan</button>
+<!-- Checkout -->
+<div class="page" id="checkoutPage">
+
+    <!-- LEFT -->
+    <div class="summary">
+        <h2>Choose Your Plan</h2>
+        <div class="sub">All plans include setup support. Cancel anytime.</div>
+
+        <div class="plan-select">
+            <div class="ps-item active" onclick="selectPlan(this,'starter','pri_01jz5nf03n8g13ntmyvgxm35p1','AED 499')">
+                <div class="ps-row">
+                    <div class="ps-radio"></div>
+                    <div class="ps-left">
+                        <h4>Starter</h4>
+                        <p>500 conversations/mo · Basic dashboard</p>
+                    </div>
+                </div>
+                <div class="ps-price">AED 499<span style="font-size:.7rem;font-weight:400;color:#475569">/mo</span></div>
+            </div>
+            <div class="ps-item" onclick="selectPlan(this,'professional','pri_01jz5nf4xk9pstntrsba1p3fqk','AED 1,499')">
+                <div class="ps-row">
+                    <div class="ps-radio"></div>
+                    <div class="ps-left">
+                        <h4>Professional ⭐</h4>
+                        <p>2,000 conversations/mo · WhatsApp + Custom bot</p>
+                    </div>
+                </div>
+                <div class="ps-price">AED 1,499<span style="font-size:.7rem;font-weight:400;color:#475569">/mo</span></div>
+            </div>
+            <div class="ps-item" onclick="selectPlan(this,'enterprise','pri_01jz5nf9r5dbcswsb1jzrxkyqb','AED 3,499')">
+                <div class="ps-row">
+                    <div class="ps-radio"></div>
+                    <div class="ps-left">
+                        <h4>Enterprise</h4>
+                        <p>Unlimited · Custom AI training · Account manager</p>
+                    </div>
+                </div>
+                <div class="ps-price">AED 3,499<span style="font-size:.7rem;font-weight:400;color:#475569">/mo</span></div>
+            </div>
         </div>
 
-        <div class="plan-card popular" onclick="selectPlan('professional',this)">
-            <div class="plan-name">Professional</div>
-            <div class="plan-price">AED 1,499 <span>/ month</span></div>
-            <ul class="plan-features">
-                <li>Unlimited conversations</li>
-                <li>3 chatbots on your websites</li>
-                <li>Arabic, English, Hindi support</li>
-                <li>WhatsApp integration</li>
-                <li>Analytics dashboard</li>
-                <li>Priority support</li>
-                <li>We deploy it for you</li>
-            </ul>
-            <button class="select-btn">Select Plan</button>
+        <hr class="divider">
+
+        <div class="what-you-get">
+            <h3>What you get immediately</h3>
+            <div class="wyg-item"><span class="ck">✓</span> AI chatbot live on your website</div>
+            <div class="wyg-item"><span class="ck">✓</span> Arabic & English replies</div>
+            <div class="wyg-item"><span class="ck">✓</span> Access code + dashboard</div>
+            <div class="wyg-item"><span class="ck">✓</span> Step-by-step setup guide</div>
+            <div class="wyg-item"><span class="ck">✓</span> Free installation support</div>
+            <div class="wyg-item"><span class="ck">✓</span> 7-day money-back guarantee</div>
         </div>
 
-        <div class="plan-card" onclick="selectPlan('enterprise',this)">
-            <div class="plan-name">Enterprise</div>
-            <div class="plan-price">AED 3,499 <span>/ month</span></div>
-            <ul class="plan-features">
-                <li>Everything in Professional</li>
-                <li>Unlimited chatbots</li>
-                <li>Custom AI training</li>
-                <li>API access</li>
-                <li>Dedicated account manager</li>
-                <li>White-label option</li>
-                <li>We deploy it for you</li>
-            </ul>
-            <button class="select-btn">Select Plan</button>
+        <div class="trust-row">
+            <div class="trust-item"><span>🔒</span> SSL Secured</div>
+            <div class="trust-item"><span>💳</span> Visa / Mastercard</div>
+            <div class="trust-item"><span>🍎</span> Apple Pay</div>
+            <div class="trust-item"><span>↩️</span> 7-Day Refund</div>
         </div>
     </div>
 
-    <!-- Checkout Form -->
-    <div class="checkout-box" id="checkoutBox">
-        <h2>Complete Your Order</h2>
+    <!-- RIGHT -->
+    <div class="form-box">
+        <h3>Your Details</h3>
 
-        <div class="selected-plan-badge" id="planBadge" style="display:none">
-            <span class="badge-name" id="badgeName">—</span>
-            <span class="badge-price" id="badgePrice">—</span>
-        </div>
-
-        <div class="field">
-            <label>Full Name</label>
-            <input type="text" id="fName" placeholder="Ahmed Al Mansoori">
-        </div>
-        <div class="field">
-            <label>Email Address</label>
-            <input type="email" id="fEmail" placeholder="ahmed@mybusiness.ae">
+        <div class="field-row">
+            <div class="field">
+                <label>Full Name</label>
+                <input type="text" id="fName" placeholder="Ahmed Al Mansoori">
+            </div>
+            <div class="field">
+                <label>Email</label>
+                <input type="email" id="fEmail" placeholder="ahmed@business.ae">
+            </div>
         </div>
         <div class="field">
-            <label>Your Website URL <span style="color:#64748b;font-weight:400;text-transform:none;">(we will deploy the AI bot here)</span></label>
+            <label>Website URL</label>
             <input type="url" id="fWebsite" placeholder="https://mybusiness.ae">
         </div>
-
-        <div class="divider-pay">
-            <span>🔒 256-bit SSL · Powered by Paddle</span>
+        <div class="field">
+            <label>Website Platform</label>
+            <select id="fPlatform">
+                <option value="" disabled selected>Select your platform</option>
+                <option value="wordpress">WordPress</option>
+                <option value="shopify">Shopify</option>
+                <option value="wix">Wix</option>
+                <option value="squarespace">Squarespace</option>
+                <option value="webflow">Webflow</option>
+                <option value="custom">Custom HTML / Developer built</option>
+                <option value="godaddy">GoDaddy</option>
+                <option value="other">Other / I don't know</option>
+            </select>
         </div>
 
         <button class="pay-btn" id="payBtn" onclick="startPayment()">
-            Select a plan above to continue
+            Pay AED 499 — Secure Checkout
         </button>
-
-        <div class="trust-row">
-            <div class="trust-badge">
-                <div class="icon">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/120px-Visa_Inc._logo.svg.png" style="height:18px;margin-right:4px;vertical-align:middle;">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/60px-Mastercard-logo.svg.png" style="height:22px;vertical-align:middle;">
-                </div>
-                <div class="name">Visa / Mastercard</div>
-                <div class="sub">All cards accepted</div>
-            </div>
-            <div class="trust-badge">
-                <div class="icon">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/Apple_Pay_logo.svg/120px-Apple_Pay_logo.svg.png" style="height:26px;filter:invert(1);">
-                </div>
-                <div class="name">Apple Pay</div>
-                <div class="sub">One-touch checkout</div>
-            </div>
-            <div class="trust-badge">
-                <div class="icon">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Google_Pay_Logo.svg/120px-Google_Pay_Logo.svg.png" style="height:26px;">
-                </div>
-                <div class="name">Google Pay</div>
-                <div class="sub">Instant payment</div>
-            </div>
-            <div class="trust-badge">
-                <div class="icon">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Lock-green.svg/48px-Lock-green.svg.png" style="height:26px;">
-                </div>
-                <div class="name">SSL Encrypted</div>
-                <div class="sub">Bank-level security</div>
-            </div>
-            <div class="trust-badge">
-                <div class="icon">🌍</div>
-                <div class="name">195 Countries</div>
-                <div class="sub">UAE, Saudi, India...</div>
-            </div>
-            <div class="trust-badge">
-                <div class="icon">↩️</div>
-                <div class="name">7-Day Refund</div>
-                <div class="sub">Money-back guarantee</div>
-            </div>
-        </div>
+        <div class="secure-note">🔒 256-bit SSL · Powered by Paddle · Cancel anytime</div>
     </div>
 </div>
 
-<!-- How it works -->
-<div class="how-section">
-    <h2>How It Works</h2>
-    <div class="steps">
-        <div class="step">
-            <div class="step-num">1</div>
-            <h3>Choose Plan & Pay</h3>
-            <p>Select your plan, fill details, pay with card or Apple Pay in 30 seconds.</p>
-        </div>
-        <div class="step">
-            <div class="step-num">2</div>
-            <h3>Submit Your Website</h3>
-            <p>Just enter your website URL. No technical skills needed from your side.</p>
-        </div>
-        <div class="step">
-            <div class="step-num">3</div>
-            <h3>We Deploy Your AI Bot</h3>
-            <p>Our team deploys your AI chatbot on your website within 24 hours.</p>
-        </div>
-        <div class="step">
-            <div class="step-num">4</div>
-            <h3>Your Bot Goes Live</h3>
-            <p>AI chatbot starts handling your customers 24/7 automatically.</p>
-        </div>
+<!-- Success Screen -->
+<div id="successScreen">
+    <div class="success-icon">🎉</div>
+    <h2>Payment Successful!</h2>
+    <p>Your AI bot is ready. Check your email for setup instructions.<br>Or go to your dashboard now.</p>
+    <div class="access-box">
+        <div class="label">Your Access Code</div>
+        <div class="code" id="accessCodeDisplay">—</div>
     </div>
-</div>
-
-<!-- Success Overlay -->
-<div id="successOverlay">
-    <div class="success-card">
-        <div class="tick">🎉</div>
-        <h2>Payment Successful!</h2>
-        <p>Your AI chatbot order is confirmed. We will deploy your bot within <strong>24 hours</strong>.</p>
-        <div class="access-code-box">
-            <div class="label">Your Access Code</div>
-            <div class="code" id="displayCode">AI-XXXXXXXX</div>
-        </div>
-        <p style="font-size:.85rem;color:#64748b;margin-bottom:20px;">We will email you at <span id="displayEmail" style="color:#a78bfa;"></span> once your bot is live.</p>
-        <button class="go-btn" onclick="goToDashboard()">Go to Dashboard →</button>
+    <div class="success-btns">
+        <button class="s-btn primary" onclick="gotoDashboard()">Go to Dashboard →</button>
+        <button class="s-btn secondary" onclick="window.location.href='/deploy-guide'">Setup Guide</button>
     </div>
 </div>
 
 <script>
-    // ── Paddle Config (replace with real IDs after signup at paddle.com) ──
-    const PADDLE_CLIENT_TOKEN = 'live_6d6e0e8ad2f98a3484b135ed7b4';
-    const PADDLE_PRODUCTS = {
-        starter:      'pri_01kwwbkbc20nay4d483fxzqs3z',
-        professional: 'pri_01kwwc0jm95gs7k6sn8svf4cw4',
-        enterprise:   'pri_01kwwc3ct86t4hw0msxe4vj3re'
+const PADDLE_TOKEN = 'live_6d6e0e8ad2f98a3484b135ed7b4';
+let selectedPlan   = 'starter';
+let selectedPriceId = 'pri_01jz5nf03n8g13ntmyvgxm35p1';
+let selectedPrice  = 'AED 499';
+
+// Read plan from URL ?plan=
+const urlPlan = new URLSearchParams(window.location.search).get('plan');
+if (urlPlan) {
+    const map = {
+        starter:      {el:0, pid:'pri_01jz5nf03n8g13ntmyvgxm35p1', price:'AED 499'},
+        professional: {el:1, pid:'pri_01jz5nf4xk9pstntrsba1p3fqk', price:'AED 1,499'},
+        enterprise:   {el:2, pid:'pri_01jz5nf9r5dbcswsb1jzrxkyqb', price:'AED 3,499'}
     };
-
-    const PLAN_LABELS  = { starter:'Starter', professional:'Professional', enterprise:'Enterprise' };
-    const PLAN_PRICES  = { starter:'AED 499/mo', professional:'AED 1,499/mo', enterprise:'AED 3,499/mo' };
-
-    let selectedPlan = null;
-
-    function selectPlan(plan, el) {
-        selectedPlan = plan;
-        document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
-        el.classList.add('selected');
-
-        document.getElementById('planBadge').style.display  = 'flex';
-        document.getElementById('badgeName').textContent    = PLAN_LABELS[plan] + ' Plan';
-        document.getElementById('badgePrice').textContent   = PLAN_PRICES[plan];
-
-        const btn = document.getElementById('payBtn');
-        btn.textContent = '💳 Pay ' + PLAN_PRICES[plan] + ' — Card / Apple Pay / Google Pay';
-        btn.disabled = false;
-
-        document.getElementById('checkoutBox').scrollIntoView({ behavior:'smooth', block:'center' });
+    const m = map[urlPlan];
+    if (m) {
+        const items = document.querySelectorAll('.ps-item');
+        items.forEach(i => i.classList.remove('active'));
+        items[m.el].classList.add('active');
+        selectedPlan    = urlPlan;
+        selectedPriceId = m.pid;
+        selectedPrice   = m.price;
+        updateBtn();
     }
+}
 
-    function validate() {
-        let ok = true;
-        const name    = document.getElementById('fName');
-        const email   = document.getElementById('fEmail');
-        const website = document.getElementById('fWebsite');
-        [name, email, website].forEach(f => f.classList.remove('error'));
-        if (!name.value.trim())                           { name.classList.add('error');    ok = false; }
-        if (!email.value.includes('@'))                   { email.classList.add('error');   ok = false; }
-        if (!website.value.trim())                        { website.classList.add('error'); ok = false; }
-        return ok;
-    }
+function selectPlan(el, plan, priceId, price) {
+    document.querySelectorAll('.ps-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    selectedPlan    = plan;
+    selectedPriceId = priceId;
+    selectedPrice   = price;
+    updateBtn();
+}
 
-    function startPayment() {
-        if (!selectedPlan) { alert('Please select a plan first.'); return; }
-        if (!validate())   { return; }
+function updateBtn() {
+    document.getElementById('payBtn').textContent = `Pay ${selectedPrice} — Secure Checkout`;
+}
 
-        const name     = document.getElementById('fName').value.trim();
-        const email    = document.getElementById('fEmail').value.trim();
-        const website  = document.getElementById('fWebsite').value.trim();
-        const platform = document.getElementById('fPlatform').value || 'unknown';
+function validate() {
+    let ok = true;
+    const name  = document.getElementById('fName');
+    const email = document.getElementById('fEmail');
+    const web   = document.getElementById('fWebsite');
+    [name, email, web].forEach(f => f.classList.remove('err'));
+    if (!name.value.trim())        { name.classList.add('err');  ok = false; }
+    if (!email.value.includes('@')){ email.classList.add('err'); ok = false; }
+    if (!web.value.trim())         { web.classList.add('err');   ok = false; }
+    return ok;
+}
 
-        localStorage.setItem('clientName',     name);
-        localStorage.setItem('clientEmail',    email);
-        localStorage.setItem('clientWebsite',  website);
-        localStorage.setItem('clientPlatform', platform);
-        localStorage.setItem('clientPlan',     selectedPlan);
+function startPayment() {
+    if (!validate()) return;
+    const name     = document.getElementById('fName').value.trim();
+    const email    = document.getElementById('fEmail').value.trim();
+    const website  = document.getElementById('fWebsite').value.trim();
+    const platform = document.getElementById('fPlatform').value || 'unknown';
 
-        const btn = document.getElementById('payBtn');
-        btn.classList.add('loading');
-        btn.disabled = true;
-        btn.textContent = 'Opening secure payment';
+    localStorage.setItem('clientName',     name);
+    localStorage.setItem('clientEmail',    email);
+    localStorage.setItem('clientWebsite',  website);
+    localStorage.setItem('clientPlatform', platform);
+    localStorage.setItem('clientPlan',     selectedPlan);
 
-        const priceId = PADDLE_PRODUCTS[selectedPlan];
+    const btn = document.getElementById('payBtn');
+    btn.disabled = true;
+    btn.classList.add('loading');
+    btn.textContent = 'Opening secure payment...';
 
-        if (typeof Paddle !== 'undefined') {
-            // ── Initialize Paddle with client token ──
-            Paddle.Initialize({ token: PADDLE_CLIENT_TOKEN });
-
-            // ── Open Paddle Checkout ──
-            Paddle.Checkout.open({
-                items: [{ priceId: priceId, quantity: 1 }],
-                customer: { email: email },
-                customData: { plan: selectedPlan, name: name, website: website, platform: platform },
-                settings: {
-                    displayMode: 'overlay',
-                    theme: 'dark',
-                    locale: 'en'
-                },
-                successCallback: function(data) {
-                    const code = generateCode(email, selectedPlan);
-                    showSuccess(code, email, selectedPlan, name, website);
-                },
-                closeCallback: function() {
-                    btn.classList.remove('loading');
-                    btn.disabled = false;
-                    btn.textContent = '💳 Pay ' + PLAN_PRICES[selectedPlan] + ' — Card / Apple Pay / Google Pay';
-                }
-            });
-        } else {
-            // ── Fallback demo mode ──
-            setTimeout(() => {
-                const code = generateCode(email, selectedPlan);
-                showSuccess(code, email, selectedPlan, name, website);
-            }, 1800);
+    Paddle.Initialize({ token: PADDLE_TOKEN });
+    Paddle.Checkout.open({
+        items: [{ priceId: selectedPriceId, quantity: 1 }],
+        customer: { email },
+        customData: { plan: selectedPlan, name, website, platform },
+        settings: { displayMode:'overlay', theme:'dark', locale:'en' },
+        successCallback(data) {
+            const code = genCode(email, selectedPlan);
+            showSuccess(code, email, selectedPlan, name, website, platform);
+        },
+        closeCallback() {
+            btn.disabled = false;
+            btn.classList.remove('loading');
+            updateBtn();
         }
-    }
-
-    function generateCode(email, plan) {
-        const raw = btoa(email + plan + Date.now()).replace(/[^A-Z0-9]/gi,'');
-        return 'AI-' + raw.substring(0,10).toUpperCase();
-    }
-
-    function showSuccess(code, email, plan, name, website) {
-        localStorage.setItem('accessCode', code);
-
-        // Save to backend
-        fetch('/payment-success', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ plan, name, email, website,
-                payment_id: 'PAY_' + Date.now(),
-                order_id: 'ORD_' + Date.now(),
-                access_code: code })
-        }).catch(() => {});
-
-        document.getElementById('displayCode').textContent  = code;
-        document.getElementById('displayEmail').textContent = email;
-        document.getElementById('successOverlay').classList.add('show');
-    }
-
-    function goToDashboard() {
-        const code = localStorage.getItem('accessCode') || '';
-        const plan = localStorage.getItem('clientPlan') || '';
-        window.location.href = '/dashboard?access=' + code + '&plan=' + plan;
-    }
-
-    // Pre-select plan from URL ?plan=professional
-    window.addEventListener('DOMContentLoaded', () => {
-        const p = new URLSearchParams(location.search).get('plan');
-        if (p) {
-            const el = document.querySelector('.plan-card:nth-child(' +
-                ({starter:1,professional:2,enterprise:3}[p]||1) + ')');
-            if (el) selectPlan(p, el);
-        }
-        // disable pay button until plan selected
-        document.getElementById('payBtn').disabled = true;
     });
+}
+
+function genCode(email, plan) {
+    const raw = email + plan + Date.now();
+    let h = 0;
+    for (let i = 0; i < raw.length; i++) { h = ((h << 5) - h) + raw.charCodeAt(i); h |= 0; }
+    return 'AI-' + Math.abs(h).toString(16).toUpperCase().padStart(8,'0').slice(0,8);
+}
+
+function showSuccess(code, email, plan, name, website, platform) {
+    fetch('/payment-success', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ plan, email, name, website, platform, access_code: code, payment_id: 'paddle_'+Date.now() })
+    }).catch(() => {});
+    localStorage.setItem('accessCode', code);
+    localStorage.setItem('clientPlan', plan);
+    document.getElementById('checkoutPage').style.display = 'none';
+    document.getElementById('accessCodeDisplay').textContent = code;
+    document.getElementById('successScreen').style.display  = 'flex';
+}
+
+function gotoDashboard() {
+    const code = localStorage.getItem('accessCode');
+    const plan = localStorage.getItem('clientPlan');
+    window.location.href = `/dashboard?access=${code}&plan=${plan}`;
+}
 </script>
 </body>
 </html>
