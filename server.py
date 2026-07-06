@@ -445,6 +445,18 @@ def payment():
 def dashboard():
     return app.send_static_file("dashboard.html")
 
+@app.route("/terms")
+def terms():
+    return app.send_static_file("terms.html")
+
+@app.route("/privacy")
+def privacy():
+    return app.send_static_file("privacy.html")
+
+@app.route("/refund")
+def refund():
+    return app.send_static_file("refund.html")
+
 @app.route("/save-lead", methods=["POST"])
 def save_lead():
     try:
