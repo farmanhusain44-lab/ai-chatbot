@@ -440,6 +440,10 @@ def boss_demo():
 def free_chatbot():
     return app.send_static_file("free-chatbot.html")
 
+@app.route("/uae")
+def uae_landing():
+    return app.send_static_file("uae-landing.html")
+
 @app.route("/payment")
 def payment():
     return app.send_static_file("payment.html")
