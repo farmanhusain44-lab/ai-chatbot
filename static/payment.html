@@ -148,10 +148,36 @@
         @keyframes spin { to { transform: rotate(360deg); } }
 
         .trust-row {
-            display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;
-            margin-top: 18px; color: #64748b; font-size: .8rem;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
         }
-        .trust-row span { display: flex; align-items: center; gap: 5px; }
+        .trust-badge {
+            background: rgba(255,255,255,.04);
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 10px;
+            padding: 10px 8px;
+            text-align: center;
+            font-size: .78rem;
+            color: #64748b;
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+        }
+        .trust-badge .icon { font-size: 1.3rem; }
+        .trust-badge .name { color: #94a3b8; font-weight: 500; font-size: .78rem; }
+        .trust-badge .sub  { color: #475569; font-size: .68rem; }
+        .divider-pay {
+            display: flex; align-items: center; gap: 10px; margin: 22px 0 18px;
+        }
+        .divider-pay::before, .divider-pay::after {
+            content:''; flex:1; height:1px; background:rgba(255,255,255,.07);
+        }
+        .divider-pay span {
+            display: flex; align-items: center; gap: 7px;
+            background: rgba(167,139,250,.08); border: 1px solid rgba(167,139,250,.2);
+            border-radius: 20px; padding: 5px 14px;
+            color: #a78bfa; font-size: .78rem; font-weight: 600;
+        }
 
         /* ── How it works ── */
         .how-section { padding: 60px 20px; max-width: 900px; margin: 0 auto; text-align: center; }
@@ -325,18 +351,45 @@
             <input type="url" id="fWebsite" placeholder="https://mybusiness.ae">
         </div>
 
-        <div class="divider">Secure Payment via Paddle</div>
+        <div class="divider-pay">
+            <span>🔒 256-bit SSL · Powered by Paddle</span>
+        </div>
 
         <button class="pay-btn" id="payBtn" onclick="startPayment()">
             Select a plan above to continue
         </button>
 
         <div class="trust-row">
-            <span>🔒 SSL Encrypted</span>
-            <span>💳 Visa / Mastercard</span>
-            <span>🍎 Apple Pay</span>
-            <span>📱 Google Pay</span>
-            <span>🌍 195 countries</span>
+            <div class="trust-badge">
+                <div class="icon">💳</div>
+                <div class="name">Visa / Mastercard</div>
+                <div class="sub">All cards accepted</div>
+            </div>
+            <div class="trust-badge">
+                <div class="icon">🍎</div>
+                <div class="name">Apple Pay</div>
+                <div class="sub">One-touch checkout</div>
+            </div>
+            <div class="trust-badge">
+                <div class="icon">�</div>
+                <div class="name">Google Pay</div>
+                <div class="sub">Instant payment</div>
+            </div>
+            <div class="trust-badge">
+                <div class="icon">🔒</div>
+                <div class="name">SSL Encrypted</div>
+                <div class="sub">Bank-level security</div>
+            </div>
+            <div class="trust-badge">
+                <div class="icon">🌍</div>
+                <div class="name">195 Countries</div>
+                <div class="sub">UAE, Saudi, India...</div>
+            </div>
+            <div class="trust-badge">
+                <div class="icon">↩️</div>
+                <div class="name">7-Day Refund</div>
+                <div class="sub">Money-back guarantee</div>
+            </div>
         </div>
     </div>
 </div>
