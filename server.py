@@ -3,6 +3,9 @@ from flask_cors import CORS
 import anthropic
 import os
 import re
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from datetime import datetime, timedelta
 from twilio.rest import Client as TwilioClient
 from twilio.twiml.messaging_response import MessagingResponse
@@ -666,8 +669,92 @@ def generate_access_code(email, plan):
 
 def send_access_email(email, name, access_code, plan):
     """Send access details via email (in production)"""
-    # In production, use actual email service
     logger.info(f"Email sent to {email}: Access Code: {access_code}, Plan: {plan}")
+    send_welcome_email(email, name, access_code, plan)
+
+
+def send_welcome_email(to_email, name, access_code, plan):
+    """Send beautiful welcome email with embed code to new client"""
+    gmail_user = os.environ.get('GMAIL_USER', '')
+    gmail_pass = os.environ.get('GMAIL_APP_PASSWORD', '')
+    if not gmail_user or not gmail_pass:
+        logger.warning('GMAIL_USER or GMAIL_APP_PASSWORD not set — skipping welcome email')
+        return
+
+    plan_prices = {'starter': 'AED 499', 'professional': 'AED 1,499', 'enterprise': 'AED 3,499'}
+    plan_label  = plan.title()
+    price       = plan_prices.get(plan, '')
+    embed_code  = f'<script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-agent="AI Assistant" data-welcome="Hello! How can I help you?" data-access="{access_code}"></script>'
+    dashboard_url = f'https://ai-chatbot-production-2f3a.up.railway.app/dashboard?access={access_code}&plan={plan}'
+
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+    <body style="margin:0;padding:0;background:#0a0a1a;font-family:Inter,Arial,sans-serif;">
+      <div style="max-width:600px;margin:0 auto;padding:40px 20px;">
+
+        <div style="text-align:center;margin-bottom:32px;">
+          <div style="font-size:48px;">🤖</div>
+          <h1 style="color:#a78bfa;font-size:1.8rem;margin:12px 0 4px;">Your AI Bot is Ready!</h1>
+          <p style="color:#64748b;margin:0;">Payment confirmed — here's everything you need</p>
+        </div>
+
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(167,139,250,.3);border-radius:16px;padding:24px;margin-bottom:20px;">
+          <p style="color:#94a3b8;margin:0 0 4px;font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;">Welcome</p>
+          <p style="color:#e2e8f0;font-size:1.1rem;font-weight:600;margin:0;">Hi {name}!</p>
+        </div>
+
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(167,139,250,.3);border-radius:16px;padding:24px;margin-bottom:20px;">
+          <p style="color:#94a3b8;margin:0 0 8px;font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;">Your Access Code</p>
+          <div style="background:#0d0d1f;border-radius:8px;padding:14px;font-family:monospace;font-size:1.3rem;color:#a78bfa;letter-spacing:2px;text-align:center;">{access_code}</div>
+          <p style="color:#475569;font-size:.8rem;margin:8px 0 0;text-align:center;">Keep this safe — it's your key to the dashboard</p>
+        </div>
+
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(167,139,250,.3);border-radius:16px;padding:24px;margin-bottom:20px;">
+          <p style="color:#94a3b8;margin:0 0 8px;font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;">Plan</p>
+          <p style="color:#34d399;font-size:1.1rem;font-weight:700;margin:0;">{plan_label} — {price}/month</p>
+        </div>
+
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(167,139,250,.3);border-radius:16px;padding:24px;margin-bottom:20px;">
+          <p style="color:#94a3b8;margin:0 0 12px;font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;">🚀 Add Bot to Your Website</p>
+          <p style="color:#94a3b8;font-size:.9rem;margin:0 0 12px;">Copy this one line and paste it in your website HTML before <code style="color:#a78bfa;">&lt;/body&gt;</code>:</p>
+          <div style="background:#0d0d1f;border-radius:8px;padding:14px;font-family:monospace;font-size:.78rem;color:#60a5fa;word-break:break-all;line-height:1.6;">{embed_code}</div>
+        </div>
+
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(167,139,250,.3);border-radius:16px;padding:24px;margin-bottom:28px;">
+          <p style="color:#94a3b8;margin:0 0 14px;font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;">How to add the bot:</p>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="color:#94a3b8;font-size:.9rem;">1️⃣ <strong style="color:#e2e8f0;">WordPress:</strong> Appearance → Theme Editor → footer.php → paste before &lt;/body&gt;</div>
+            <div style="color:#94a3b8;font-size:.9rem;">2️⃣ <strong style="color:#e2e8f0;">Shopify:</strong> Online Store → Themes → Edit Code → theme.liquid → paste before &lt;/body&gt;</div>
+            <div style="color:#94a3b8;font-size:.9rem;">3️⃣ <strong style="color:#e2e8f0;">Custom HTML:</strong> Open your HTML file → paste before &lt;/body&gt;</div>
+            <div style="color:#94a3b8;font-size:.9rem;">4️⃣ <strong style="color:#e2e8f0;">Can't do it?</strong> Reply to this email — we'll add it for you! ✅</div>
+          </div>
+        </div>
+
+        <div style="text-align:center;margin-bottom:32px;">
+          <a href="{dashboard_url}" style="display:inline-block;background:linear-gradient(135deg,#a78bfa,#60a5fa);color:#fff;text-decoration:none;padding:15px 36px;border-radius:10px;font-weight:700;font-size:1rem;">Go to My Dashboard →</a>
+        </div>
+
+        <p style="color:#334155;font-size:.82rem;text-align:center;">Questions? Reply to this email or contact <a href="mailto:support@aichatbot.ae" style="color:#60a5fa;">support@aichatbot.ae</a></p>
+      </div>
+    </body>
+    </html>
+    """
+
+    try:
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = f'🤖 Your AI Bot is Ready — {plan_label} Plan Activated!'
+        msg['From']    = f'AI Chatbot <{gmail_user}>'
+        msg['To']      = to_email
+        msg.attach(MIMEText(html, 'html'))
+
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+            server.login(gmail_user, gmail_pass)
+            server.sendmail(gmail_user, to_email, msg.as_string())
+        logger.info(f'Welcome email sent to {to_email}')
+    except Exception as e:
+        logger.error(f'Failed to send welcome email to {to_email}: {e}')
 
 @app.route("/verify-access", methods=["POST"])
 def verify_access():
