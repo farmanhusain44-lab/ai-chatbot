@@ -479,6 +479,10 @@ def my_business():
 def botify_shop():
     return app.send_static_file("botify-shop.html")
 
+@app.route("/botify-store")
+def botify_store():
+    return app.send_static_file("botify-store.html")
+
 @app.route("/admin/clients", methods=["GET"])
 def admin_clients():
     password = request.args.get("pw", "")
