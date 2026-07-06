@@ -48,6 +48,9 @@ CHUNK_OVERLAP = 100
 # In-memory lead storage (in production, use database)
 LEADS = []
 
+# In-memory clients DB (payment records)
+clients_db = []
+
 
 def normalize_arabic(text):
     """Normalize Arabic text for better matching across dialects and diacritics."""
@@ -457,6 +460,35 @@ def privacy():
 def refund():
     return app.send_static_file("refund.html")
 
+@app.route("/admin")
+def admin():
+    return app.send_static_file("admin.html")
+
+@app.route("/admin/clients", methods=["GET"])
+def admin_clients():
+    password = request.args.get("pw", "")
+    if password != os.environ.get("ADMIN_PASSWORD", "farman2024"):
+        return jsonify({"error": "Unauthorized"}), 401
+    return jsonify({"clients": clients_db})
+
+@app.route("/admin/deploy", methods=["POST"])
+def admin_deploy():
+    data = request.get_json()
+    password = data.get("pw", "")
+    if password != os.environ.get("ADMIN_PASSWORD", "farman2024"):
+        return jsonify({"error": "Unauthorized"}), 401
+    access_code = data.get("access_code", "")
+    website_url = data.get("website_url", "")
+    notes = data.get("notes", "")
+    for client in clients_db:
+        if client.get("access_code") == access_code:
+            client["deployed"] = True
+            client["website_url"] = website_url
+            client["deploy_notes"] = notes
+            client["deployed_at"] = datetime.now().isoformat()
+            break
+    return jsonify({"success": True})
+
 @app.route("/save-lead", methods=["POST"])
 def save_lead():
     try:
@@ -568,24 +600,27 @@ def payment_success():
         plan = data.get('plan', 'starter')
         email = data.get('email', '')
         name = data.get('name', '')
-        
-        # In production, verify with payment provider API
-        # For now, just log the successful payment
+        website = data.get('website', '')
+        access_code_in = data.get('access_code', '')
+
         logger.info(f"Payment successful: {payment_id} for order {order_id} - Plan: {plan}")
-        
-        # Store payment record
-        payment_record = {
+
+        # Grant automatic access
+        access_code = access_code_in if access_code_in else generate_access_code(email, plan)
+
+        # Save to clients_db for admin panel
+        clients_db.append({
+            "name": name,
+            "email": email,
+            "website": website,
+            "plan": plan,
+            "access_code": access_code,
             "payment_id": payment_id,
             "order_id": order_id,
-            "plan": plan,
-            "email": email,
-            "name": name,
-            "timestamp": datetime.now().isoformat(),
-            "status": "success"
-        }
-        
-        # Grant automatic access
-        access_code = generate_access_code(email, plan)
+            "paid_at": datetime.now().isoformat(),
+            "deployed": False,
+            "deploy_notes": ""
+        })
         
         # Store access record
         access_record = {
