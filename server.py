@@ -467,6 +467,10 @@ def refund():
 def admin():
     return app.send_static_file("admin.html")
 
+@app.route("/deploy-guide")
+def deploy_guide():
+    return app.send_static_file("deploy-guide.html")
+
 @app.route("/admin/clients", methods=["GET"])
 def admin_clients():
     password = request.args.get("pw", "")
@@ -686,6 +690,7 @@ def send_welcome_email(to_email, name, access_code, plan):
     price       = plan_prices.get(plan, '')
     embed_code  = f'<script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-agent="AI Assistant" data-welcome="Hello! How can I help you?" data-access="{access_code}"></script>'
     dashboard_url = f'https://ai-chatbot-production-2f3a.up.railway.app/dashboard?access={access_code}&plan={plan}'
+    guide_url = f'https://ai-chatbot-production-2f3a.up.railway.app/deploy-guide?access={access_code}'
 
     html = f"""
     <!DOCTYPE html>
@@ -722,17 +727,13 @@ def send_welcome_email(to_email, name, access_code, plan):
           <div style="background:#0d0d1f;border-radius:8px;padding:14px;font-family:monospace;font-size:.78rem;color:#60a5fa;word-break:break-all;line-height:1.6;">{embed_code}</div>
         </div>
 
-        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(167,139,250,.3);border-radius:16px;padding:24px;margin-bottom:28px;">
-          <p style="color:#94a3b8;margin:0 0 14px;font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;">How to add the bot:</p>
-          <div style="display:flex;flex-direction:column;gap:10px;">
-            <div style="color:#94a3b8;font-size:.9rem;">1️⃣ <strong style="color:#e2e8f0;">WordPress:</strong> Appearance → Theme Editor → footer.php → paste before &lt;/body&gt;</div>
-            <div style="color:#94a3b8;font-size:.9rem;">2️⃣ <strong style="color:#e2e8f0;">Shopify:</strong> Online Store → Themes → Edit Code → theme.liquid → paste before &lt;/body&gt;</div>
-            <div style="color:#94a3b8;font-size:.9rem;">3️⃣ <strong style="color:#e2e8f0;">Custom HTML:</strong> Open your HTML file → paste before &lt;/body&gt;</div>
-            <div style="color:#94a3b8;font-size:.9rem;">4️⃣ <strong style="color:#e2e8f0;">Can't do it?</strong> Reply to this email — we'll add it for you! ✅</div>
-          </div>
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(167,139,250,.3);border-radius:16px;padding:24px;margin-bottom:28px;text-align:center;">
+          <p style="color:#94a3b8;margin:0 0 6px;font-size:.85rem;">Step-by-step guide for WordPress, Shopify, Wix &amp; more:</p>
+          <a href="{guide_url}" style="display:inline-block;background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.3);color:#a78bfa;text-decoration:none;padding:12px 28px;border-radius:9px;font-weight:700;font-size:.95rem;">📖 View Full Deploy Guide →</a>
+          <p style="color:#475569;font-size:.8rem;margin:12px 0 0;">Can't do it? Reply to this email — we'll add it for you free! ✅</p>
         </div>
 
-        <div style="text-align:center;margin-bottom:32px;">
+        <div style="text-align:center;margin-bottom:32px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
           <a href="{dashboard_url}" style="display:inline-block;background:linear-gradient(135deg,#a78bfa,#60a5fa);color:#fff;text-decoration:none;padding:15px 36px;border-radius:10px;font-weight:700;font-size:1rem;">Go to My Dashboard →</a>
         </div>
 
