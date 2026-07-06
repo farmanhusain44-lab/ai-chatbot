@@ -471,6 +471,10 @@ def admin():
 def deploy_guide():
     return app.send_static_file("deploy-guide.html")
 
+@app.route("/my-business")
+def my_business():
+    return app.send_static_file("my-business.html")
+
 @app.route("/admin/clients", methods=["GET"])
 def admin_clients():
     password = request.args.get("pw", "")
