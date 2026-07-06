@@ -126,8 +126,26 @@
     button.id = widgetId + '-button';
     button.setAttribute('aria-label', 'Open chat');
     button.innerHTML = `
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        <svg width="32" height="32" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Head -->
+          <rect x="10" y="16" width="44" height="34" rx="10" fill="white" fill-opacity="0.95"/>
+          <!-- Antenna -->
+          <rect x="30" y="6" width="4" height="10" rx="2" fill="white" fill-opacity="0.9"/>
+          <circle cx="32" cy="5" r="4" fill="white"/>
+          <!-- Eyes -->
+          <rect x="18" y="26" width="10" height="8" rx="4" fill="${color}"/>
+          <rect x="36" y="26" width="10" height="8" rx="4" fill="${color}"/>
+          <!-- Eye shine -->
+          <circle cx="21" cy="28" r="2" fill="white" fill-opacity="0.7"/>
+          <circle cx="39" cy="28" r="2" fill="white" fill-opacity="0.7"/>
+          <!-- Mouth -->
+          <rect x="20" y="38" width="24" height="5" rx="2.5" fill="${color}" fill-opacity="0.5"/>
+          <rect x="22" y="39" width="6" height="3" rx="1.5" fill="${color}"/>
+          <rect x="30" y="39" width="6" height="3" rx="1.5" fill="${color}"/>
+          <rect x="38" y="39" width="4" height="3" rx="1.5" fill="${color}"/>
+          <!-- Ears -->
+          <rect x="4" y="26" width="6" height="12" rx="3" fill="white" fill-opacity="0.7"/>
+          <rect x="54" y="26" width="6" height="12" rx="3" fill="white" fill-opacity="0.7"/>
         </svg>
         <span class="${widgetId}-badge"></span>
     `;
