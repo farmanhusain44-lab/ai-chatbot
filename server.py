@@ -475,6 +475,10 @@ def deploy_guide():
 def my_business():
     return app.send_static_file("my-business.html")
 
+@app.route("/botify")
+def botify_shop():
+    return app.send_static_file("botify-shop.html")
+
 @app.route("/admin/clients", methods=["GET"])
 def admin_clients():
     password = request.args.get("pw", "")
