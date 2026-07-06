@@ -3,7 +3,7 @@ from flask_cors import CORS
 import anthropic
 import os
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from twilio.rest import Client as TwilioClient
 from twilio.twiml.messaging_response import MessagingResponse
 from langdetect import detect
@@ -1021,13 +1021,16 @@ def speak():
 
     try:
         resp = requests.post(url, json=payload, headers=headers, timeout=60)
+        if resp.status_code == 401 or resp.status_code == 429:
+            logger.warning("ElevenLabs quota exceeded or unauthorized - client will use browser TTS")
+            return jsonify({"error": "quota_exceeded"}), 503
         if resp.status_code != 200:
             logger.error("ElevenLabs error: status=%s, body=%s", resp.status_code, resp.text[:500])
-            return jsonify({"error": "ElevenLabs error", "details": resp.text[:200]}), 500
+            return jsonify({"error": "ElevenLabs error"}), 503
         return Response(resp.content, mimetype="audio/mpeg")
     except Exception as e:
         logger.error("ElevenLabs error: %s", e)
-        return jsonify({"error": "Failed to generate audio"}), 500
+        return jsonify({"error": "Failed to generate audio"}), 503
 
 @app.route("/whatsapp", methods=["POST"])
 def whatsapp():
