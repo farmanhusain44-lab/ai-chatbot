@@ -706,32 +706,32 @@
 
     <section class="payment-info">
         <div class="container">
-            <h2 class="section-title" id="paymentTitle">International Payment Options</h2>
-            <p class="section-subtitle" id="paymentSubtitle">Multiple payment methods for your convenience</p>
+            <h2 class="section-title" id="paymentTitle">Secure Payment Methods</h2>
+            <p class="section-subtitle" id="paymentSubtitle">Pay securely — works from UAE, Saudi, India, and 195 countries</p>
             
             <div class="payment-methods">
                 <div class="payment-method">
                     <div class="payment-icon">💳</div>
-                    <h4 id="wiseTitle">Wise Transfer</h4>
-                    <p id="wiseDesc">International bank transfer</p>
+                    <h4 id="wiseTitle">Credit / Debit Card</h4>
+                    <p id="wiseDesc">Visa, Mastercard, Amex</p>
                 </div>
                 
                 <div class="payment-method">
-                    <div class="payment-icon">🌍</div>
-                    <h4 id="paypalTitle">PayPal</h4>
-                    <p id="paypalDesc">Secure online payments</p>
+                    <div class="payment-icon">�</div>
+                    <h4 id="paypalTitle">Apple Pay</h4>
+                    <p id="paypalDesc">One-touch on iPhone</p>
                 </div>
                 
                 <div class="payment-method">
-                    <div class="payment-icon">💰</div>
-                    <h4 id="stripeTitle">Stripe</h4>
-                    <p id="stripeDesc">Credit/Debit cards</p>
+                    <div class="payment-icon">�</div>
+                    <h4 id="stripeTitle">Google Pay</h4>
+                    <p id="stripeDesc">Quick on Android</p>
                 </div>
                 
                 <div class="payment-method">
-                    <div class="payment-icon">🏦</div>
-                    <h4 id="bankTitle">Bank Transfer</h4>
-                    <p id="bankDesc">Direct to India account</p>
+                    <div class="payment-icon">🔒</div>
+                    <h4 id="bankTitle">SSL Secured</h4>
+                    <p id="bankDesc">Bank-level security</p>
                 </div>
             </div>
         </div>
@@ -1019,11 +1019,15 @@
                   <label style="display:block;font-weight:600;margin-bottom:6px;color:#333;">Full Name</label>
                   <input id="pmName" type="text" placeholder="Ahmed Al Mansoori" style="width:100%;padding:11px 14px;border:2px solid #ddd;border-radius:8px;font-size:1rem;outline:none;" onfocus="this.style.borderColor='#0047AB'" onblur="this.style.borderColor='#ddd'">
                 </div>
-                <div style="margin-bottom:24px;">
+                <div style="margin-bottom:18px;">
                   <label style="display:block;font-weight:600;margin-bottom:6px;color:#333;">Email Address</label>
                   <input id="pmEmail" type="email" placeholder="ahmed@business.ae" style="width:100%;padding:11px 14px;border:2px solid #ddd;border-radius:8px;font-size:1rem;outline:none;" onfocus="this.style.borderColor='#0047AB'" onblur="this.style.borderColor='#ddd'">
                 </div>
-                <p style="font-size:.85rem;color:#888;margin-bottom:14px;text-align:center;">✅ Secure payment — access delivered to your email instantly</p>
+                <div style="margin-bottom:24px;">
+                  <label style="display:block;font-weight:600;margin-bottom:6px;color:#333;">Your Website URL <span style="color:#aaa;font-weight:400;font-size:.85rem;">(we deploy the AI bot here)</span></label>
+                  <input id="pmWebsite" type="url" placeholder="https://mybusiness.ae" style="width:100%;padding:11px 14px;border:2px solid #ddd;border-radius:8px;font-size:1rem;outline:none;" onfocus="this.style.borderColor='#0047AB'" onblur="this.style.borderColor='#ddd'">
+                </div>
+                <p style="font-size:.85rem;color:#888;margin-bottom:14px;text-align:center;">✅ We deploy your AI bot — no technical work needed from you</p>
                 <button onclick="proceedPayment('${plan}')" id="pmPayBtn" style="width:100%;background:linear-gradient(135deg,#0047AB,#FF6B35);color:#fff;border:none;padding:15px;border-radius:10px;font-size:1.1rem;font-weight:700;cursor:pointer;margin-bottom:12px;">
                   💳 Pay AED ${price} — Card / Apple Pay / Google Pay
                 </button>
@@ -1039,14 +1043,17 @@
         }
 
         function proceedPayment(plan) {
-            const clientName  = document.getElementById('pmName').value.trim();
-            const clientEmail = document.getElementById('pmEmail').value.trim();
-            if (!clientName)  { document.getElementById('pmName').style.borderColor = 'red'; return; }
-            if (!clientEmail || !clientEmail.includes('@')) { document.getElementById('pmEmail').style.borderColor = 'red'; return; }
+            const clientName    = document.getElementById('pmName').value.trim();
+            const clientEmail   = document.getElementById('pmEmail').value.trim();
+            const clientWebsite = document.getElementById('pmWebsite').value.trim();
+            if (!clientName)                             { document.getElementById('pmName').style.borderColor = 'red';    return; }
+            if (!clientEmail || !clientEmail.includes('@')) { document.getElementById('pmEmail').style.borderColor = 'red';   return; }
+            if (!clientWebsite)                          { document.getElementById('pmWebsite').style.borderColor = 'red'; return; }
 
-            localStorage.setItem('clientName',  clientName);
-            localStorage.setItem('clientEmail', clientEmail);
-            localStorage.setItem('clientPlan',  plan);
+            localStorage.setItem('clientName',    clientName);
+            localStorage.setItem('clientEmail',   clientEmail);
+            localStorage.setItem('clientWebsite', clientWebsite);
+            localStorage.setItem('clientPlan',    plan);
 
             const btn = document.getElementById('pmPayBtn');
             btn.textContent = '⏳ Opening secure payment...';
