@@ -98,7 +98,7 @@ nav{padding:16px 28px;display:flex;align-items:center;justify-content:space-betw
         <div class="sub">All plans include setup support. Cancel anytime.</div>
 
         <div class="plan-select">
-            <div class="ps-item active" onclick="selectPlan(this,'starter','pri_01jz5nf03n8g13ntmyvgxm35p1','AED 499')">
+            <div class="ps-item active" onclick="selectPlan(this,'starter','pri_01kwyphc6q21dyfrefrbwx84d4','AED 499')">
                 <div class="ps-row">
                     <div class="ps-radio"></div>
                     <div class="ps-left">
@@ -108,7 +108,7 @@ nav{padding:16px 28px;display:flex;align-items:center;justify-content:space-betw
                 </div>
                 <div class="ps-price">AED 499<span style="font-size:.7rem;font-weight:400;color:#475569">/mo</span></div>
             </div>
-            <div class="ps-item" onclick="selectPlan(this,'professional','pri_01jz5nf4xk9pstntrsba1p3fqk','AED 1,499')">
+            <div class="ps-item" onclick="selectPlan(this,'professional','pri_01kwypkc37z1nab8qx1xswacdy','AED 1,499')">
                 <div class="ps-row">
                     <div class="ps-radio"></div>
                     <div class="ps-left">
@@ -118,7 +118,7 @@ nav{padding:16px 28px;display:flex;align-items:center;justify-content:space-betw
                 </div>
                 <div class="ps-price">AED 1,499<span style="font-size:.7rem;font-weight:400;color:#475569">/mo</span></div>
             </div>
-            <div class="ps-item" onclick="selectPlan(this,'enterprise','pri_01jz5nf9r5dbcswsb1jzrxkyqb','AED 3,499')">
+            <div class="ps-item" onclick="selectPlan(this,'enterprise','pri_01kwypmjtydfmgrvqpjp2jyk7m','AED 3,499')">
                 <div class="ps-row">
                     <div class="ps-radio"></div>
                     <div class="ps-left">
@@ -216,16 +216,16 @@ nav{padding:16px 28px;display:flex;align-items:center;justify-content:space-betw
 <script>
 const PADDLE_TOKEN = 'live_6d6e0e8ad2f98a3484b135ed7b4';
 let selectedPlan   = 'starter';
-let selectedPriceId = 'pri_01jz5nf03n8g13ntmyvgxm35p1';
+let selectedPriceId = 'pri_01kwyphc6q21dyfrefrbwx84d4';
 let selectedPrice  = 'AED 499';
 
 // Read plan from URL ?plan=
 const urlPlan = new URLSearchParams(window.location.search).get('plan');
 if (urlPlan) {
     const map = {
-        starter:      {el:0, pid:'pri_01jz5nf03n8g13ntmyvgxm35p1', price:'AED 499'},
-        professional: {el:1, pid:'pri_01jz5nf4xk9pstntrsba1p3fqk', price:'AED 1,499'},
-        enterprise:   {el:2, pid:'pri_01jz5nf9r5dbcswsb1jzrxkyqb', price:'AED 3,499'}
+        starter:      {el:0, pid:'pri_01kwyphc6q21dyfrefrbwx84d4', price:'AED 499'},
+        professional: {el:1, pid:'pri_01kwypkc37z1nab8qx1xswacdy', price:'AED 1,499'},
+        enterprise:   {el:2, pid:'pri_01kwypmjtydfmgrvqpjp2jyk7m', price:'AED 3,499'}
     };
     const m = map[urlPlan];
     if (m) {
