@@ -1050,8 +1050,8 @@ def razorpay_order():
         plan  = data.get('plan', 'starter')
         name  = data.get('name', '')
         email = data.get('email', '')
-        # INR pricing in paise
-        prices = {'starter': 4990000, 'professional': 14990000, 'enterprise': 34990000}
+        # INR pricing in paise (AED 499 ≈ INR 11500, AED 1499 ≈ INR 34500, AED 3499 ≈ INR 80500)
+        prices = {'starter': 1150000, 'professional': 3450000, 'enterprise': 8050000}
         amount = prices.get(plan, 4990000)
         client = razorpay.Client(auth=(
             os.environ.get("RAZORPAY_KEY_ID", ""),
