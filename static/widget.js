@@ -126,9 +126,7 @@
     button.id = widgetId + '-button';
     button.setAttribute('aria-label', 'Open chat');
     button.innerHTML = `
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-          <path d="M20 2H4C2.9 2 2 2.9 2 4v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
-        </svg>
+        <img src="https://i.imgur.com/FfNwGyA.png" width="42" height="42" style="border-radius:50%;object-fit:cover;" alt="BotifyAI"/>
         <span class="${widgetId}-badge"></span>
     `;
 
