@@ -1042,6 +1042,37 @@ def paypal_payment():
         logger.error(f"Error creating PayPal payment: {e}")
         return jsonify({"error": "Failed to create PayPal payment"}), 500
 
+@app.route("/razorpay-order", methods=["POST"])
+def razorpay_order():
+    try:
+        import razorpay
+        data = request.get_json()
+        plan  = data.get('plan', 'starter')
+        name  = data.get('name', '')
+        email = data.get('email', '')
+        # INR pricing in paise
+        prices = {'starter': 4990000, 'professional': 14990000, 'enterprise': 34990000}
+        amount = prices.get(plan, 4990000)
+        client = razorpay.Client(auth=(
+            os.environ.get("RAZORPAY_KEY_ID", ""),
+            os.environ.get("RAZORPAY_KEY_SECRET", "")
+        ))
+        order = client.order.create({
+            'amount': amount,
+            'currency': 'INR',
+            'notes': {'plan': plan, 'name': name, 'email': email}
+        })
+        return jsonify({
+            'success': True,
+            'order_id': order['id'],
+            'amount': amount,
+            'currency': 'INR',
+            'key_id': os.environ.get("RAZORPAY_KEY_ID", "")
+        })
+    except Exception as e:
+        logger.error(f"Razorpay order error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route("/stripe-checkout", methods=["POST"])
 def stripe_checkout():
     """Create Stripe Checkout session and return URL"""

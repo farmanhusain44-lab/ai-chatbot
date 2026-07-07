@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Checkout — BotifyAI</title>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
@@ -277,21 +278,44 @@ function startPayment() {
     btn.classList.add('loading');
     btn.textContent = 'Opening secure payment...';
 
-    fetch('/stripe-checkout', {
+    fetch('/razorpay-order', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ plan: selectedPlan, name, email, currency: 'usd' })
+        body: JSON.stringify({ plan: selectedPlan, name, email })
     })
     .then(r => r.json())
     .then(data => {
-        if (data.checkout_url || data.url) {
-            window.location.href = data.checkout_url || data.url;
-        } else {
+        if (!data.success) {
             btn.disabled = false;
             btn.classList.remove('loading');
-            btn.textContent = 'Error — Try Again';
+            updateBtn();
             alert(data.error || 'Payment error. Please try again.');
+            return;
         }
+        const options = {
+            key: data.key_id,
+            amount: data.amount,
+            currency: data.currency,
+            name: 'BotifyAI',
+            description: selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1) + ' Plan',
+            image: 'https://i.imgur.com/FfNwGyA.png',
+            order_id: data.order_id,
+            prefill: { name, email },
+            theme: { color: '#6366f1' },
+            handler: function(response) {
+                const code = genCode(email, selectedPlan);
+                showSuccess(code, email, selectedPlan, name, website, platform);
+            },
+            modal: {
+                ondismiss: function() {
+                    btn.disabled = false;
+                    btn.classList.remove('loading');
+                    updateBtn();
+                }
+            }
+        };
+        const rzp = new Razorpay(options);
+        rzp.open();
     })
     .catch(() => {
         btn.disabled = false;
