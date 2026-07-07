@@ -284,8 +284,8 @@ function startPayment() {
     })
     .then(r => r.json())
     .then(data => {
-        if (data.url) {
-            window.location.href = data.url;
+        if (data.checkout_url || data.url) {
+            window.location.href = data.checkout_url || data.url;
         } else {
             btn.disabled = false;
             btn.classList.remove('loading');
