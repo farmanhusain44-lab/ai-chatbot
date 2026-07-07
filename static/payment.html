@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Checkout — BotifyAI</title>
-<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
@@ -214,27 +213,24 @@ nav{padding:16px 28px;display:flex;align-items:center;justify-content:space-betw
 </div>
 
 <script>
-const PADDLE_TOKEN = 'live_9a6404a15092cce7d07806849d4';
-let selectedPlan   = 'starter';
-let selectedPriceId = 'pri_01kwyphc6q21dyfrefrbwx84d4';
-let selectedPrice  = 'AED 499';
+let selectedPlan  = 'starter';
+let selectedPrice = 'AED 499';
 
 // Read plan from URL ?plan=
 const urlPlan = new URLSearchParams(window.location.search).get('plan');
 if (urlPlan) {
     const map = {
-        starter:      {el:0, pid:'pri_01kwyphc6q21dyfrefrbwx84d4', price:'AED 499'},
-        professional: {el:1, pid:'pri_01kwypkc37z1nab8qx1xswacdy', price:'AED 1,499'},
-        enterprise:   {el:2, pid:'pri_01kwypmjtydfmgrvqpjp2jyk7m', price:'AED 3,499'}
+        starter:      {el:0, price:'AED 499'},
+        professional: {el:1, price:'AED 1,499'},
+        enterprise:   {el:2, price:'AED 3,499'}
     };
     const m = map[urlPlan];
     if (m) {
         const items = document.querySelectorAll('.ps-item');
         items.forEach(i => i.classList.remove('active'));
         items[m.el].classList.add('active');
-        selectedPlan    = urlPlan;
-        selectedPriceId = m.pid;
-        selectedPrice   = m.price;
+        selectedPlan  = urlPlan;
+        selectedPrice = m.price;
         updateBtn();
     }
 }
@@ -242,9 +238,8 @@ if (urlPlan) {
 function selectPlan(el, plan, priceId, price) {
     document.querySelectorAll('.ps-item').forEach(i => i.classList.remove('active'));
     el.classList.add('active');
-    selectedPlan    = plan;
-    selectedPriceId = priceId;
-    selectedPrice   = price;
+    selectedPlan  = plan;
+    selectedPrice = price;
     updateBtn();
 }
 
@@ -282,21 +277,27 @@ function startPayment() {
     btn.classList.add('loading');
     btn.textContent = 'Opening secure payment...';
 
-    Paddle.Initialize({ token: PADDLE_TOKEN });
-    Paddle.Checkout.open({
-        items: [{ priceId: selectedPriceId, quantity: 1 }],
-        customer: { email },
-        customData: { plan: selectedPlan, name, website, platform },
-        settings: { displayMode:'overlay', theme:'dark', locale:'en' },
-        successCallback(data) {
-            const code = genCode(email, selectedPlan);
-            showSuccess(code, email, selectedPlan, name, website, platform);
-        },
-        closeCallback() {
+    fetch('/stripe-checkout', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ plan: selectedPlan, name, email, currency: 'usd' })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.url) {
+            window.location.href = data.url;
+        } else {
             btn.disabled = false;
             btn.classList.remove('loading');
-            updateBtn();
+            btn.textContent = 'Error — Try Again';
+            alert(data.error || 'Payment error. Please try again.');
         }
+    })
+    .catch(() => {
+        btn.disabled = false;
+        btn.classList.remove('loading');
+        updateBtn();
+        alert('Network error. Please try again.');
     });
 }
 
