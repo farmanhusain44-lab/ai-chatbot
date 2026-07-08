@@ -115,11 +115,9 @@
     const container = document.createElement('div');
     container.id = widgetId + '-container';
 
-    // Cycling tooltip above button
     const tooltip = document.createElement('div');
     tooltip.id = widgetId + '-tooltip';
-    tooltip.textContent = 'Welcome';
-    tooltip.style.direction = 'ltr';
+    tooltip.style.display = 'none';
 
     // Floating button
     const button = document.createElement('button');
