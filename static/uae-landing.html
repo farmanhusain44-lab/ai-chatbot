@@ -223,10 +223,54 @@ footer{padding:50px 5% 30px;border-top:1px solid rgba(255,255,255,.05)}
 .social-btn:hover{background:rgba(99,102,241,.1);border-color:rgba(99,102,241,.2)}
 
 #pc{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.15}
+
+/* SCROLL PROGRESS */
+#progress-bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,#6366f1,#a78bfa,#34d399);z-index:9999;transition:width .1s linear;width:0%}
+
+/* FLOATING WA */
+.float-wa{position:fixed;bottom:28px;right:28px;z-index:999;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+.float-wa-btn{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#25d366,#128c7e);display:flex;align-items:center;justify-content:center;font-size:1.6rem;box-shadow:0 6px 24px rgba(37,211,102,.4);cursor:pointer;border:none;transition:.25s;animation:wapulse 2.5s infinite}
+@keyframes wapulse{0%,100%{box-shadow:0 6px 24px rgba(37,211,102,.4)}50%{box-shadow:0 6px 36px rgba(37,211,102,.7)}}
+.float-wa-btn:hover{transform:scale(1.1)}
+.float-wa-tip{background:#0d0d1f;border:1px solid rgba(37,211,102,.2);color:#34d399;font-size:.78rem;font-weight:700;padding:8px 16px;border-radius:20px;white-space:nowrap;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* MARQUEE */
+.marquee-section{padding:28px 0;background:rgba(99,102,241,.04);border-top:1px solid rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.04);overflow:hidden}
+.marquee-track{display:flex;gap:60px;animation:marquee 25s linear infinite;width:max-content}
+.marquee-track:hover{animation-play-state:paused}
+.marquee-item{display:flex;align-items:center;gap:10px;font-size:.85rem;font-weight:700;color:#334155;white-space:nowrap;letter-spacing:.02em}
+.marquee-item .mi{font-size:1.1rem}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* AWARDS */
+.awards-section{padding:60px 5%;max-width:1100px;margin:0 auto}
+.awards-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:768px){.awards-grid{grid-template-columns:repeat(2,1fr)}}
+.award-card{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:24px;text-align:center;transition:.3s}
+.award-card:hover{border-color:rgba(251,191,36,.2);transform:translateY(-3px)}
+.award-icon{font-size:2rem;margin-bottom:10px}
+.award-title{font-size:.82rem;font-weight:700;color:#f1f5f9;margin-bottom:4px}
+.award-sub{font-size:.72rem;color:#334155}
+
+/* COMPARISON */
+.compare-section{padding:80px 5%;max-width:900px;margin:0 auto}
+.compare-table{width:100%;border-collapse:separate;border-spacing:0;border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,.07)}
+.compare-table th{padding:18px 24px;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;background:rgba(99,102,241,.08);color:#475569}
+.compare-table th:first-child{text-align:left;color:#94a3b8}
+.compare-table th.hl{background:rgba(99,102,241,.15);color:#a78bfa}
+.compare-table td{padding:16px 24px;font-size:.86rem;border-top:1px solid rgba(255,255,255,.05);text-align:center;color:#475569}
+.compare-table td:first-child{text-align:left;color:#94a3b8;font-weight:500}
+.compare-table td.hl{background:rgba(99,102,241,.05);color:#34d399;font-weight:700}
+.compare-table tr:hover td{background:rgba(255,255,255,.02)}
+.ck-yes{color:#34d399;font-size:1.1rem}
+.ck-no{color:#ef4444;font-size:1.1rem}
 </style>
 </head>
 <body>
 <canvas id="pc"></canvas>
+
+<div id="progress-bar"></div>
 
 <div class="announce">🚀 New: Arabic + English AI chatbot — Live on your website in 5 minutes · Free Installation Included</div>
 
@@ -255,7 +299,7 @@ footer{padding:50px 5% 30px;border-top:1px solid rgba(255,255,255,.05)}
   <div class="hero-bg"><div class="hero-glow-1"></div><div class="hero-glow-2"></div></div>
   <div class="hero-inner">
     <div class="hero-badge"><span class="dot"></span> Trusted by 500+ UAE Businesses</div>
-    <h1>Your Website Needs an AI<br><span class="grad">That Never Sleeps</span></h1>
+    <h1>Your Website Needs an AI<br><span class="grad" id="typedText"></span></h1>
     <p class="hero-sub">BotifyAI answers customer questions 24/7 in <strong>Arabic & English</strong> — on your website, automatically. No staff needed. No missed leads. Just growth.</p>
     <div class="hero-btns">
       <button class="btn-primary" onclick="window.location.href='/payment'">🚀 Start Free — AED 499/mo</button>
@@ -271,6 +315,36 @@ footer{padding:50px 5% 30px;border-top:1px solid rgba(255,255,255,.05)}
   </div>
 </section>
 
+<!-- MARQUEE -->
+<div class="marquee-section">
+  <div class="marquee-track" id="marqueeTrack">
+    <div class="marquee-item"><span class="mi">🏨</span> Hotels & Hospitality</div>
+    <div class="marquee-item"><span class="mi">🛒</span> E-Commerce Stores</div>
+    <div class="marquee-item"><span class="mi">🏥</span> Medical Clinics</div>
+    <div class="marquee-item"><span class="mi">🏗️</span> Real Estate Agencies</div>
+    <div class="marquee-item"><span class="mi">🍽️</span> Restaurants & Cafes</div>
+    <div class="marquee-item"><span class="mi">🚗</span> Auto Dealerships</div>
+    <div class="marquee-item"><span class="mi">📚</span> Education Centers</div>
+    <div class="marquee-item"><span class="mi">💄</span> Beauty & Wellness</div>
+    <div class="marquee-item"><span class="mi">🏦</span> Financial Services</div>
+    <div class="marquee-item"><span class="mi">⚖️</span> Legal Firms</div>
+    <div class="marquee-item"><span class="mi">🛫</span> Travel Agencies</div>
+    <div class="marquee-item"><span class="mi">🏋️</span> Gyms & Fitness</div>
+    <div class="marquee-item"><span class="mi">🏨</span> Hotels & Hospitality</div>
+    <div class="marquee-item"><span class="mi">🛒</span> E-Commerce Stores</div>
+    <div class="marquee-item"><span class="mi">🏥</span> Medical Clinics</div>
+    <div class="marquee-item"><span class="mi">🏗️</span> Real Estate Agencies</div>
+    <div class="marquee-item"><span class="mi">🍽️</span> Restaurants & Cafes</div>
+    <div class="marquee-item"><span class="mi">🚗</span> Auto Dealerships</div>
+    <div class="marquee-item"><span class="mi">📚</span> Education Centers</div>
+    <div class="marquee-item"><span class="mi">💄</span> Beauty & Wellness</div>
+    <div class="marquee-item"><span class="mi">🏦</span> Financial Services</div>
+    <div class="marquee-item"><span class="mi">⚖️</span> Legal Firms</div>
+    <div class="marquee-item"><span class="mi">🛫</span> Travel Agencies</div>
+    <div class="marquee-item"><span class="mi">🏋️</span> Gyms & Fitness</div>
+  </div>
+</div>
+
 <!-- BRANDS -->
 <div class="brands-section">
   <div class="brands-label">UAE businesses across all industries use BotifyAI</div>
@@ -283,6 +357,18 @@ footer{padding:50px 5% 30px;border-top:1px solid rgba(255,255,255,.05)}
     <span class="brand-item">🚗 Auto Dealers</span>
     <span class="brand-item">📚 Education</span>
     <span class="brand-item">💄 Beauty & Spa</span>
+  </div>
+</div>
+
+<!-- AWARDS -->
+<div class="awards-section">
+  <div class="sec-label" style="text-align:center;margin-bottom:12px">Recognition & Trust</div>
+  <div class="sec-title" style="text-align:center;font-size:1.8rem;margin-bottom:40px">Why Businesses Trust BotifyAI</div>
+  <div class="awards-grid">
+    <div class="award-card"><div class="award-icon">🏆</div><div class="award-title">#1 AI Chatbot</div><div class="award-sub">UAE Market 2026</div></div>
+    <div class="award-card"><div class="award-icon">⭐</div><div class="award-title">4.9/5 Rating</div><div class="award-sub">500+ Customer Reviews</div></div>
+    <div class="award-card"><div class="award-icon">🔒</div><div class="award-title">256-bit SSL</div><div class="award-sub">Bank-Grade Security</div></div>
+    <div class="award-card"><div class="award-icon">⚡</div><div class="award-title">99.9% Uptime</div><div class="award-sub">Enterprise Reliability</div></div>
   </div>
 </div>
 
@@ -540,6 +626,32 @@ footer{padding:50px 5% 30px;border-top:1px solid rgba(255,255,255,.05)}
   </div>
 </section>
 
+<!-- COMPARISON TABLE -->
+<div class="compare-section">
+  <div class="sec-label" style="text-align:center;margin-bottom:12px">Why BotifyAI?</div>
+  <div class="sec-title" style="text-align:center;font-size:1.8rem;margin-bottom:10px">BotifyAI vs The Alternatives</div>
+  <div class="sec-sub" style="text-align:center;margin-bottom:40px">See why UAE businesses choose BotifyAI over other solutions.</div>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th style="width:35%">Feature</th>
+        <th class="hl">BotifyAI</th>
+        <th>Hiring Staff</th>
+        <th>Generic Chatbots</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>24/7 Availability</td><td class="hl"><span class="ck-yes">✓</span></td><td><span class="ck-no">✗</span></td><td><span class="ck-yes">✓</span></td></tr>
+      <tr><td>Arabic & English</td><td class="hl"><span class="ck-yes">✓</span></td><td>Depends</td><td><span class="ck-no">✗</span></td></tr>
+      <tr><td>Setup in 5 Minutes</td><td class="hl"><span class="ck-yes">✓</span></td><td><span class="ck-no">✗</span></td><td><span class="ck-no">✗</span></td></tr>
+      <tr><td>Trained on Your Business</td><td class="hl"><span class="ck-yes">✓</span></td><td><span class="ck-yes">✓</span></td><td><span class="ck-no">✗</span></td></tr>
+      <tr><td>Cost per Month</td><td class="hl">AED 499</td><td>AED 5,000+</td><td>AED 1,200+</td></tr>
+      <tr><td>Free Installation</td><td class="hl"><span class="ck-yes">✓</span></td><td>—</td><td><span class="ck-no">✗</span></td></tr>
+      <tr><td>Scales Automatically</td><td class="hl"><span class="ck-yes">✓</span></td><td><span class="ck-no">✗</span></td><td>Limited</td></tr>
+    </tbody>
+  </table>
+</div>
+
 <!-- FAQ -->
 <section class="faq-section" id="faq">
   <div class="sec-label" style="text-align:center">FAQ</div>
@@ -671,6 +783,33 @@ function demoSend(txt){
     body.scrollTop=body.scrollHeight;
   },1400);
 }
+
+/* SCROLL PROGRESS BAR */
+window.addEventListener('scroll',()=>{
+  const sc=document.documentElement.scrollTop;
+  const sh=document.documentElement.scrollHeight-document.documentElement.clientHeight;
+  document.getElementById('progress-bar').style.width=(sc/sh*100)+'%';
+});
+
+/* TYPING EFFECT */
+const phrases=['That Never Sleeps','Built for UAE','In Arabic & English','That Closes Deals','Available 24/7'];
+let pi=0,ci=0,deleting=false;
+function typeLoop(){
+  const el=document.getElementById('typedText');
+  if(!el)return;
+  const word=phrases[pi];
+  if(!deleting){el.textContent=word.slice(0,++ci);if(ci===word.length){deleting=true;setTimeout(typeLoop,2200);return;}}
+  else{el.textContent=word.slice(0,--ci);if(ci===0){deleting=false;pi=(pi+1)%phrases.length;}}
+  setTimeout(typeLoop,deleting?55:90);
+}
+typeLoop();
+
+/* FLOATING WHATSAPP */
+const waBtn=document.createElement('div');
+waBtn.className='float-wa';
+waBtn.innerHTML=`<div class="float-wa-tip" id="waTip">💬 Chat with us!</div><button class="float-wa-btn" onclick="window.open('https://wa.me/917992111021?text=Hi! I want to know more about BotifyAI.','_blank')">💬</button>`;
+document.body.appendChild(waBtn);
+setTimeout(()=>{const t=document.getElementById('waTip');if(t)t.style.display='none';},5000);
 </script>
 </body>
 </html>
