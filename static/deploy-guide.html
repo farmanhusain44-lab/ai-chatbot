@@ -114,8 +114,7 @@
 
     <div class="embed-box" id="heroCode">
         &lt;script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js"
-        data-agent="BotifyAI Assistant"
-        data-welcome="Hello! How can I help you?"&gt;&lt;/script&gt;
+        data-agent="BotifyAI Assistant"&gt;&lt;/script&gt;
     </div>
     <br>
     <button class="copy-btn" onclick="copyCode()">📋 Copy This Code</button>
@@ -517,7 +516,7 @@
     }
 
     function copyCode() {
-        const raw = `<script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-agent="BotifyAI Assistant" data-welcome="Hello! How can I help you?"><\/script>`;
+        const raw = `<script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-agent="BotifyAI Assistant"><\/script>`;
         navigator.clipboard.writeText(raw).then(() => {
             const msg = document.getElementById('copyMsg');
             msg.style.display = 'inline';
@@ -529,7 +528,7 @@
     const params = new URLSearchParams(window.location.search);
     const ac = params.get('access');
     if (ac) {
-        const display = `&lt;script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-agent="BotifyAI Assistant" data-welcome="Hello! How can I help you?" data-access="${ac}"&gt;&lt;/script&gt;`;
+        const display = `&lt;script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-agent="BotifyAI Assistant" data-access="${ac}"&gt;&lt;/script&gt;`;
         document.getElementById('heroCode').innerHTML = display;
     }
 </script>
