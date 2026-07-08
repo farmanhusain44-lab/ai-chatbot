@@ -122,17 +122,22 @@ footer p{font-size:.75rem;color:#1e293b}
     <h1>Add AI to Your Website<br><span>in 5 Minutes</span></h1>
     <p>One line of code. Works on any platform. Our team installs it for you — completely free. Pick your platform below and follow the steps.</p>
 
-    <div class="code-box-wrap" id="heroCodeWrap">
+    <div class="code-box-wrap" id="heroCodeWrap" style="position:relative">
       <div class="code-box-header">
         <div class="code-dots"><span style="background:#ff5f56"></span><span style="background:#ffbd2e"></span><span style="background:#27c93f"></span></div>
-        <span class="code-box-label">Your Embed Code</span>
+        <span class="code-box-label" id="codeBoxLabel">Your Embed Code</span>
       </div>
-      <div class="code-box" id="heroCode">
-        &lt;<span style="color:#f472b6">script</span> <span class="attr">src</span>=<span class="val">"https://ai-chatbot-production-2f3a.up.railway.app/widget.js"</span><br>&nbsp;&nbsp;<span class="attr">data-agent</span>=<span class="val">"BotifyAI Assistant"</span>&gt;&lt;/<span style="color:#f472b6">script</span>&gt;
+      <div class="code-box" id="heroCode" style="filter:blur(5px);user-select:none;pointer-events:none">
+        &lt;<span style="color:#f472b6">script</span> <span class="attr">src</span>=<span class="val">"https://ai-chatbot-production-2f3a.up.railway.app/widget.js"</span><br>&nbsp;&nbsp;<span class="attr">data-agent</span>=<span class="val">"BotifyAI Assistant"</span><br>&nbsp;&nbsp;<span class="attr">data-access</span>=<span class="val">"XXXX-XXXX-XXXX"</span>&gt;&lt;/<span style="color:#f472b6">script</span>&gt;
+      </div>
+      <div id="lockOverlay" style="position:absolute;inset:0;top:52px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(2,2,10,.7);backdrop-filter:blur(2px);border-radius:0 0 16px 16px;gap:10px">
+        <div style="font-size:2rem">🔒</div>
+        <div style="font-size:.85rem;font-weight:700;color:#e2e8f0">Purchase Required to Access</div>
+        <a href="/payment" style="padding:10px 24px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-radius:9px;font-weight:700;font-size:.83rem;margin-top:4px">Get Your Access Code →</a>
       </div>
     </div>
     <div class="copy-row">
-      <button class="copy-btn" onclick="copyCode()">📋 Copy Embed Code</button>
+      <button class="copy-btn" id="copyBtnMain" onclick="copyCode()" style="opacity:.4;cursor:not-allowed">� Unlock to Copy Code</button>
       <span class="copy-msg" id="copyMsg">✅ Copied to clipboard!</span>
     </div>
 
@@ -318,20 +323,28 @@ function show(platform, el){
   document.querySelector('.guides').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-/* COPY */
-function copyCode(){
-  const raw=`<script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-agent="BotifyAI Assistant"><\/script>`;
-  navigator.clipboard.writeText(raw).then(()=>{
-    const m=document.getElementById('copyMsg');m.style.display='inline';
-    setTimeout(()=>m.style.display='none',3000);
-  });
-}
-
 /* ACCESS CODE */
 const params=new URLSearchParams(window.location.search);
 const ac=params.get('access');
 if(ac){
+  document.getElementById('heroCode').style.filter='none';
+  document.getElementById('heroCode').style.pointerEvents='auto';
+  document.getElementById('heroCode').style.userSelect='text';
+  document.getElementById('lockOverlay').style.display='none';
+  document.getElementById('codeBoxLabel').textContent='Your Embed Code ✓ Unlocked';
   document.getElementById('heroCode').innerHTML=`&lt;<span style="color:#f472b6">script</span> <span style="color:#a78bfa">src</span>=<span style="color:#34d399">"https://ai-chatbot-production-2f3a.up.railway.app/widget.js"</span><br>&nbsp;&nbsp;<span style="color:#a78bfa">data-agent</span>=<span style="color:#34d399">"BotifyAI Assistant"</span><br>&nbsp;&nbsp;<span style="color:#a78bfa">data-access</span>=<span style="color:#34d399">"${ac}"</span>&gt;&lt;/<span style="color:#f472b6">script</span>&gt;`;
+  const cb=document.getElementById('copyBtnMain');
+  cb.style.opacity='1';cb.style.cursor='pointer';cb.textContent='📋 Copy Embed Code';
+}
+
+/* COPY */
+function copyCode(){
+  if(!ac){window.location.href='/payment';return;}
+  const raw=`<script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-agent="BotifyAI Assistant" data-access="${ac}"><\/script>`;
+  navigator.clipboard.writeText(raw).then(()=>{
+    const m=document.getElementById('copyMsg');m.style.display='inline';
+    setTimeout(()=>m.style.display='none',3000);
+  });
 }
 
 /* SCROLL REVEAL */
