@@ -575,27 +575,13 @@ def admin_upload_client_document(client_id):
     file_size = file.tell()
     file.seek(0)
     logger.info(f"Upload: client={client_id} file={file.filename} size={file_size} bytes")
-    if file_size > 8 * 1024 * 1024:
-        return jsonify({"error": "File too large. Maximum size is 8MB."}), 413
-    tmp_path = None
+    if file_size > 5 * 1024 * 1024:
+        return jsonify({"error": "File too large. Maximum size is 5MB. Please upload a smaller text-based PDF, DOCX, or TXT file."}), 413
     try:
-        # Save to temp file to avoid loading entire file into memory at once
-        ext = os.path.splitext(file.filename.lower())[1]
-        fd, tmp_path = tempfile.mkstemp(suffix=ext)
-        os.close(fd)
-        file.save(tmp_path)
-        logger.info(f"Saved upload to temp file: {tmp_path}")
-        text = extract_text_from_file(tmp_path, file.filename)
+        text = extract_text_from_file(file, file.filename)
     except Exception as e:
         logger.error("Extraction failed: %s", e)
         return jsonify({"error": "Failed to extract text from file: " + str(e)}), 500
-    finally:
-        if tmp_path and os.path.exists(tmp_path):
-            try:
-                os.remove(tmp_path)
-                logger.info(f"Removed temp file: {tmp_path}")
-            except Exception:
-                pass
     text_len = len(text.strip())
     logger.info(f"Extracted text length: {text_len} chars")
     if not text.strip():
