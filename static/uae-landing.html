@@ -267,62 +267,58 @@ footer{padding:50px 5% 30px;border-top:1px solid rgba(255,255,255,.05)}
 .ck-yes{color:#34d399;font-size:1.1rem}
 .ck-no{color:#ef4444;font-size:1.1rem}
 
-/* 3D SHOWCASE SECTION */
+/* 3D SHOWCASE SECTION — Apple-style immersive */
 .showcase-section{position:relative;height:500vh;background:#02020a}
 .showcase-sticky{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.showcase-track{display:flex;transition:transform .85s cubic-bezier(.16,1,.3,1);width:fit-content}
-.showcase-card{width:100vw;height:100vh;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:5%;position:relative}
-.showcase-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(99,102,241,.06),transparent 50%);pointer-events:none;opacity:0;transition:opacity .6s}
+.showcase-track{display:flex;transition:transform 1.1s cubic-bezier(.16,1,.3,1);width:fit-content}
+.showcase-card{width:100vw;height:100vh;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:4% 5%;position:relative}
+.showcase-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 70% 25%,rgba(99,102,241,.14),transparent 55%),radial-gradient(circle at 25% 85%,rgba(139,92,246,.1),transparent 50%);pointer-events:none;opacity:0;transition:opacity 1s}
 .showcase-card.active::before{opacity:1}
-.showcase-card-inner{width:100%;max-width:1200px;display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center;position:relative;z-index:2}
-@media(max-width:900px){.showcase-card-inner{grid-template-columns:1fr;gap:32px;text-align:center}.showcase-card{padding:100px 5%}}
+.showcase-card-inner{width:100%;max-width:1280px;display:grid;grid-template-columns:1.15fr 1fr;gap:90px;align-items:center;position:relative;z-index:2}
+@media(max-width:1000px){.showcase-card-inner{grid-template-columns:1fr;gap:36px;text-align:center}.showcase-card{padding:80px 5% 130px}}
 
-.showcase-visual{position:relative;perspective:1500px;transform-style:preserve-3d;min-height:340px;display:flex;align-items:center;justify-content:center}
-.feature-3d{position:relative;width:380px;height:380px;margin:0 auto;transform-style:preserve-3d;transition:transform .6s ease;animation:featureFloat 6s ease-in-out infinite}
-@media(max-width:500px){.feature-3d{width:280px;height:280px}}
-@keyframes featureFloat{0%,100%{transform:translateY(0) rotateX(0) rotateY(0)}50%{transform:translateY(-15px) rotateX(3deg) rotateY(-3deg)}}
-.feature-3d-base{position:absolute;inset:0;border-radius:34px;background:linear-gradient(135deg,rgba(99,102,241,.2),rgba(139,92,246,.12),rgba(6,182,212,.08));border:1px solid rgba(255,255,255,.1);box-shadow:0 40px 80px rgba(0,0,0,.45),inset 0 0 80px rgba(99,102,241,.12);backdrop-filter:blur(10px);transform:translateZ(0)}
-.feature-3d-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) translateZ(80px);font-size:6.5rem;filter:drop-shadow(0 25px 45px rgba(0,0,0,.5));transition:transform .5s}
-.showcase-card.active .feature-3d-icon{animation:iconPulse 3s ease-in-out infinite}
-@keyframes iconPulse{0%,100%{transform:translate(-50%,-50%) translateZ(80px) scale(1)}50%{transform:translate(-50%,-50%) translateZ(110px) scale(1.1)}}
-.feature-3d-ring{position:absolute;inset:-35px;border-radius:50%;border:2px dashed rgba(99,102,241,.22);animation:spin3d 18s linear infinite;transform:translateZ(-40px)}
-@keyframes spin3d{from{transform:rotate(0) translateZ(-40px)}to{transform:rotate(360deg) translateZ(-40px)}}
-.feature-3d-ring-2{position:absolute;inset:-60px;border-radius:50%;border:1px solid rgba(139,92,246,.12);animation:spin3d2 24s linear infinite reverse;transform:translateZ(-80px)}
-@keyframes spin3d2{from{transform:rotate(0) translateZ(-80px)}to{transform:rotate(360deg) translateZ(-80px)}}
-.feature-3d-orb{position:absolute;border-radius:50%;filter:blur(24px);opacity:.5;animation:floatOrb 7s ease-in-out infinite}
-.feature-3d-orb.o1{width:90px;height:90px;background:#6366f1;top:8%;left:8%}
-.feature-3d-orb.o2{width:70px;height:70px;background:#8b5cf6;bottom:12%;right:8%;animation-delay:-2.5s}
-.feature-3d-orb.o3{width:55px;height:55px;background:#06b6d4;top:55%;right:5%;animation-delay:-4.5s}
-@keyframes floatOrb{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-25px) scale(1.15)}}
+.showcase-visual{position:relative;perspective:1700px;transform-style:preserve-3d;min-height:340px;display:flex;align-items:center;justify-content:center}
+.feature-frame{position:relative;width:100%;max-width:620px;aspect-ratio:4/3;transform-style:preserve-3d;transition:transform 1.1s cubic-bezier(.16,1,.3,1);border-radius:34px;overflow:hidden;box-shadow:0 70px 160px rgba(0,0,0,.6);transform:rotateY(-22deg) rotateX(7deg) scale(.9)}
+.showcase-card.active .feature-frame{transform:rotateY(-6deg) rotateX(2deg) scale(1)}
+.feature-frame img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 1.4s ease}
+.showcase-card.active .feature-frame img{transform:scale(1.06)}
+.feature-frame::after{content:'';position:absolute;inset:0;border:1px solid rgba(255,255,255,.14);border-radius:34px;pointer-events:none;box-shadow:inset 0 0 80px rgba(99,102,241,.12)}
+.feature-glow{position:absolute;inset:-50px;background:radial-gradient(circle at 50% 50%,rgba(99,102,241,.35),rgba(139,92,246,.18),transparent 60%);filter:blur(55px);z-index:-1;opacity:.55;animation:glowPulse 6s ease-in-out infinite}
+@keyframes glowPulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:.85;transform:scale(1.06)}}
+.feature-badge{position:absolute;bottom:22px;left:22px;background:rgba(0,0,0,.5);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);padding:10px 18px;border-radius:24px;font-size:.75rem;font-weight:800;color:#f1f5f9;display:flex;align-items:center;gap:8px}
+.feature-badge::before{content:'';width:8px;height:8px;border-radius:50%;background:#34d399}
 
-.showcase-content{opacity:0;transform:translateX(50px);transition:all .8s cubic-bezier(.16,1,.3,1) .15s}
-.showcase-card.active .showcase-content{opacity:1;transform:translateX(0)}
-.showcase-label{font-size:.68rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.14em;margin-bottom:16px}
-.showcase-card h2{font-size:clamp(2.4rem,4.5vw,4rem);font-weight:900;color:#f1f5f9;letter-spacing:-.04em;line-height:1.08;margin-bottom:24px}
+.showcase-content{opacity:0;transform:translateY(40px);transition:all 1s cubic-bezier(.16,1,.3,1) .25s}
+.showcase-card.active .showcase-content{opacity:1;transform:translateY(0)}
+.showcase-label{font-size:.64rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.18em;margin-bottom:16px}
+.showcase-card h2{font-size:clamp(2.3rem,4.2vw,4rem);font-weight:900;color:#f8fafc;letter-spacing:-.04em;line-height:1.05;margin-bottom:22px}
 .showcase-card h2 .grad{background:linear-gradient(135deg,#a78bfa 0%,#60a5fa 50%,#34d399 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.showcase-desc{font-size:1.08rem;color:#475569;line-height:1.85;margin-bottom:34px}
-.showcase-points{display:flex;flex-direction:column;gap:16px}
-.showcase-point{display:flex;align-items:flex-start;gap:14px;font-size:.92rem;color:#94a3b8;line-height:1.6}
+.showcase-desc{font-size:1.05rem;color:#475569;line-height:1.85;margin-bottom:28px}
+.showcase-chips{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:30px}
+@media(max-width:1000px){.showcase-chips{justify-content:center}}
+.showcase-chip{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:8px 15px;font-size:.74rem;color:#94a3b8;font-weight:600;backdrop-filter:blur(4px)}
+.showcase-points{display:flex;flex-direction:column;gap:14px}
+.showcase-point{display:flex;align-items:flex-start;gap:12px;font-size:.9rem;color:#94a3b8;line-height:1.6}
 .showcase-point::before{content:'✓';color:#34d399;font-weight:800;font-size:1rem;flex-shrink:0;margin-top:2px}
-.showcase-story{background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.15);border-radius:16px;padding:20px 22px;margin-top:28px}
-.showcase-story-title{font-size:.78rem;font-weight:800;color:#a78bfa;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
-.showcase-story-text{font-size:.86rem;color:#64748b;line-height:1.7;font-style:italic}
-.showcase-story-text strong{color:#94a3b8}
+.showcase-story{background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.18);border-radius:20px;padding:22px 24px;margin-top:30px}
+.showcase-story-title{font-size:.72rem;font-weight:800;color:#a78bfa;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.showcase-story-text{font-size:.86rem;color:#94a3b8;line-height:1.75;font-style:italic}
+.showcase-story-text strong{color:#cbd5e1}
 
-.showcase-nav{position:absolute;right:34px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:14px;z-index:100}
-@media(max-width:900px){.showcase-nav{display:none}}
-.showcase-dot{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.12);cursor:pointer;transition:.3s;position:relative}
-.showcase-dot::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid transparent;transition:.3s}
-.showcase-dot.active{background:#6366f1;box-shadow:0 0 14px rgba(99,102,241,.9)}
+.showcase-nav{position:absolute;right:36px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:16px;z-index:100}
+@media(max-width:1000px){.showcase-nav{display:none}}
+.showcase-dot{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.12);cursor:pointer;transition:.3s;position:relative}
+.showcase-dot::after{content:'';position:absolute;inset:-5px;border-radius:50%;border:1px solid transparent;transition:.3s}
+.showcase-dot.active{background:#6366f1;box-shadow:0 0 16px rgba(99,102,241,.9)}
 .showcase-dot.active::after{border-color:rgba(99,102,241,.35)}
-.showcase-progress{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:12px;z-index:100}
-.showcase-progress span{font-size:.72rem;color:#475569;font-weight:800}
+.showcase-progress{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:12px;z-index:100}
+.showcase-progress span{font-size:.7rem;color:#475569;font-weight:800}
 .showcase-bar{width:220px;height:3px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
-.showcase-bar-fill{height:100%;background:linear-gradient(90deg,#6366f1,#8b5cf6);width:0%;transition:width .5s}
-.showcase-hint{position:absolute;bottom:70px;left:50%;transform:translateX(-50%);font-size:.72rem;color:#334155;letter-spacing:.05em;animation:hintPulse 2s infinite;z-index:100}
-@keyframes hintPulse{0%,100%{opacity:.6}50%{opacity:1}}
+.showcase-bar-fill{height:100%;background:linear-gradient(90deg,#6366f1,#8b5cf6);width:0%;transition:width .6s}
+.showcase-hint{position:absolute;bottom:72px;left:50%;transform:translateX(-50%);font-size:.7rem;color:#334155;letter-spacing:.05em;animation:hintPulse 2.5s infinite;z-index:100}
+@keyframes hintPulse{0%,100%{opacity:.5}50%{opacity:1}}
 .showcase-mobile-dots{display:none;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:20px}
-@media(max-width:900px){.showcase-mobile-dots{display:flex}}
+@media(max-width:1000px){.showcase-mobile-dots{display:flex}}
 .showcase-mobile-dots .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.2)}
 .showcase-mobile-dots .dot.active{background:#6366f1}
 </style>
@@ -454,24 +450,26 @@ footer{padding:50px 5% 30px;border-top:1px solid rgba(255,255,255,.05)}
       <article class="showcase-card active" data-index="0">
         <div class="showcase-card-inner">
           <div class="showcase-visual">
-            <div class="feature-3d">
-              <div class="feature-3d-orb o1"></div>
-              <div class="feature-3d-orb o2"></div>
-              <div class="feature-3d-orb o3"></div>
-              <div class="feature-3d-ring"></div>
-              <div class="feature-3d-ring-2"></div>
-              <div class="feature-3d-base"></div>
-              <div class="feature-3d-icon">🌍</div>
+            <div class="feature-frame">
+              <div class="feature-glow"></div>
+              <img src="/static/images/languages.jpg" alt="Arabic and English support" loading="lazy" onerror="this.style.opacity='0'">
+              <div class="feature-badge">Arabic + English</div>
             </div>
           </div>
           <div class="showcase-content">
             <div class="showcase-label">01 / Platform Capabilities</div>
-            <h2>Arabic + English<br><span class="grad">Automatic Bilingual AI</span></h2>
+            <h2>Arabic & English<br><span class="grad">Automatic Bilingual AI</span></h2>
             <div class="showcase-desc">BotifyAI detects whether your customer writes in Arabic or English and replies in the same language — instantly. No setup, no configuration, perfect for the UAE's bilingual market.</div>
+            <div class="showcase-chips">
+              <span class="showcase-chip">Auto-detect</span>
+              <span class="showcase-chip">Mixed messages</span>
+              <span class="showcase-chip">No translation</span>
+              <span class="showcase-chip">Zero setup</span>
+            </div>
             <div class="showcase-points">
-              <div class="showcase-point">Auto-detects Arabic, English, and mixed messages</div>
-              <div class="showcase-point">Replies naturally in the same language</div>
-              <div class="showcase-point">No manual switching or translation needed</div>
+              <div class="showcase-point">Customer types in العربية, bot replies in Arabic</div>
+              <div class="showcase-point">Switch between Arabic and English mid-conversation</div>
+              <div class="showcase-point">Built for Emirati, expat, and tourist customers</div>
             </div>
             <div class="showcase-story">
               <div class="showcase-story-title">Real Customer Story</div>
@@ -486,24 +484,26 @@ footer{padding:50px 5% 30px;border-top:1px solid rgba(255,255,255,.05)}
       <article class="showcase-card" data-index="1">
         <div class="showcase-card-inner">
           <div class="showcase-visual">
-            <div class="feature-3d">
-              <div class="feature-3d-orb o1" style="background:#10b981"></div>
-              <div class="feature-3d-orb o2" style="background:#34d399;animation-delay:-2s"></div>
-              <div class="feature-3d-orb o3" style="background:#06b6d4;animation-delay:-4s"></div>
-              <div class="feature-3d-ring" style="border-color:rgba(52,211,153,.25)"></div>
-              <div class="feature-3d-ring-2" style="border-color:rgba(6,182,212,.12)"></div>
-              <div class="feature-3d-base" style="background:linear-gradient(135deg,rgba(52,211,153,.2),rgba(6,182,212,.12),rgba(99,102,241,.08))"></div>
-              <div class="feature-3d-icon">⚡</div>
+            <div class="feature-frame">
+              <div class="feature-glow"></div>
+              <img src="/static/images/instant.jpg" alt="Instant responses" loading="lazy" onerror="this.style.opacity='0'">
+              <div class="feature-badge">Under 2 Seconds</div>
             </div>
           </div>
           <div class="showcase-content">
             <div class="showcase-label">02 / Platform Capabilities</div>
-            <h2>Instant Replies Under<br><span class="grad">2 Seconds</span></h2>
-            <div class="showcase-desc">Your customers get answers faster than any human agent — 24 hours a day, 7 days a week, 365 days a year. No queues, no waiting, no missed messages.</div>
+            <h2>Replies Before Your<br><span class="grad">Competitor Can</span></h2>
+            <div class="showcase-desc">Every message is answered in under 2 seconds. While other businesses make customers wait, yours is already booking appointments, sharing prices, and capturing leads — 24/7, 365 days.</div>
+            <div class="showcase-chips">
+              <span class="showcase-chip">24/7 online</span>
+              <span class="showcase-chip">No queues</span>
+              <span class="showcase-chip">92% resolution</span>
+              <span class="showcase-chip">Instant lead capture</span>
+            </div>
             <div class="showcase-points">
-              <div class="showcase-point">Responds to 92% of queries without human help</div>
-              <div class="showcase-point">Handles multiple chats at the same time</div>
-              <div class="showcase-point">Works on weekends, holidays, and midnight</div>
+              <div class="showcase-point">Handles thousands of chats simultaneously</div>
+              <div class="showcase-point">Never takes a break, holiday, or sick day</div>
+              <div class="showcase-point">Escalates complex queries to your team</div>
             </div>
             <div class="showcase-story">
               <div class="showcase-story-title">Real Customer Story</div>
@@ -518,24 +518,26 @@ footer{padding:50px 5% 30px;border-top:1px solid rgba(255,255,255,.05)}
       <article class="showcase-card" data-index="2">
         <div class="showcase-card-inner">
           <div class="showcase-visual">
-            <div class="feature-3d">
-              <div class="feature-3d-orb o1" style="background:#f59e0b"></div>
-              <div class="feature-3d-orb o2" style="background:#fbbf24;animation-delay:-2s"></div>
-              <div class="feature-3d-orb o3" style="background:#6366f1;animation-delay:-4s"></div>
-              <div class="feature-3d-ring" style="border-color:rgba(251,191,36,.25)"></div>
-              <div class="feature-3d-ring-2" style="border-color:rgba(245,158,11,.12)"></div>
-              <div class="feature-3d-base" style="background:linear-gradient(135deg,rgba(251,191,36,.2),rgba(245,158,11,.12),rgba(99,102,241,.08))"></div>
-              <div class="feature-3d-icon">🤖</div>
+            <div class="feature-frame">
+              <div class="feature-glow"></div>
+              <img src="/static/images/ai.jpg" alt="Custom AI training" loading="lazy" onerror="this.style.opacity='0'">
+              <div class="feature-badge">Your Own AI Brain</div>
             </div>
           </div>
           <div class="showcase-content">
             <div class="showcase-label">03 / Platform Capabilities</div>
-            <h2>Custom AI Training On<br><span class="grad">Your Business Data</span></h2>
-            <div class="showcase-desc">Trained on your products, services, prices, FAQs, and policies. It gives accurate answers specific to your UAE business — not generic chatbot responses.</div>
+            <h2>Trained Like a Real<br><span class="grad">Employee</span></h2>
+            <div class="showcase-desc">Upload your catalog, price list, service menu, or FAQs. The bot memorizes everything and answers exactly the way your best team member would — only faster, in Arabic & English, and available forever.</div>
+            <div class="showcase-chips">
+              <span class="showcase-chip">PDF upload</span>
+              <span class="showcase-chip">Text paste</span>
+              <span class="showcase-chip">Auto-updates</span>
+              <span class="showcase-chip">Brand tone</span>
+            </div>
             <div class="showcase-points">
-              <div class="showcase-point">Upload PDFs, documents, or paste text directly</div>
-              <div class="showcase-point">Bot learns your exact prices, policies, and tone</div>
-              <div class="showcase-point">Keep answers updated anytime from dashboard</div>
+              <div class="showcase-point">Learns your products, prices, and policies</div>
+              <div class="showcase-point">Replies in your brand voice and tone</div>
+              <div class="showcase-point">Update knowledge anytime from dashboard</div>
             </div>
             <div class="showcase-story">
               <div class="showcase-story-title">Real Customer Story</div>
@@ -550,24 +552,26 @@ footer{padding:50px 5% 30px;border-top:1px solid rgba(255,255,255,.05)}
       <article class="showcase-card" data-index="3">
         <div class="showcase-card-inner">
           <div class="showcase-visual">
-            <div class="feature-3d">
-              <div class="feature-3d-orb o1" style="background:#ef4444"></div>
-              <div class="feature-3d-orb o2" style="background:#f87171;animation-delay:-2s"></div>
-              <div class="feature-3d-orb o3" style="background:#6366f1;animation-delay:-4s"></div>
-              <div class="feature-3d-ring" style="border-color:rgba(239,68,68,.25)"></div>
-              <div class="feature-3d-ring-2" style="border-color:rgba(248,113,113,.12)"></div>
-              <div class="feature-3d-base" style="background:linear-gradient(135deg,rgba(239,68,68,.2),rgba(248,113,113,.12),rgba(99,102,241,.08))"></div>
-              <div class="feature-3d-icon">📊</div>
+            <div class="feature-frame">
+              <div class="feature-glow"></div>
+              <img src="/static/images/analytics.jpg" alt="Real-time analytics" loading="lazy" onerror="this.style.opacity='0'">
+              <div class="feature-badge">Live Dashboard</div>
             </div>
           </div>
           <div class="showcase-content">
             <div class="showcase-label">04 / Platform Capabilities</div>
-            <h2>Real-Time Analytics &<br><span class="grad">Customer Insights</span></h2>
-            <div class="showcase-desc">See every conversation, track popular questions, identify customer pain points, and use data to improve your products, services, and marketing in the UAE market.</div>
+            <h2>Know What Your<br><span class="grad">Customers Want</span></h2>
+            <div class="showcase-desc">See every conversation, track your most-asked questions, identify drop-off points, and discover hidden opportunities. Turn chat data into business decisions that increase revenue in the UAE market.</div>
+            <div class="showcase-chips">
+              <span class="showcase-chip">Conversation logs</span>
+              <span class="showcase-chip">Top questions</span>
+              <span class="showcase-chip">Lead tracking</span>
+              <span class="showcase-chip">Export data</span>
+            </div>
             <div class="showcase-points">
-              <div class="showcase-point">Live dashboard with conversation history</div>
-              <div class="showcase-point">Track top questions, drop-off points, and leads</div>
-              <div class="showcase-point">Export insights to improve your business</div>
+              <div class="showcase-point">Real-time dashboard with full chat history</div>
+              <div class="showcase-point">Track which products customers ask about most</div>
+              <div class="showcase-point">Download reports to improve marketing</div>
             </div>
             <div class="showcase-story">
               <div class="showcase-story-title">Real Customer Story</div>
@@ -582,24 +586,26 @@ footer{padding:50px 5% 30px;border-top:1px solid rgba(255,255,255,.05)}
       <article class="showcase-card" data-index="4">
         <div class="showcase-card-inner">
           <div class="showcase-visual">
-            <div class="feature-3d">
-              <div class="feature-3d-orb o1" style="background:#06b6d4"></div>
-              <div class="feature-3d-orb o2" style="background:#22d3ee;animation-delay:-2s"></div>
-              <div class="feature-3d-orb o3" style="background:#6366f1;animation-delay:-4s"></div>
-              <div class="feature-3d-ring" style="border-color:rgba(6,182,212,.25)"></div>
-              <div class="feature-3d-ring-2" style="border-color:rgba(34,211,238,.12)"></div>
-              <div class="feature-3d-base" style="background:linear-gradient(135deg,rgba(6,182,212,.2),rgba(34,211,238,.12),rgba(99,102,241,.08))"></div>
-              <div class="feature-3d-icon">📱</div>
+            <div class="feature-frame">
+              <div class="feature-glow"></div>
+              <img src="/static/images/mobile.jpg" alt="Mobile perfect" loading="lazy" onerror="this.style.opacity='0'">
+              <div class="feature-badge">Mobile First</div>
             </div>
           </div>
           <div class="showcase-content">
             <div class="showcase-label">05 / Platform Capabilities</div>
-            <h2>Mobile Perfect For<br><span class="grad">80% of UAE Users</span></h2>
-            <div class="showcase-desc">BotifyAI is designed mobile-first — smooth, fast, and beautiful on every device. WhatsApp, Instagram, and website chat all work perfectly on mobile.</div>
+            <h2>Looks Beautiful on<br><span class="grad">Every Phone</span></h2>
+            <div class="showcase-desc">80% of UAE customers browse on mobile. BotifyAI is built mobile-first — fast, smooth, and stunning on WhatsApp, Instagram, and any website, even on slower hotel or mall Wi-Fi.</div>
+            <div class="showcase-chips">
+              <span class="showcase-chip">WhatsApp ready</span>
+              <span class="showcase-chip">Instagram DM</span>
+              <span class="showcase-chip">All screen sizes</span>
+              <span class="showcase-chip">Fast loading</span>
+            </div>
             <div class="showcase-points">
-              <div class="showcase-point">Responsive chat widget for all screen sizes</div>
+              <div class="showcase-point">Responsive chat widget fits every screen</div>
               <div class="showcase-point">Native WhatsApp & Instagram experience</div>
-              <div class="showcase-point">Fast loading even on slower mobile networks</div>
+              <div class="showcase-point">Lightning-fast load on mobile networks</div>
             </div>
             <div class="showcase-story">
               <div class="showcase-story-title">Real Customer Story</div>
@@ -1057,18 +1063,18 @@ function updateShowcaseFromScroll(){
 window.addEventListener('scroll',updateShowcaseFromScroll,{passive:true});
 
 showcase.addEventListener('mousemove',e=>{
-  if(window.innerWidth<900)return;
-  const active=document.querySelector('.showcase-card.active .feature-3d');
+  if(window.innerWidth<1000)return;
+  const active=document.querySelector('.showcase-card.active .feature-frame');
   if(!active)return;
   const rect=active.getBoundingClientRect();
   const x=(e.clientX-rect.left)/rect.width-.5;
   const y=(e.clientY-rect.top)/rect.height-.5;
-  active.style.transform=`rotateY(${x*12}deg) rotateX(${-y*12}deg) translateZ(20px)`;
-  active.style.animation='none';
+  active.style.transform=`rotateY(${x*16}deg) rotateX(${-y*14}deg) scale(1.02)`;
+  active.style.transition='transform .2s ease-out';
 });
 showcase.addEventListener('mouseleave',()=>{
-  const active=document.querySelector('.showcase-card.active .feature-3d');
-  if(active){active.style.transform='';active.style.animation='';}
+  const active=document.querySelector('.showcase-card.active .feature-frame');
+  if(active){active.style.transform='';active.style.transition='transform 1.1s cubic-bezier(.16,1,.3,1)';}
 });
 
 window.addEventListener('keydown',e=>{
