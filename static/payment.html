@@ -61,6 +61,7 @@ nav{padding:16px 28px;display:flex;align-items:center;justify-content:space-betw
 @keyframes spin{to{transform:translateY(-50%) rotate(360deg)}}
 
 .secure-note{text-align:center;color:#334155;font-size:.75rem;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:6px}
+.trust-pill{padding:5px 12px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);font-size:.72rem;color:#94a3b8;font-weight:500}
 
 /* SUCCESS */
 #successScreen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;text-align:center;padding:40px 20px}
@@ -191,13 +192,16 @@ nav{padding:16px 28px;display:flex;align-items:center;justify-content:space-betw
             </select>
         </div>
 
-        <div style="background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.15);border-radius:14px;padding:22px;text-align:center;margin-bottom:14px">
-          <div style="font-size:1.6rem;margin-bottom:10px">🔐</div>
-          <div style="font-size:.92rem;font-weight:700;color:#e2e8f0;margin-bottom:6px">Secure Online Payment — Coming Soon</div>
-          <div style="font-size:.82rem;color:#475569;line-height:1.7;margin-bottom:16px">Our payment gateway is being set up. In the meantime, contact us directly on WhatsApp to get started — we'll activate your bot within 1 hour!</div>
-          <a href="https://wa.me/917992111021?text=Hi!%20I%20want%20to%20purchase%20BotifyAI.%20Please%20help%20me%20get%20started." target="_blank" style="display:inline-block;padding:13px 32px;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;border-radius:10px;font-weight:700;font-size:.9rem;text-decoration:none;transition:.2s">💬 Contact on WhatsApp →</a>
+        <button id="payBtn" class="pay-btn" onclick="startPayment()">
+          Pay ₹100 — Secure Checkout
+        </button>
+        <div class="secure-note">🔒 256-bit SSL · Razorpay Secure · Cancel anytime</div>
+        <div style="display:flex;justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap">
+          <span class="trust-pill">UPI</span>
+          <span class="trust-pill">Cards</span>
+          <span class="trust-pill">Net Banking</span>
+          <span class="trust-pill">Wallets</span>
         </div>
-        <div class="secure-note">🔒 256-bit SSL · Secure Setup · Cancel anytime</div>
     </div>
 </div>
 
@@ -337,8 +341,31 @@ function startPayment() {
             prefill: { name, email },
             theme: { color: '#6366f1' },
             handler: function(response) {
-                const code = genCode(email, selectedPlan);
-                showSuccess(code, email, selectedPlan, name, website, platform);
+                fetch('/payment-success', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({
+                        plan: selectedPlan,
+                        email, name, website, platform,
+                        payment_id: response.razorpay_payment_id,
+                        order_id: response.razorpay_order_id,
+                        signature: response.razorpay_signature
+                    })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showSuccess(data.access_code, selectedPlan);
+                    } else {
+                        alert('Payment recorded but access creation failed. Please contact support.');
+                    }
+                })
+                .catch(() => {
+                    btn.disabled = false;
+                    btn.classList.remove('loading');
+                    updateBtn();
+                    alert('Payment succeeded but we could not create your account. Please contact support.');
+                });
             },
             modal: {
                 ondismiss: function() {
@@ -359,18 +386,7 @@ function startPayment() {
     });
 }
 
-function genCode(email, plan) {
-    const raw = email + plan + Date.now();
-    let h = 0;
-    for (let i = 0; i < raw.length; i++) { h = ((h << 5) - h) + raw.charCodeAt(i); h |= 0; }
-    return 'AI-' + Math.abs(h).toString(16).toUpperCase().padStart(8,'0').slice(0,8);
-}
-
-function showSuccess(code, email, plan, name, website, platform) {
-    fetch('/payment-success', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ plan, email, name, website, platform, access_code: code, payment_id: 'paddle_'+Date.now() })
-    }).catch(() => {});
+function showSuccess(code, plan) {
     localStorage.setItem('accessCode', code);
     localStorage.setItem('clientPlan', plan);
     document.getElementById('checkoutPage').style.display = 'none';

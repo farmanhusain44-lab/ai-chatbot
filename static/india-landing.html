@@ -38,8 +38,14 @@ body {
 .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 
 /* Navbar */
+.announce {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1002;
+  background: linear-gradient(90deg, #ff9933, #ffffff, #138808);
+  color: #1a1a1a; text-align: center; padding: 10px 16px;
+  font-size: 0.75rem; font-weight: 700; letter-spacing: 0.03em;
+}
 nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  position: fixed; top: 36px; left: 0; right: 0; z-index: 1000;
   background: rgba(11, 13, 23, 0.85);
   backdrop-filter: blur(18px);
   border-bottom: 1px solid var(--border);
@@ -78,13 +84,21 @@ nav {
 
 /* Hero */
 .hero {
-  padding: 150px 0 100px;
+  padding: 170px 0 100px;
   position: relative;
   background:
     radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.18), transparent 40%),
     radial-gradient(circle at 80% 70%, rgba(249, 115, 22, 0.12), transparent 40%),
     var(--bg);
 }
+.hero-glow {
+  position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; opacity: 0.35;
+}
+.hero-glow-1 { width: 500px; height: 500px; background: rgba(99,102,241,0.25); top: -100px; left: 10%; animation: float 8s ease-in-out infinite; }
+.hero-glow-2 { width: 400px; height: 400px; background: rgba(249,115,22,0.18); bottom: 0; right: 5%; animation: float 10s ease-in-out infinite reverse; }
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-30px); } }
+.hero-trust { display: flex; align-items: center; gap: 20px; margin-top: 28px; flex-wrap: wrap; font-size: 0.8rem; color: var(--muted); }
+.hero-trust span { display: flex; align-items: center; gap: 6px; }
 .hero::before {
   content: ''; position: absolute; inset: 0; opacity: 0.08;
   background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
@@ -117,16 +131,36 @@ nav {
 }
 .btn-secondary:hover { background: rgba(255,255,255,0.05); }
 .hero-flag {
-  display: inline-flex; align-items: center; gap: 8px;
+  display: inline-flex; align-items: center; gap: 10px;
   padding: 8px 16px; border-radius: 999px;
   background: rgba(255,255,255,0.05); border: 1px solid var(--border);
   font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;
 }
-.flag-stripe { width: 22px; height: 14px; border-radius: 2px; overflow: hidden; display: flex; flex-direction: column; }
-.flag-stripe span { flex: 1; }
-.flag-stripe span:nth-child(1) { background: var(--tricolor-saffron); }
-.flag-stripe span:nth-child(2) { background: var(--tricolor-white); }
-.flag-stripe span:nth-child(3) { background: var(--tricolor-green); }
+.india-flag { width: 28px; height: 19px; border-radius: 2px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.25); flex-shrink: 0; }
+
+.lang-banner {
+  position: fixed; top: 100px; left: 0; right: 0; z-index: 999;
+  background: linear-gradient(90deg, #ff9933, #ffffff, #138808);
+  color: #1a1a1a; padding: 12px 20px; text-align: center;
+  display: none; font-size: 0.95rem; font-weight: 500;
+}
+.lang-banner .inner { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.lang-banner button { padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; font-size: 0.85rem; transition: transform 0.15s; }
+.lang-banner button:hover { transform: translateY(-1px); }
+.lang-banner .detected { background: #000080; color: #fff; box-shadow: 0 4px 12px rgba(0,0,128,0.25); }
+.lang-banner .english { background: rgba(0,0,0,0.08); color: #1a1a1a; }
+
+.lang-switch {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px; border-radius: 999px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+}
+.lang-switch button {
+  background: transparent; border: none; color: var(--muted); font-size: 0.8rem; font-weight: 600;
+  padding: 6px 12px; border-radius: 999px; cursor: pointer; transition: 0.2s;
+}
+.lang-switch button.active { background: var(--primary); color: #fff; }
+.lang-switch button:hover { color: #fff; }
 
 .hero-demo {
   position: relative;
@@ -319,8 +353,19 @@ body { top: 0 !important; }
 </head>
 <body>
 
+<div class="announce">🇮🇳 Now serving businesses across all 28 states of India · 22+ languages supported</div>
+
 <!-- Google Translate hidden element -->
 <div id="google_translate_element" style="display:none;"></div>
+
+<!-- Language detection banner -->
+<div class="lang-banner" id="langBanner">
+  <div class="inner">
+    <span id="langBannerText">We detected your state. View in your language?</span>
+    <button class="detected" id="langBannerDetected" onclick="applyDetectedLanguage()">Hindi</button>
+    <button class="english" onclick="setLanguage('en')">English</button>
+  </div>
+</div>
 
 <nav id="navbar">
   <div class="nav-inner">
@@ -335,23 +380,9 @@ body { top: 0 !important; }
       <li><a href="#pricing">Pricing</a></li>
       <li><a href="#faq">FAQ</a></li>
       <li>
-        <div class="lang-box">
-          🌐 Language
-          <select id="langSelect" onchange="changeLanguage(this.value)">
-            <option value="en">English</option>
-            <option value="hi">Hindi - हिन्दी</option>
-            <option value="ta">Tamil - தமிழ்</option>
-            <option value="te">Telugu - తెలుగు</option>
-            <option value="bn">Bengali - বাংলা</option>
-            <option value="mr">Marathi - मराठी</option>
-            <option value="gu">Gujarati - ગુજરાતી</option>
-            <option value="pa">Punjabi - ਪੰਜਾਬੀ</option>
-            <option value="ml">Malayalam - മലയാളം</option>
-            <option value="kn">Kannada - ಕನ್ನಡ</option>
-            <option value="ur">Urdu - اردو</option>
-            <option value="as">Assamese - অসমীয়া</option>
-            <option value="or">Odia - ଓଡ଼ିଆ</option>
-          </select>
+        <div class="lang-switch" id="langSwitch">
+          <button class="active" onclick="setLanguage('en')" data-lang="en">English</button>
+          <button onclick="setLanguage('hi')" data-lang="hi" id="navDetectedLang">Hindi</button>
         </div>
       </li>
     </ul>
@@ -360,10 +391,31 @@ body { top: 0 !important; }
 </nav>
 
 <section class="hero" id="home">
+  <div class="hero-glow hero-glow-1"></div>
+  <div class="hero-glow hero-glow-2"></div>
   <div class="container hero-inner">
     <div>
       <div class="hero-flag">
-        <div class="flag-stripe"><span></span><span></span><span></span></div>
+        <svg class="india-flag" viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg">
+          <rect width="900" height="200" fill="#FF9933"/>
+          <rect y="200" width="900" height="200" fill="#FFFFFF"/>
+          <rect y="400" width="900" height="200" fill="#138808"/>
+          <circle cx="450" cy="300" r="80" fill="none" stroke="#000080" stroke-width="6"/>
+          <g stroke="#000080" stroke-width="4.5" stroke-linecap="round">
+            <line x1="450" y1="220" x2="450" y2="380"/>
+            <line x1="450" y1="220" x2="450" y2="380" transform="rotate(15 450 300)"/>
+            <line x1="450" y1="220" x2="450" y2="380" transform="rotate(30 450 300)"/>
+            <line x1="450" y1="220" x2="450" y2="380" transform="rotate(45 450 300)"/>
+            <line x1="450" y1="220" x2="450" y2="380" transform="rotate(60 450 300)"/>
+            <line x1="450" y1="220" x2="450" y2="380" transform="rotate(75 450 300)"/>
+            <line x1="450" y1="220" x2="450" y2="380" transform="rotate(90 450 300)"/>
+            <line x1="450" y1="220" x2="450" y2="380" transform="rotate(105 450 300)"/>
+            <line x1="450" y1="220" x2="450" y2="380" transform="rotate(120 450 300)"/>
+            <line x1="450" y1="220" x2="450" y2="380" transform="rotate(135 450 300)"/>
+            <line x1="450" y1="220" x2="450" y2="380" transform="rotate(150 450 300)"/>
+            <line x1="450" y1="220" x2="450" y2="380" transform="rotate(165 450 300)"/>
+          </g>
+        </svg>
         Made for India
       </div>
       <h1>AI Chatbot for <span>Every Indian Business</span></h1>
@@ -371,6 +423,11 @@ body { top: 0 !important; }
       <div class="hero-btns">
         <a href="#pricing" class="btn btn-primary">Start at ₹100 →</a>
         <a href="#how-it-works" class="btn btn-secondary">See How It Works</a>
+      </div>
+      <div class="hero-trust">
+        <span>✅ 22+ Indian Languages</span>
+        <span>✅ Razorpay Secure</span>
+        <span>✅ 7-Day Refund</span>
       </div>
     </div>
     <div class="hero-demo">
@@ -552,29 +609,107 @@ function googleTranslateElementInit() {
   }, 'google_translate_element');
 }
 
-function changeLanguage(lang) {
-  if (!window.google || !google.translate) return;
+const langNames = {
+  en: 'English', hi: 'Hindi', mr: 'Marathi', gu: 'Gujarati', pa: 'Punjabi',
+  bn: 'Bengali', ta: 'Tamil', kn: 'Kannada', te: 'Telugu', ml: 'Malayalam',
+  or: 'Odia', as: 'Assamese', ur: 'Urdu'
+};
+
+const stateLangMap = {
+  'Maharashtra': 'mr', 'Goa': 'mr',
+  'Gujarat': 'gu', 'Dadra and Nagar Haveli and Daman and Diu': 'gu',
+  'Punjab': 'pa', 'Chandigarh': 'pa',
+  'West Bengal': 'bn',
+  'Tamil Nadu': 'ta', 'Puducherry': 'ta',
+  'Karnataka': 'kn',
+  'Andhra Pradesh': 'te', 'Telangana': 'te',
+  'Kerala': 'ml', 'Lakshadweep': 'ml',
+  'Odisha': 'or',
+  'Assam': 'as', 'Arunachal Pradesh': 'as', 'Manipur': 'as', 'Meghalaya': 'as', 'Mizoram': 'as', 'Nagaland': 'as', 'Tripura': 'as', 'Sikkim': 'as',
+  'Jammu and Kashmir': 'ur', 'Ladakh': 'ur',
+  'Delhi': 'hi', 'Haryana': 'hi', 'Himachal Pradesh': 'hi', 'Uttarakhand': 'hi', 'Uttar Pradesh': 'hi', 'Bihar': 'hi', 'Jharkhand': 'hi', 'Rajasthan': 'hi', 'Madhya Pradesh': 'hi', 'Chhattisgarh': 'hi', 'Andaman and Nicobar Islands': 'hi'
+};
+
+let detectedLang = 'hi';
+let detectedState = '';
+
+function setLanguage(lang) {
+  localStorage.setItem('botifyai_lang', lang);
   const select = document.querySelector('.goog-te-combo');
   if (select) {
     select.value = lang;
     select.dispatchEvent(new Event('change'));
   }
-  localStorage.setItem('botifyai_lang', lang);
+  updateLangUI(lang);
+  document.getElementById('langBanner').style.display = 'none';
+}
+
+function applyDetectedLanguage() {
+  if (detectedLang) setLanguage(detectedLang);
+}
+
+function updateLangUI(lang) {
+  document.querySelectorAll('.lang-switch button').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === lang);
+  });
+}
+
+function detectStateAndLanguage() {
+  const saved = localStorage.getItem('botifyai_lang');
+  if (saved) {
+    updateLangUI(saved);
+    if (saved !== 'en') setLanguage(saved);
+    return;
+  }
+
+  fetch('https://ipapi.co/json/')
+    .then(r => r.json())
+    .then(data => {
+      const region = data.region || '';
+      detectedState = region;
+      detectedLang = stateLangMap[region] || 'hi';
+      showLangBanner();
+    })
+    .catch(() => {
+      const nav = navigator.language || 'en';
+      const base = nav.split('-')[0];
+      detectedLang = langNames[base] ? base : 'hi';
+      showLangBanner();
+    });
+}
+
+function showLangBanner() {
+  if (detectedLang === 'en') return;
+  const banner = document.getElementById('langBanner');
+  const btn = document.getElementById('langBannerDetected');
+  const navBtn = document.getElementById('navDetectedLang');
+  const text = document.getElementById('langBannerText');
+  const name = langNames[detectedLang] || 'Hindi';
+
+  btn.textContent = name;
+  navBtn.textContent = name;
+  navBtn.setAttribute('onclick', `setLanguage('${detectedLang}')`);
+  navBtn.dataset.lang = detectedLang;
+  text.textContent = detectedState
+    ? `We detected you are in ${detectedState}. View this page in ${name}?`
+    : `View this page in ${name}?`;
+  banner.style.display = 'block';
+  document.body.style.paddingTop = '0';
 }
 
 function restoreLanguage() {
   const saved = localStorage.getItem('botifyai_lang');
-  if (!saved || saved === 'en') return;
-  const check = setInterval(() => {
-    const select = document.querySelector('.goog-te-combo');
-    const sel = document.getElementById('langSelect');
-    if (select) {
-      select.value = saved;
-      select.dispatchEvent(new Event('change'));
-      if (sel) sel.value = saved;
-      clearInterval(check);
-    }
-  }, 500);
+  if (saved) {
+    const check = setInterval(() => {
+      const select = document.querySelector('.goog-te-combo');
+      if (select) {
+        select.value = saved;
+        select.dispatchEvent(new Event('change'));
+        updateLangUI(saved);
+        clearInterval(check);
+      }
+    }, 500);
+  }
 }
 
 function toggleMenu() {
@@ -635,7 +770,10 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.4 });
 observer.observe(document.getElementById('results'));
 
-window.addEventListener('load', restoreLanguage);
+window.addEventListener('load', () => {
+  restoreLanguage();
+  detectStateAndLanguage();
+});
 </script>
 </body>
 </html>
