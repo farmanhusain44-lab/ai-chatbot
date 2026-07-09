@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BotifyAI India — AI Chatbot for Every Indian Business</title>
+<meta name="description" content="BotifyAI India - Multi-lingual AI chatbot for Indian businesses. Plans starting at ₹100. Support Hindi, Tamil, Telugu, Bengali, Marathi, Gujarati + more.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --accent: #f97316;
+  --accent-glow: rgba(249, 115, 22, 0.35);
+  --bg: #0b0d17;
+  --bg-light: #111827;
+  --card: #161b2e;
+  --text: #f3f4f6;
+  --muted: #94a3b8;
+  --border: rgba(255,255,255,0.08);
+  --green: #22c55e;
+  --tricolor-saffron: #ff9933;
+  --tricolor-white: #ffffff;
+  --tricolor-green: #138808;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+::selection { background: var(--primary); color: #fff; }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* Navbar */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  background: rgba(11, 13, 23, 0.85);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-inner {
+  max-width: 1200px; margin: 0 auto; padding: 14px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 1.4rem;
+  color: #fff; text-decoration: none;
+}
+.logo img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; }
+.nav-links {
+  display: flex; align-items: center; gap: 32px;
+  list-style: none;
+}
+.nav-links a {
+  color: var(--muted); text-decoration: none; font-weight: 500; font-size: 0.95rem;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: #fff; }
+.lang-box {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 14px; border-radius: 999px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+  font-size: 0.85rem; color: var(--text);
+}
+.lang-box select {
+  background: transparent; border: none; color: #fff; font-family: inherit;
+  font-size: 0.85rem; outline: none; cursor: pointer;
+}
+.lang-box select option { background: var(--bg-light); color: #fff; }
+.mobile-menu { display: none; background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
+
+/* Hero */
+.hero {
+  padding: 150px 0 100px;
+  position: relative;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.18), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(249, 115, 22, 0.12), transparent 40%),
+    var(--bg);
+}
+.hero::before {
+  content: ''; position: absolute; inset: 0; opacity: 0.08;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+}
+.hero-inner {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 60px; align-items: center;
+}
+.hero h1 {
+  font-family: 'Poppins', sans-serif; font-size: 3.4rem; font-weight: 800; line-height: 1.12;
+  background: linear-gradient(90deg, #fff 0%, #c7d2fe 60%, var(--accent) 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero h1 span { color: var(--accent); }
+.hero p { font-size: 1.15rem; color: var(--muted); margin-top: 20px; max-width: 540px; }
+.hero-btns { display: flex; gap: 16px; margin-top: 34px; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 14px 28px; border-radius: 12px; font-weight: 600; font-size: 1rem;
+  text-decoration: none; transition: transform 0.2s, box-shadow 0.2s; border: none; cursor: pointer;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff; box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(99, 102, 241, 0.4); }
+.btn-secondary {
+  background: transparent; color: #fff; border: 1px solid var(--border);
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.05); }
+.hero-flag {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 16px; border-radius: 999px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+  font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;
+}
+.flag-stripe { width: 22px; height: 14px; border-radius: 2px; overflow: hidden; display: flex; flex-direction: column; }
+.flag-stripe span { flex: 1; }
+.flag-stripe span:nth-child(1) { background: var(--tricolor-saffron); }
+.flag-stripe span:nth-child(2) { background: var(--tricolor-white); }
+.flag-stripe span:nth-child(3) { background: var(--tricolor-green); }
+
+.hero-demo {
+  position: relative;
+}
+.chat-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 24px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.45); overflow: hidden;
+}
+.chat-header {
+  padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+  background: linear-gradient(90deg, rgba(99,102,241,0.25), rgba(249,115,22,0.15));
+  border-bottom: 1px solid var(--border);
+}
+.chat-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.1); }
+.chat-name { font-weight: 600; font-size: 0.95rem; }
+.chat-status { font-size: 0.75rem; color: var(--green); display: flex; align-items: center; gap: 6px; }
+.chat-status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+.chat-body { padding: 20px; min-height: 280px; display: flex; flex-direction: column; gap: 14px; }
+.msg { padding: 12px 16px; border-radius: 18px; max-width: 80%; font-size: 0.9rem; animation: pop 0.35s ease both; }
+.msg.bot { background: rgba(255,255,255,0.06); border: 1px solid var(--border); border-top-left-radius: 4px; align-self: flex-start; }
+.msg.user { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); border-top-right-radius: 4px; align-self: flex-end; }
+.chat-input {
+  padding: 14px 20px; display: flex; gap: 10px; border-top: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+}
+.chat-input input {
+  flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+  border-radius: 999px; padding: 10px 18px; color: #fff; outline: none;
+}
+.chat-input button {
+  width: 38px; height: 38px; border-radius: 50%; border: none;
+  background: var(--primary); color: #fff; cursor: pointer;
+}
+
+@keyframes pop { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Section common */
+.section { padding: 90px 0; }
+.section-title {
+  font-family: 'Poppins', sans-serif; font-size: 2.4rem; font-weight: 700; text-align: center; margin-bottom: 16px;
+}
+.section-subtitle { text-align: center; color: var(--muted); max-width: 600px; margin: 0 auto 60px; font-size: 1.05rem; }
+
+/* Features */
+#features { background: var(--bg-light); }
+.features-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;
+}
+.feature-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 30px;
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.feature-card:hover { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(0,0,0,0.25); border-color: rgba(99,102,241,0.25); }
+.feature-icon {
+  width: 54px; height: 54px; border-radius: 14px; display: grid; place-items: center;
+  font-size: 1.6rem; margin-bottom: 20px;
+  background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(249,115,22,0.1));
+  border: 1px solid var(--border);
+}
+.feature-card h3 { font-size: 1.15rem; margin-bottom: 10px; }
+.feature-card p { color: var(--muted); font-size: 0.95rem; }
+
+/* How It Works */
+.steps {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 30px; counter-reset: step;
+}
+.step {
+  background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 32px; position: relative;
+}
+.step::before {
+  counter-increment: step; content: counter(step);
+  position: absolute; top: -18px; left: 24px;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--primary); color: #fff; font-weight: 700;
+  display: grid; place-items: center; box-shadow: 0 8px 20px rgba(99,102,241,0.35);
+}
+.step h3 { margin-top: 10px; margin-bottom: 10px; font-size: 1.15rem; }
+.step p { color: var(--muted); font-size: 0.95rem; }
+
+/* Results / Stats */
+#results {
+  background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(249,115,22,0.08));
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+}
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;
+}
+.stat {
+  text-align: center; padding: 30px 20px; background: var(--card);
+  border: 1px solid var(--border); border-radius: 20px;
+}
+.stat-num {
+  font-family: 'Poppins', sans-serif; font-size: 3rem; font-weight: 800;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.stat-label { color: var(--muted); font-size: 0.95rem; margin-top: 6px; }
+
+/* Pricing */
+#pricing { background: var(--bg-light); }
+.pricing-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; align-items: stretch;
+}
+.price-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 34px;
+  display: flex; flex-direction: column; position: relative; transition: transform 0.25s;
+}
+.price-card:hover { transform: translateY(-6px); }
+.price-card.popular {
+  border-color: var(--accent); box-shadow: 0 0 40px var(--accent-glow);
+}
+.popular-badge {
+  position: absolute; top: -12px; right: 24px;
+  background: linear-gradient(135deg, var(--accent), #ea580c); color: #fff;
+  padding: 6px 14px; border-radius: 999px; font-size: 0.75rem; font-weight: 700;
+}
+.plan-name { font-size: 1.3rem; font-weight: 700; }
+.plan-desc { color: var(--muted); font-size: 0.9rem; margin: 8px 0 18px; }
+.price { font-family: 'Poppins', sans-serif; font-size: 3rem; font-weight: 800; }
+.price span { font-size: 1rem; color: var(--muted); font-weight: 400; }
+.plan-features { list-style: none; margin: 24px 0; flex: 1; }
+.plan-features li {
+  padding: 10px 0; border-bottom: 1px solid var(--border); color: var(--muted); font-size: 0.95rem;
+  display: flex; align-items: center; gap: 10px;
+}
+.plan-features li::before { content: '✓'; color: var(--green); font-weight: 700; }
+.plan-features li:last-child { border-bottom: none; }
+.btn-block { width: 100%; margin-top: auto; }
+
+/* FAQ */
+.faq-item {
+  background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+  margin-bottom: 14px; overflow: hidden;
+}
+.faq-q {
+  width: 100%; padding: 20px 24px; background: transparent; border: none; color: #fff;
+  font-size: 1rem; font-weight: 600; text-align: left; cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.faq-icon { transition: transform 0.2s; font-size: 1.2rem; }
+.faq-item.open .faq-icon { transform: rotate(180deg); }
+.faq-a {
+  max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+}
+.faq-a-inner { padding: 0 24px 20px; color: var(--muted); font-size: 0.95rem; }
+
+/* Footer */
+footer {
+  background: #070810; border-top: 1px solid var(--border); padding: 60px 0 30px;
+}
+.footer-grid {
+  display: grid; grid-template-columns: 1.5fr repeat(3, 1fr); gap: 40px; margin-bottom: 50px;
+}
+.footer-brand p { color: var(--muted); font-size: 0.9rem; margin-top: 14px; max-width: 300px; }
+.footer-col h4 { font-size: 1rem; margin-bottom: 16px; }
+.footer-col a {
+  display: block; color: var(--muted); text-decoration: none; font-size: 0.9rem; margin-bottom: 10px;
+  transition: color 0.2s;
+}
+.footer-col a:hover { color: #fff; }
+.footer-bottom {
+  border-top: 1px solid var(--border); padding-top: 24px;
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+  color: var(--muted); font-size: 0.85rem;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .hero-inner { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 2.6rem; }
+  .nav-links { display: none; position: absolute; top: 64px; left: 0; right: 0; background: var(--bg-light); flex-direction: column; padding: 20px; gap: 16px; border-bottom: 1px solid var(--border); }
+  .nav-links.open { display: flex; }
+  .mobile-menu { display: block; }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .hero h1 { font-size: 2rem; }
+  .section-title { font-size: 1.8rem; }
+  .pricing-grid { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr; }
+  .hero-btns { flex-direction: column; }
+  .btn { width: 100%; }
+}
+
+/* Google Translate override */
+.goog-te-banner-frame.skiptranslate { display: none !important; }
+body { top: 0 !important; }
+#goog-gt-tt, .goog-te-balloon-frame { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- Google Translate hidden element -->
+<div id="google_translate_element" style="display:none;"></div>
+
+<nav id="navbar">
+  <div class="nav-inner">
+    <a href="#" class="logo">
+      <img src="https://i.imgur.com/FfNwGyA.png" alt="BotifyAI">
+      BotifyAI
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><a href="#results">Results</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li>
+        <div class="lang-box">
+          🌐 Language
+          <select id="langSelect" onchange="changeLanguage(this.value)">
+            <option value="en">English</option>
+            <option value="hi">Hindi - हिन्दी</option>
+            <option value="ta">Tamil - தமிழ்</option>
+            <option value="te">Telugu - తెలుగు</option>
+            <option value="bn">Bengali - বাংলা</option>
+            <option value="mr">Marathi - मराठी</option>
+            <option value="gu">Gujarati - ગુજરાતી</option>
+            <option value="pa">Punjabi - ਪੰਜਾਬੀ</option>
+            <option value="ml">Malayalam - മലയാളം</option>
+            <option value="kn">Kannada - ಕನ್ನಡ</option>
+            <option value="ur">Urdu - اردو</option>
+            <option value="as">Assamese - অসমীয়া</option>
+            <option value="or">Odia - ଓଡ଼ିଆ</option>
+          </select>
+        </div>
+      </li>
+    </ul>
+    <button class="mobile-menu" onclick="toggleMenu()">☰</button>
+  </div>
+</nav>
+
+<section class="hero" id="home">
+  <div class="container hero-inner">
+    <div>
+      <div class="hero-flag">
+        <div class="flag-stripe"><span></span><span></span><span></span></div>
+        Made for India
+      </div>
+      <h1>AI Chatbot for <span>Every Indian Business</span></h1>
+      <p>BotifyAI talks to your customers in their own language — Hindi, Tamil, Telugu, Bengali, Marathi, Gujarati &amp; more. 24/7 support, instant replies, and pricing starting at just ₹100.</p>
+      <div class="hero-btns">
+        <a href="#pricing" class="btn btn-primary">Start at ₹100 →</a>
+        <a href="#how-it-works" class="btn btn-secondary">See How It Works</a>
+      </div>
+    </div>
+    <div class="hero-demo">
+      <div class="chat-card">
+        <div class="chat-header">
+          <img src="https://i.imgur.com/FfNwGyA.png" class="chat-avatar" alt="BotifyAI">
+          <div>
+            <div class="chat-name">BotifyAI Assistant</div>
+            <div class="chat-status">Online</div>
+          </div>
+        </div>
+        <div class="chat-body" id="demoChat">
+          <div class="msg bot">Namaste! 🙏 Main aapki kaise madad kar sakta hoon?</div>
+          <div class="msg user">Aap Hindi mein baat kar sakte ho?</div>
+        </div>
+        <div class="chat-input">
+          <input type="text" id="demoInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter') sendDemo()">
+          <button onclick="sendDemo()">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="features">
+  <div class="container">
+    <h2 class="section-title">Powerful Features</h2>
+    <p class="section-subtitle">Everything you need to automate customer support and generate more leads.</p>
+    <div class="features-grid">
+      <div class="feature-card"><div class="feature-icon">🗣️</div><h3>22+ Indian Languages</h3><p>Auto-detect and reply in Hindi, Tamil, Telugu, Bengali, Marathi, Gujarati, Punjabi, Malayalam, Kannada, Urdu &amp; more.</p></div>
+      <div class="feature-card"><div class="feature-icon">⏰</div><h3>24/7 Support</h3><p>Your chatbot never sleeps. Handle customer queries any time of day, even on holidays.</p></div>
+      <div class="feature-card"><div class="feature-icon">⚡</div><h3>Instant Replies</h3><p>Get instant AI-generated responses trained from your own website, documents and FAQs.</p></div>
+      <div class="feature-card"><div class="feature-icon">📄</div><h3>Document Training</h3><p>Upload PDFs, Word files, or text docs. BotifyAI learns your business and answers accurately.</p></div>
+      <div class="feature-card"><div class="feature-icon">🔗</div><h3>Easy Integration</h3><p>Just copy-paste one line of code into your website, WordPress, Shopify, Wix or Webflow.</p></div>
+      <div class="feature-card"><div class="feature-icon">📊</div><h3>Analytics Dashboard</h3><p>Track conversations, message counts, active clients and leads in a clean admin panel.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="how-it-works">
+  <div class="container">
+    <h2 class="section-title">How It Works</h2>
+    <p class="section-subtitle">Get your AI chatbot live in 3 simple steps.</p>
+    <div class="steps">
+      <div class="step"><h3>1. Choose Your Plan</h3><p>Pick a plan starting at just ₹100. No hidden charges. Razorpay &amp; UPI payments accepted.</p></div>
+      <div class="step"><h3>2. Add Your Knowledge</h3><p>Upload your website link, documents, or FAQs. Your bot learns your business in minutes.</p></div>
+      <div class="step"><h3>3. Embed &amp; Go Live</h3><p>Copy the one-line embed code and paste it on your website. Your chatbot is live instantly.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="results">
+  <div class="container">
+    <h2 class="section-title">Real Results</h2>
+    <p class="section-subtitle">Businesses across India are saving time and converting more visitors.</p>
+    <div class="stats-grid">
+      <div class="stat"><div class="stat-num" data-target="80">0%</div><div class="stat-label">Faster Replies</div></div>
+      <div class="stat"><div class="stat-num" data-target="60">0%</div><div class="stat-label">Support Cost Saved</div></div>
+      <div class="stat"><div class="stat-num" data-target="12">0x</div><div class="stat-label">More Leads</div></div>
+      <div class="stat"><div class="stat-num" data-target="22">0+</div><div class="stat-label">Indian Languages</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="pricing">
+  <div class="container">
+    <h2 class="section-title">Simple Pricing</h2>
+    <p class="section-subtitle">Affordable plans for every Indian business. No setup fees.</p>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="plan-name">Starter</div>
+        <div class="plan-desc">Best for small shops &amp; startups</div>
+        <div class="price">₹100<span>/month</span></div>
+        <ul class="plan-features">
+          <li>1 AI chatbot</li>
+          <li>500 messages/month</li>
+          <li>5 training documents</li>
+          <li>Basic analytics</li>
+          <li>Email support</li>
+        </ul>
+        <a href="/payment?plan=starter&amount=100" class="btn btn-secondary btn-block">Get Starter</a>
+      </div>
+      <div class="price-card popular">
+        <div class="popular-badge">MOST POPULAR</div>
+        <div class="plan-name">Professional</div>
+        <div class="plan-desc">Best for growing businesses</div>
+        <div class="price">₹150<span>/month</span></div>
+        <ul class="plan-features">
+          <li>3 AI chatbots</li>
+          <li>3,000 messages/month</li>
+          <li>25 training documents</li>
+          <li>Advanced analytics</li>
+          <li>Priority WhatsApp support</li>
+        </ul>
+        <a href="/payment?plan=professional&amount=150" class="btn btn-primary btn-block">Get Professional</a>
+      </div>
+      <div class="price-card">
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-desc">Best for agencies &amp; large teams</div>
+        <div class="price">₹200<span>/month</span></div>
+        <ul class="plan-features">
+          <li>Unlimited chatbots</li>
+          <li>Unlimited messages</li>
+          <li>Unlimited documents</li>
+          <li>Admin dashboard</li>
+          <li>Dedicated support</li>
+        </ul>
+        <a href="/payment?plan=enterprise&amount=200" class="btn btn-secondary btn-block">Get Enterprise</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="faq">
+  <div class="container" style="max-width: 800px;">
+    <h2 class="section-title">Frequently Asked Questions</h2>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Can the chatbot speak my state language? <span class="faq-icon">▼</span></button>
+      <div class="faq-a"><div class="faq-a-inner">Yes! Use the language selector at the top to switch to Hindi, Tamil, Telugu, Bengali, Marathi, Gujarati, Punjabi, Malayalam, Kannada, Urdu, Assamese, Odia and more.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">How do I add the chatbot to my website? <span class="faq-icon">▼</span></button>
+      <div class="faq-a"><div class="faq-a-inner">After payment, you get a one-line embed code. Just paste it into your website's HTML. Works with WordPress, Shopify, Wix, Webflow and custom sites.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Is my business data safe? <span class="faq-icon">▼</span></button>
+      <div class="faq-a"><div class="faq-a-inner">Yes. Each client gets an isolated AI brain. Your documents and chats are stored securely in your own client space.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">What payment methods do you accept? <span class="faq-icon">▼</span></button>
+      <div class="faq-a"><div class="faq-a-inner">We accept Razorpay, UPI, credit/debit cards, net banking and all Indian wallets.</div></div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">Can I upload my own documents? <span class="faq-icon">▼</span></button>
+      <div class="faq-a"><div class="faq-a-inner">Yes. Upload PDFs, Word files, text files or Markdown. BotifyAI will learn from them and answer based on your content.</div></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="#" class="logo"><img src="https://i.imgur.com/FfNwGyA.png" alt="BotifyAI">BotifyAI</a>
+        <p>AI chatbot platform for Indian businesses. Talk to customers in any language, 24/7.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#how-it-works">How It Works</a>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <a href="/deploy-guide">Deploy Guide</a>
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+      </div>
+      <div class="footer-col">
+        <h4>Admin</h4>
+        <a href="/admin">Admin Panel</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 BotifyAI India. All rights reserved.</span>
+      <span>🇮🇳 Built for Bharat</span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+<script>
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    includedLanguages: 'en,hi,ta,te,bn,mr,gu,pa,ml,kn,ur,as,or,sd,ne,sa',
+    layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+    autoDisplay: false
+  }, 'google_translate_element');
+}
+
+function changeLanguage(lang) {
+  if (!window.google || !google.translate) return;
+  const select = document.querySelector('.goog-te-combo');
+  if (select) {
+    select.value = lang;
+    select.dispatchEvent(new Event('change'));
+  }
+  localStorage.setItem('botifyai_lang', lang);
+}
+
+function restoreLanguage() {
+  const saved = localStorage.getItem('botifyai_lang');
+  if (!saved || saved === 'en') return;
+  const check = setInterval(() => {
+    const select = document.querySelector('.goog-te-combo');
+    const sel = document.getElementById('langSelect');
+    if (select) {
+      select.value = saved;
+      select.dispatchEvent(new Event('change'));
+      if (sel) sel.value = saved;
+      clearInterval(check);
+    }
+  }, 500);
+}
+
+function toggleMenu() {
+  document.getElementById('navLinks').classList.toggle('open');
+}
+
+function toggleFaq(btn) {
+  const item = btn.parentElement;
+  const ans = item.querySelector('.faq-a');
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => {
+    i.classList.remove('open');
+    i.querySelector('.faq-a').style.maxHeight = '0';
+  });
+  if (!isOpen) {
+    item.classList.add('open');
+    ans.style.maxHeight = ans.scrollHeight + 'px';
+  }
+}
+
+function sendDemo() {
+  const input = document.getElementById('demoInput');
+  const chat = document.getElementById('demoChat');
+  const text = input.value.trim();
+  if (!text) return;
+  const userMsg = document.createElement('div');
+  userMsg.className = 'msg user';
+  userMsg.textContent = text;
+  chat.appendChild(userMsg);
+  input.value = '';
+  setTimeout(() => {
+    const botMsg = document.createElement('div');
+    botMsg.className = 'msg bot';
+    botMsg.textContent = 'Shukriya! Main aapki query record kar li hai. Team jaldi contact karegi.';
+    chat.appendChild(botMsg);
+    chat.scrollTop = chat.scrollHeight;
+  }, 600);
+}
+
+// Counter animation
+function animateCounters() {
+  const counters = document.querySelectorAll('.stat-num');
+  counters.forEach(c => {
+    const target = parseInt(c.dataset.target);
+    const suffix = c.textContent.includes('%') ? '%' : (c.textContent.includes('x') ? 'x' : '+');
+    let current = 0;
+    const step = Math.max(1, Math.floor(target / 40));
+    const timer = setInterval(() => {
+      current += step;
+      if (current >= target) { current = target; clearInterval(timer); }
+      c.textContent = current + suffix;
+    }, 40);
+  });
+}
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { animateCounters(); observer.disconnect(); } });
+}, { threshold: 0.4 });
+observer.observe(document.getElementById('results'));
+
+window.addEventListener('load', restoreLanguage);
+</script>
+</body>
+</html>
