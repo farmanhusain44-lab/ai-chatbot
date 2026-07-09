@@ -3,6 +3,7 @@ from flask_cors import CORS
 import anthropic
 import os
 import re
+import tempfile
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -72,12 +73,15 @@ def normalize_arabic(text):
     return text
 
 
-def extract_text_from_file(file_obj, filename):
-    """Extract text from PDF, DOCX, or TXT files."""
+def extract_text_from_file(file_input, filename):
+    """Extract text from PDF, DOCX, or TXT files. file_input can be a file object or a path string."""
     ext = os.path.splitext(filename.lower())[1]
     try:
         if ext == '.pdf' and PyPDF2:
-            reader = PyPDF2.PdfReader(BytesIO(file_obj.read()))
+            if isinstance(file_input, str):
+                reader = PyPDF2.PdfReader(file_input)
+            else:
+                reader = PyPDF2.PdfReader(BytesIO(file_input.read()))
             parts = []
             for page in reader.pages:
                 try:
@@ -86,12 +90,22 @@ def extract_text_from_file(file_obj, filename):
                     pass
             return '\n'.join(parts)
         elif ext in ('.docx', '.doc') and Document:
-            doc = Document(BytesIO(file_obj.read()))
+            if isinstance(file_input, str):
+                with open(file_input, 'rb') as f:
+                    doc = Document(BytesIO(f.read()))
+            else:
+                doc = Document(BytesIO(file_input.read()))
             return '\n'.join(p.text for p in doc.paragraphs if p.text)
         elif ext in ('.txt', '.md', '.csv', '.json'):
-            return file_obj.read().decode('utf-8', errors='ignore')
+            if isinstance(file_input, str):
+                with open(file_input, 'r', encoding='utf-8', errors='ignore') as f:
+                    return f.read()
+            return file_input.read().decode('utf-8', errors='ignore')
         else:
-            return file_obj.read().decode('utf-8', errors='ignore')
+            if isinstance(file_input, str):
+                with open(file_input, 'r', encoding='utf-8', errors='ignore') as f:
+                    return f.read()
+            return file_input.read().decode('utf-8', errors='ignore')
     except Exception as e:
         logger.error("Document extraction failed for %s: %s", filename, e)
         return ""
@@ -547,11 +561,27 @@ def admin_upload_client_document(client_id):
     file_size = file.tell()
     file.seek(0)
     logger.info(f"Upload: client={client_id} file={file.filename} size={file_size} bytes")
+    if file_size > 8 * 1024 * 1024:
+        return jsonify({"error": "File too large. Maximum size is 8MB."}), 413
+    tmp_path = None
     try:
-        text = extract_text_from_file(file, file.filename)
+        # Save to temp file to avoid loading entire file into memory at once
+        ext = os.path.splitext(file.filename.lower())[1]
+        fd, tmp_path = tempfile.mkstemp(suffix=ext)
+        os.close(fd)
+        file.save(tmp_path)
+        logger.info(f"Saved upload to temp file: {tmp_path}")
+        text = extract_text_from_file(tmp_path, file.filename)
     except Exception as e:
         logger.error("Extraction failed: %s", e)
         return jsonify({"error": "Failed to extract text from file: " + str(e)}), 500
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            try:
+                os.remove(tmp_path)
+                logger.info(f"Removed temp file: {tmp_path}")
+            except Exception:
+                pass
     text_len = len(text.strip())
     logger.info(f"Extracted text length: {text_len} chars")
     if not text.strip():
