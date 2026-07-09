@@ -16,7 +16,6 @@ from langdetect.lang_detect_exception import LangDetectException
 import requests
 import logging
 from io import BytesIO
-import numpy as np
 
 try:
     import openai
@@ -134,10 +133,11 @@ def chunk_text(text, chunk_size=CHUNK_SIZE, overlap=CHUNK_OVERLAP):
 
 def embed_texts(texts):
     """Get OpenAI embeddings for a list of texts. Falls back to None if unavailable."""
-    if not openai_client or not texts:
+    oc = get_openai_client()
+    if not oc or not texts:
         return None
     try:
-        response = openai_client.embeddings.create(
+        response = oc.embeddings.create(
             model="text-embedding-3-small",
             input=texts
         )
@@ -148,6 +148,7 @@ def embed_texts(texts):
 
 
 def cosine_similarity(a, b):
+    import numpy as np
     return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
 
 
@@ -210,9 +211,10 @@ def get_relevant_context(query, top_k=3):
         return ""
 
     # If we have embeddings, do vector search
-    if openai_client and any("embedding" in c for c in DOCUMENT_CHUNKS):
+    if get_openai_client() and any("embedding" in c for c in DOCUMENT_CHUNKS):
         query_embedding = embed_texts([query])
         if query_embedding and query_embedding[0]:
+            import numpy as np
             q_vec = np.array(query_embedding[0])
             scored = []
             for chunk in DOCUMENT_CHUNKS:
@@ -253,16 +255,25 @@ api_key = os.environ.get("ANTHROPIC_API_KEY")
 if not api_key:
     logger.warning("ANTHROPIC_API_KEY environment variable is not set — API calls will fail")
 
-client = anthropic.Anthropic(api_key=api_key)
+_anthropic_client = None
+def get_anthropic_client():
+    global _anthropic_client
+    if _anthropic_client is None and api_key:
+        import anthropic
+        _anthropic_client = anthropic.Anthropic(api_key=api_key)
+    return _anthropic_client
 
 # Optional OpenAI client for document embeddings (vector search)
 openai_api_key = os.environ.get("OPENAI_API_KEY")
-openai_client = None
-if openai and openai_api_key:
-    try:
-        openai_client = openai.OpenAI(api_key=openai_api_key)
-    except Exception as e:
-        logger.warning("OpenAI client failed to initialize: %s", e)
+_openai_client = None
+def get_openai_client():
+    global _openai_client
+    if _openai_client is None and openai and openai_api_key:
+        try:
+            _openai_client = openai.OpenAI(api_key=openai_api_key)
+        except Exception as e:
+            logger.warning("OpenAI client failed to initialize: %s", e)
+    return _openai_client
 
 twilio_sid = os.environ.get("TWILIO_ACCOUNT_SID")
 twilio_token = os.environ.get("TWILIO_AUTH_TOKEN")
@@ -405,7 +416,10 @@ def get_ai_reply(message, language, timezone=None, history=None, context=None):
             "Question:\n"
         )
         messages[-1]["content"] = context_prompt + messages[-1]["content"]
-    response = client.messages.create(
+    anthropic_client = get_anthropic_client()
+    if not anthropic_client:
+        return "I'm sorry, the AI service is not configured right now."
+    response = anthropic_client.messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=2048,
         system=get_system_prompt(language, timezone),
