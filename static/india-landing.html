@@ -280,6 +280,65 @@ body{top:0 !important}
 .compare-table tr:hover td{background:rgba(255,255,255,.02)}
 .ck-yes{color:#34d399;font-size:1.1rem}
 .ck-no{color:#ef4444;font-size:1.1rem}
+
+/* 3D SHOWCASE SECTION */
+.showcase-section{position:relative;height:500vh;background:#02020a}
+.showcase-sticky{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.showcase-track{display:flex;transition:transform .85s cubic-bezier(.16,1,.3,1);width:fit-content}
+.showcase-card{width:100vw;height:100vh;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:5%;position:relative}
+.showcase-card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(99,102,241,.06),transparent 50%);pointer-events:none;opacity:0;transition:opacity .6s}
+.showcase-card.active::before{opacity:1}
+.showcase-card-inner{width:100%;max-width:1200px;display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center;position:relative;z-index:2}
+@media(max-width:900px){.showcase-card-inner{grid-template-columns:1fr;gap:32px;text-align:center}.showcase-card{padding:100px 5%}}
+
+.showcase-visual{position:relative;perspective:1500px;transform-style:preserve-3d;min-height:340px;display:flex;align-items:center;justify-content:center}
+.feature-3d{position:relative;width:380px;height:380px;margin:0 auto;transform-style:preserve-3d;transition:transform .6s ease;animation:featureFloat 6s ease-in-out infinite}
+@media(max-width:500px){.feature-3d{width:280px;height:280px}}
+@keyframes featureFloat{0%,100%{transform:translateY(0) rotateX(0) rotateY(0)}50%{transform:translateY(-15px) rotateX(3deg) rotateY(-3deg)}}
+.feature-3d-base{position:absolute;inset:0;border-radius:34px;background:linear-gradient(135deg,rgba(99,102,241,.2),rgba(139,92,246,.12),rgba(6,182,212,.08));border:1px solid rgba(255,255,255,.1);box-shadow:0 40px 80px rgba(0,0,0,.45),inset 0 0 80px rgba(99,102,241,.12);backdrop-filter:blur(10px);transform:translateZ(0)}
+.feature-3d-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) translateZ(80px);font-size:6.5rem;filter:drop-shadow(0 25px 45px rgba(0,0,0,.5));transition:transform .5s}
+.showcase-card.active .feature-3d-icon{animation:iconPulse 3s ease-in-out infinite}
+@keyframes iconPulse{0%,100%{transform:translate(-50%,-50%) translateZ(80px) scale(1)}50%{transform:translate(-50%,-50%) translateZ(110px) scale(1.1)}}
+.feature-3d-ring{position:absolute;inset:-35px;border-radius:50%;border:2px dashed rgba(99,102,241,.22);animation:spin3d 18s linear infinite;transform:translateZ(-40px)}
+@keyframes spin3d{from{transform:rotate(0) translateZ(-40px)}to{transform:rotate(360deg) translateZ(-40px)}}
+.feature-3d-ring-2{position:absolute;inset:-60px;border-radius:50%;border:1px solid rgba(139,92,246,.12);animation:spin3d2 24s linear infinite reverse;transform:translateZ(-80px)}
+@keyframes spin3d2{from{transform:rotate(0) translateZ(-80px)}to{transform:rotate(360deg) translateZ(-80px)}}
+.feature-3d-orb{position:absolute;border-radius:50%;filter:blur(24px);opacity:.5;animation:floatOrb 7s ease-in-out infinite}
+.feature-3d-orb.o1{width:90px;height:90px;background:#6366f1;top:8%;left:8%}
+.feature-3d-orb.o2{width:70px;height:70px;background:#8b5cf6;bottom:12%;right:8%;animation-delay:-2.5s}
+.feature-3d-orb.o3{width:55px;height:55px;background:#06b6d4;top:55%;right:5%;animation-delay:-4.5s}
+@keyframes floatOrb{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-25px) scale(1.15)}}
+
+.showcase-content{opacity:0;transform:translateX(50px);transition:all .8s cubic-bezier(.16,1,.3,1) .15s}
+.showcase-card.active .showcase-content{opacity:1;transform:translateX(0)}
+.showcase-label{font-size:.68rem;font-weight:800;color:#475569;text-transform:uppercase;letter-spacing:.14em;margin-bottom:16px}
+.showcase-card h2{font-size:clamp(2.4rem,4.5vw,4rem);font-weight:900;color:#f1f5f9;letter-spacing:-.04em;line-height:1.08;margin-bottom:24px}
+.showcase-card h2 .grad{background:linear-gradient(135deg,#a78bfa 0%,#60a5fa 50%,#34d399 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.showcase-desc{font-size:1.08rem;color:#475569;line-height:1.85;margin-bottom:34px}
+.showcase-points{display:flex;flex-direction:column;gap:16px}
+.showcase-point{display:flex;align-items:flex-start;gap:14px;font-size:.92rem;color:#94a3b8;line-height:1.6}
+.showcase-point::before{content:'✓';color:#34d399;font-weight:800;font-size:1rem;flex-shrink:0;margin-top:2px}
+.showcase-story{background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.15);border-radius:16px;padding:20px 22px;margin-top:28px}
+.showcase-story-title{font-size:.78rem;font-weight:800;color:#a78bfa;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.showcase-story-text{font-size:.86rem;color:#64748b;line-height:1.7;font-style:italic}
+.showcase-story-text strong{color:#94a3b8}
+
+.showcase-nav{position:absolute;right:34px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:14px;z-index:100}
+@media(max-width:900px){.showcase-nav{display:none}}
+.showcase-dot{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.12);cursor:pointer;transition:.3s;position:relative}
+.showcase-dot::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid transparent;transition:.3s}
+.showcase-dot.active{background:#6366f1;box-shadow:0 0 14px rgba(99,102,241,.9)}
+.showcase-dot.active::after{border-color:rgba(99,102,241,.35)}
+.showcase-progress{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:12px;z-index:100}
+.showcase-progress span{font-size:.72rem;color:#475569;font-weight:800}
+.showcase-bar{width:220px;height:3px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
+.showcase-bar-fill{height:100%;background:linear-gradient(90deg,#6366f1,#8b5cf6);width:0%;transition:width .5s}
+.showcase-hint{position:absolute;bottom:70px;left:50%;transform:translateX(-50%);font-size:.72rem;color:#334155;letter-spacing:.05em;animation:hintPulse 2s infinite;z-index:100}
+@keyframes hintPulse{0%,100%{opacity:.6}50%{opacity:1}}
+.showcase-mobile-dots{display:none;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:20px}
+@media(max-width:900px){.showcase-mobile-dots{display:flex}}
+.showcase-mobile-dots .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.2)}
+.showcase-mobile-dots .dot.active{background:#6366f1}
 </style>
 </head>
 <body>
@@ -435,49 +494,179 @@ body{top:0 !important}
   </div>
 </section>
 
-<!-- FEATURES -->
-<section class="features-section" id="features">
-  <div class="sec-label">Platform Capabilities</div>
-  <div class="sec-title">Everything Your Indian Business Needs</div>
-  <div class="sec-sub">Built for India — 22+ languages, mobile-first, and trained on your business data.</div>
-  <div class="features-bento">
-    <div class="fb-card wide">
-      <div class="fb-icon" style="background:rgba(99,102,241,.1)">🌍</div>
-      <div class="fb-stat">22+ Indian Languages</div>
-      <h3>Speaks Your Customer's Language</h3>
-      <p>Hindi, Tamil, Telugu, Bengali, Marathi, Gujarati, Punjabi, Malayalam, Kannada, Urdu, Assamese, Odia and more. Customers message in their language, the bot replies in the same language automatically.</p>
-      <span class="fb-tag">AUTO LANGUAGE DETECTION</span>
+<!-- 3D FEATURE SHOWCASE -->
+<section class="showcase-section" id="features">
+  <div class="showcase-sticky">
+    <div class="showcase-track" id="showcaseTrack">
+
+      <!-- Slide 1: Indian Languages -->
+      <article class="showcase-card active" data-index="0">
+        <div class="showcase-card-inner">
+          <div class="showcase-visual">
+            <div class="feature-3d">
+              <div class="feature-3d-orb o1"></div>
+              <div class="feature-3d-orb o2"></div>
+              <div class="feature-3d-orb o3"></div>
+              <div class="feature-3d-ring"></div>
+              <div class="feature-3d-ring-2"></div>
+              <div class="feature-3d-base"></div>
+              <div class="feature-3d-icon">🌍</div>
+            </div>
+          </div>
+          <div class="showcase-content">
+            <div class="showcase-label">01 / Platform Capabilities</div>
+            <h2>Speaks Your Customer's<br><span class="grad">22+ Indian Languages</span></h2>
+            <div class="showcase-desc">Hindi, Tamil, Telugu, Bengali, Marathi, Gujarati, Punjabi, Malayalam, Kannada, Urdu, Assamese, Odia and more. Customers message in their language, the bot replies in the same language automatically.</div>
+            <div class="showcase-points">
+              <div class="showcase-point">Auto-detects customer language in real time</div>
+              <div class="showcase-point">Replies naturally in Hindi, English, Tamil, Telugu & more</div>
+              <div class="showcase-point">No manual switching or translation needed</div>
+            </div>
+            <div class="showcase-story">
+              <div class="showcase-story-title">Real Customer Story</div>
+              <div class="showcase-story-text">"<strong>Saree Mahal</strong> in Surat saw a 60% increase in Gujarati & Hindi customer engagement after the bot started replying in regional languages."</div>
+            </div>
+            <div class="showcase-mobile-dots" id="mobileDots0"></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Slide 2: Instant Responses -->
+      <article class="showcase-card" data-index="1">
+        <div class="showcase-card-inner">
+          <div class="showcase-visual">
+            <div class="feature-3d">
+              <div class="feature-3d-orb o1" style="background:#10b981"></div>
+              <div class="feature-3d-orb o2" style="background:#34d399;animation-delay:-2s"></div>
+              <div class="feature-3d-orb o3" style="background:#06b6d4;animation-delay:-4s"></div>
+              <div class="feature-3d-ring" style="border-color:rgba(52,211,153,.25)"></div>
+              <div class="feature-3d-ring-2" style="border-color:rgba(6,182,212,.12)"></div>
+              <div class="feature-3d-base" style="background:linear-gradient(135deg,rgba(52,211,153,.2),rgba(6,182,212,.12),rgba(99,102,241,.08))"></div>
+              <div class="feature-3d-icon">⚡</div>
+            </div>
+          </div>
+          <div class="showcase-content">
+            <div class="showcase-label">02 / Platform Capabilities</div>
+            <h2>Instant Replies Under<br><span class="grad">2 Seconds</span></h2>
+            <div class="showcase-desc">Your customers get answers faster than any human agent — 24 hours a day, 7 days a week, 365 days a year. No queues, no waiting, no missed messages.</div>
+            <div class="showcase-points">
+              <div class="showcase-point">Responds to 92% of queries without human help</div>
+              <div class="showcase-point">Handles multiple chats at the same time</div>
+              <div class="showcase-point">Works on weekends, festivals, and midnight</div>
+            </div>
+            <div class="showcase-story">
+              <div class="showcase-story-title">Real Customer Story</div>
+              <div class="showcase-story-text">"<strong>Metro Properties</strong> in Bangalore captured 40% more leads because the bot responded instantly at 2 AM when agents were offline."</div>
+            </div>
+            <div class="showcase-mobile-dots" id="mobileDots1"></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Slide 3: Custom AI Training -->
+      <article class="showcase-card" data-index="2">
+        <div class="showcase-card-inner">
+          <div class="showcase-visual">
+            <div class="feature-3d">
+              <div class="feature-3d-orb o1" style="background:#f59e0b"></div>
+              <div class="feature-3d-orb o2" style="background:#fbbf24;animation-delay:-2s"></div>
+              <div class="feature-3d-orb o3" style="background:#6366f1;animation-delay:-4s"></div>
+              <div class="feature-3d-ring" style="border-color:rgba(251,191,36,.25)"></div>
+              <div class="feature-3d-ring-2" style="border-color:rgba(245,158,11,.12)"></div>
+              <div class="feature-3d-base" style="background:linear-gradient(135deg,rgba(251,191,36,.2),rgba(245,158,11,.12),rgba(99,102,241,.08))"></div>
+              <div class="feature-3d-icon">🤖</div>
+            </div>
+          </div>
+          <div class="showcase-content">
+            <div class="showcase-label">03 / Platform Capabilities</div>
+            <h2>Custom AI Training On<br><span class="grad">Your Business Data</span></h2>
+            <div class="showcase-desc">Trained on your products, services, prices, FAQs, and policies. It gives accurate answers specific to your business — not generic chatbot responses.</div>
+            <div class="showcase-points">
+              <div class="showcase-point">Upload PDFs, documents, or paste text directly</div>
+              <div class="showcase-point">Bot learns your exact prices, policies, and tone</div>
+              <div class="showcase-point">Keep answers updated anytime from dashboard</div>
+            </div>
+            <div class="showcase-story">
+              <div class="showcase-story-title">Real Customer Story</div>
+              <div class="showcase-story-text">"<strong>Dr. Sharma Clinic</strong> trained the bot on 50 common health FAQs. Now it handles 85% of appointment and query calls automatically."</div>
+            </div>
+            <div class="showcase-mobile-dots" id="mobileDots2"></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Slide 4: Real-Time Analytics -->
+      <article class="showcase-card" data-index="3">
+        <div class="showcase-card-inner">
+          <div class="showcase-visual">
+            <div class="feature-3d">
+              <div class="feature-3d-orb o1" style="background:#ef4444"></div>
+              <div class="feature-3d-orb o2" style="background:#f87171;animation-delay:-2s"></div>
+              <div class="feature-3d-orb o3" style="background:#6366f1;animation-delay:-4s"></div>
+              <div class="feature-3d-ring" style="border-color:rgba(239,68,68,.25)"></div>
+              <div class="feature-3d-ring-2" style="border-color:rgba(248,113,113,.12)"></div>
+              <div class="feature-3d-base" style="background:linear-gradient(135deg,rgba(239,68,68,.2),rgba(248,113,113,.12),rgba(99,102,241,.08))"></div>
+              <div class="feature-3d-icon">📊</div>
+            </div>
+          </div>
+          <div class="showcase-content">
+            <div class="showcase-label">04 / Platform Capabilities</div>
+            <h2>Real-Time Analytics &<br><span class="grad">Customer Insights</span></h2>
+            <div class="showcase-desc">See every conversation, track popular questions, identify customer pain points, and use data to improve your products, services, and marketing.</div>
+            <div class="showcase-points">
+              <div class="showcase-point">Live dashboard with conversation history</div>
+              <div class="showcase-point">Track top questions, drop-off points, and leads</div>
+              <div class="showcase-point">Export insights to improve your business</div>
+            </div>
+            <div class="showcase-story">
+              <div class="showcase-story-title">Real Customer Story</div>
+              <div class="showcase-story-text">"<strong>Raj Vilas Hotel</strong> discovered 70% of guests asked about airport pickup. They added the service and increased bookings by 25%."</div>
+            </div>
+            <div class="showcase-mobile-dots" id="mobileDots3"></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Slide 5: Mobile Perfect -->
+      <article class="showcase-card" data-index="4">
+        <div class="showcase-card-inner">
+          <div class="showcase-visual">
+            <div class="feature-3d">
+              <div class="feature-3d-orb o1" style="background:#06b6d4"></div>
+              <div class="feature-3d-orb o2" style="background:#22d3ee;animation-delay:-2s"></div>
+              <div class="feature-3d-orb o3" style="background:#6366f1;animation-delay:-4s"></div>
+              <div class="feature-3d-ring" style="border-color:rgba(6,182,212,.25)"></div>
+              <div class="feature-3d-ring-2" style="border-color:rgba(34,211,238,.12)"></div>
+              <div class="feature-3d-base" style="background:linear-gradient(135deg,rgba(6,182,212,.2),rgba(34,211,238,.12),rgba(99,102,241,.08))"></div>
+              <div class="feature-3d-icon">📱</div>
+            </div>
+          </div>
+          <div class="showcase-content">
+            <div class="showcase-label">05 / Platform Capabilities</div>
+            <h2>Mobile Perfect For<br><span class="grad">80% of Indian Users</span></h2>
+            <div class="showcase-desc">BotifyAI is designed mobile-first — smooth, fast, and beautiful on every device. WhatsApp, Instagram, and website chat all work perfectly on mobile.</div>
+            <div class="showcase-points">
+              <div class="showcase-point">Responsive chat widget for all screen sizes</div>
+              <div class="showcase-point">Native WhatsApp & Instagram experience</div>
+              <div class="showcase-point">Fast loading even on 2G/3G networks</div>
+            </div>
+            <div class="showcase-story">
+              <div class="showcase-story-title">Real Customer Story</div>
+              <div class="showcase-story-text">"<strong>Spice Route Restaurant</strong> gets 75% of orders through WhatsApp on mobile. The bot handles menu, pricing, and table booking without human help."</div>
+            </div>
+            <div class="showcase-mobile-dots" id="mobileDots4"></div>
+          </div>
+        </div>
+      </article>
+
     </div>
-    <div class="fb-card">
-      <div class="fb-icon" style="background:rgba(52,211,153,.1)">⚡</div>
-      <h3>Instant Responses</h3>
-      <p>Under 2 seconds. Your customers get answers faster than any human agent — 24 hours a day, 7 days a week, 365 days a year.</p>
-      <span class="fb-tag">ALWAYS ONLINE</span>
+    <div class="showcase-nav" id="showcaseNav"></div>
+    <div class="showcase-progress">
+      <span id="showcaseCurrent">01</span>
+      <div class="showcase-bar"><div class="showcase-bar-fill" id="showcaseBarFill"></div></div>
+      <span>05</span>
     </div>
-    <div class="fb-card">
-      <div class="fb-icon" style="background:rgba(251,191,36,.1)">🤖</div>
-      <h3>Custom AI Training</h3>
-      <p>Trained on your products, services, prices, FAQs, and policies. Gives accurate answers specific to your business — not generic responses.</p>
-      <span class="fb-tag">YOUR KNOWLEDGE BASE</span>
-    </div>
-    <div class="fb-card">
-      <div class="fb-icon" style="background:rgba(239,68,68,.1)">📊</div>
-      <h3>Real-Time Analytics</h3>
-      <p>See every conversation, track popular questions, identify customer pain points, and use insights to improve your business.</p>
-      <span class="fb-tag">LIVE DASHBOARD</span>
-    </div>
-    <div class="fb-card">
-      <div class="fb-icon" style="background:rgba(6,182,212,.1)">📱</div>
-      <h3>Mobile Perfect</h3>
-      <p>80% of UAE customers browse on mobile. BotifyAI is designed mobile-first — smooth, fast, and beautiful on every device.</p>
-      <span class="fb-tag">RESPONSIVE DESIGN</span>
-    </div>
-    <div class="fb-card">
-      <div class="fb-icon" style="background:rgba(167,139,250,.1)">🔒</div>
-      <h3>Enterprise Security</h3>
-      <p>256-bit SSL encryption. All conversations are private and secure. GDPR-compliant data handling built in from day one.</p>
-      <span class="fb-tag">BANK-GRADE SECURITY</span>
-    </div>
+    <div class="showcase-hint" id="showcaseHint">Scroll to explore ↓</div>
   </div>
 </section>
 
@@ -903,6 +1092,106 @@ function typeLoop(){
   setTimeout(typeLoop,deleting?55:90);
 }
 typeLoop();
+
+/* 3D SHOWCASE SCROLLER */
+const showcase=document.getElementById('features');
+const track=document.getElementById('showcaseTrack');
+const cards=Array.from(document.querySelectorAll('.showcase-card'));
+const nav=document.getElementById('showcaseNav');
+const currentEl=document.getElementById('showcaseCurrent');
+const barFill=document.getElementById('showcaseBarFill');
+const hint=document.getElementById('showcaseHint');
+const total=cards.length;
+let currentIndex=0;
+let hintHidden=false;
+
+// Build side dots
+for(let i=0;i<total;i++){
+  const dot=document.createElement('div');
+  dot.className='showcase-dot'+(i===0?' active':'');
+  dot.addEventListener('click',()=>goTo(i));
+  nav.appendChild(dot);
+}
+
+// Build mobile dots for each card
+for(let i=0;i<total;i++){
+  const container=document.getElementById('mobileDots'+i);
+  if(!container)continue;
+  for(let j=0;j<total;j++){
+    const d=document.createElement('span');
+    d.className='dot'+(j===i?' active':'');
+    container.appendChild(d);
+  }
+}
+
+function goTo(i){
+  if(i<0||i>=total)return;
+  currentIndex=i;
+  track.style.transform=`translateX(-${i*100}vw)`;
+  cards.forEach((c,idx)=>c.classList.toggle('active',idx===i));
+  document.querySelectorAll('.showcase-dot').forEach((d,idx)=>d.classList.toggle('active',idx===i));
+  // update mobile dots inside each card
+  cards.forEach((card,ci)=>{
+    const dots=card.querySelectorAll('.showcase-mobile-dots .dot');
+    dots.forEach((d,di)=>d.classList.toggle('active',di===currentIndex));
+  });
+  if(currentEl)currentEl.textContent=String(i+1).padStart(2,'0');
+  if(barFill)barFill.style.width=(((i+1)/total)*100)+'%';
+}
+
+function updateShowcaseFromScroll(){
+  if(!showcase)return;
+  const rect=showcase.getBoundingClientRect();
+  const vh=window.innerHeight;
+  const sectionHeight=showcase.offsetHeight;
+  // only when section is in view
+  if(rect.top>0||rect.bottom<vh)return;
+  const progress=Math.abs(rect.top)/(sectionHeight-vh);
+  const index=Math.max(0,Math.min(total-1,Math.floor(progress*total)));
+  if(index!==currentIndex)goTo(index);
+  if(!hintHidden&&progress>0.05){
+    hintHidden=true;
+    if(hint){hint.style.opacity='0';hint.style.transition='opacity .5s';}
+  }
+}
+
+window.addEventListener('scroll',updateShowcaseFromScroll,{passive:true});
+
+// 3D tilt on mouse move for active card
+showcase.addEventListener('mousemove',e=>{
+  if(window.innerWidth<900)return;
+  const active=document.querySelector('.showcase-card.active .feature-3d');
+  if(!active)return;
+  const rect=active.getBoundingClientRect();
+  const x=(e.clientX-rect.left)/rect.width-.5;
+  const y=(e.clientY-rect.top)/rect.height-.5;
+  active.style.transform=`rotateY(${x*12}deg) rotateX(${-y*12}deg) translateZ(20px)`;
+  active.style.animation='none';
+});
+showcase.addEventListener('mouseleave',()=>{
+  const active=document.querySelector('.showcase-card.active .feature-3d');
+  if(active){active.style.transform='';active.style.animation='';}
+});
+
+// Keyboard navigation
+window.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown')goTo(currentIndex+1);
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp')goTo(currentIndex-1);
+});
+
+// Touch swipe for mobile
+let startX=0;
+showcase.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;},{passive:true});
+showcase.addEventListener('touchend',e=>{
+  const endX=e.changedTouches[0].clientX;
+  const diff=endX-startX;
+  if(Math.abs(diff)>50){
+    if(diff<0)goTo(currentIndex+1);else goTo(currentIndex-1);
+  }
+},{passive:true});
+
+// Initialize
+updateShowcaseFromScroll();
 
 </script>
 
