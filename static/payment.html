@@ -220,15 +220,44 @@ nav{padding:16px 28px;display:flex;align-items:center;justify-content:space-betw
 let selectedPlan  = 'starter';
 let selectedPrice = 'AED 499';
 
-// Read plan from URL ?plan=
-const urlPlan = new URLSearchParams(window.location.search).get('plan');
+// Read plan + currency from URL
+const urlParams = new URLSearchParams(window.location.search);
+const urlPlan = urlParams.get('plan');
+const isIndia = urlParams.get('currency') === 'inr' || urlParams.get('region') === 'in';
+
+if (isIndia) {
+    document.querySelector('.wyg-item:nth-child(2)').innerHTML = '<span class="ck">✓</span> 22+ Indian languages';
+}
+
+const priceMap = isIndia ? {
+    starter:      {el:0, price:'₹100'},
+    professional: {el:1, price:'₹150'},
+    enterprise:   {el:2, price:'₹200'}
+} : {
+    starter:      {el:0, price:'AED 499'},
+    professional: {el:1, price:'AED 1,499'},
+    enterprise:   {el:2, price:'AED 3,499'}
+};
+
+const inrOnclick = isIndia ? [
+    "selectPlan(this,'starter','inr_starter','₹100')",
+    "selectPlan(this,'professional','inr_professional','₹150')",
+    "selectPlan(this,'enterprise','inr_enterprise','₹200')"
+] : null;
+
+// Update displayed prices for India mode
+if (isIndia) {
+    const items = document.querySelectorAll('.ps-item');
+    items[0].querySelector('.ps-price').innerHTML = "₹100<span style='font-size:.7rem;font-weight:400;color:#475569'>/mo</span>";
+    items[1].querySelector('.ps-price').innerHTML = "₹150<span style='font-size:.7rem;font-weight:400;color:#475569'>/mo</span>";
+    items[2].querySelector('.ps-price').innerHTML = "₹200<span style='font-size:.7rem;font-weight:400;color:#475569'>/mo</span>";
+    items[0].setAttribute('onclick', inrOnclick[0]);
+    items[1].setAttribute('onclick', inrOnclick[1]);
+    items[2].setAttribute('onclick', inrOnclick[2]);
+}
+
 if (urlPlan) {
-    const map = {
-        starter:      {el:0, price:'AED 499'},
-        professional: {el:1, price:'AED 1,499'},
-        enterprise:   {el:2, price:'AED 3,499'}
-    };
-    const m = map[urlPlan];
+    const m = priceMap[urlPlan];
     if (m) {
         const items = document.querySelectorAll('.ps-item');
         items.forEach(i => i.classList.remove('active'));
