@@ -144,7 +144,8 @@ def create_client(name, email="", website="", plan="basic", days_valid=365):
 def get_client_by_access_code(access_code):
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute(f'SELECT * FROM clients WHERE access_code = {ph(1)} AND active = {ph(1) if IS_POSTGRES else "1"}', (access_code,) if IS_POSTGRES else (access_code,))
+    active_val = 'TRUE' if IS_POSTGRES else '1'
+    cursor.execute(f'SELECT * FROM clients WHERE access_code = {ph(1)} AND active = {active_val}', (access_code,))
     row = cursor.fetchone()
     conn.close()
     return row_to_dict(cursor, row)
