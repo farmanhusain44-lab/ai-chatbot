@@ -543,14 +543,21 @@ def admin_upload_client_document(client_id):
     client = get_client(client_id)
     if not client:
         return jsonify({"error": "Client not found"}), 404
+    file.seek(0, os.SEEK_END)
+    file_size = file.tell()
+    file.seek(0)
+    logger.info(f"Upload: client={client_id} file={file.filename} size={file_size} bytes")
     try:
         text = extract_text_from_file(file, file.filename)
     except Exception as e:
         logger.error("Extraction failed: %s", e)
-        return jsonify({"error": "Failed to extract text from file"}), 500
+        return jsonify({"error": "Failed to extract text from file: " + str(e)}), 500
+    text_len = len(text.strip())
+    logger.info(f"Extracted text length: {text_len} chars")
     if not text.strip():
-        return jsonify({"error": "No text could be extracted"}), 400
+        return jsonify({"error": "No text could be extracted. If this is a scanned/image PDF, please upload a text-based PDF, DOCX, or TXT file."}), 400
     chunks = chunk_text(text)
+    logger.info(f"Created {len(chunks)} chunks")
     doc_id = add_document(client_id, file.filename, text, len(chunks))
     return jsonify({"success": True, "doc_id": doc_id, "chunks": len(chunks), "preview": text[:300].replace('\n', ' ')})
 
