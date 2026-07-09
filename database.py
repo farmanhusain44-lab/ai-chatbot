@@ -14,12 +14,9 @@ else:
 
 def get_db():
     if IS_POSTGRES:
-        conn = psycopg2.connect(DATABASE_URL)
-        conn.is_postgres = True
-    else:
-        conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
-        conn.is_postgres = False
+        return psycopg2.connect(DATABASE_URL)
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
     return conn
 
 def ph(n=1):
