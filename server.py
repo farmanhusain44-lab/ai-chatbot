@@ -7,6 +7,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from datetime import datetime, timedelta
+from database import init_db, create_client, get_client, get_client_by_access_code, get_all_clients, add_document, get_client_context, increment_message_count
 from twilio.rest import Client as TwilioClient
 from twilio.twiml.messaging_response import MessagingResponse
 from langdetect import detect
@@ -41,6 +42,9 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__, static_folder='static')
 CORS(app)
 port = int(os.environ.get("PORT", 8080))
+
+# Initialize database
+init_db()
 
 # In-memory document knowledge base
 DOCUMENT_CHUNKS = []
@@ -486,30 +490,69 @@ def my_business():
 
 
 
+def check_admin_password(data_or_args):
+    pw = (data_or_args.get("pw", "") if isinstance(data_or_args, dict) else data_or_args.get("pw", ""))
+    return pw == os.environ.get("ADMIN_PASSWORD", "farman2024")
+
 @app.route("/admin/clients", methods=["GET"])
 def admin_clients():
-    password = request.args.get("pw", "")
-    if password != os.environ.get("ADMIN_PASSWORD", "farman2024"):
+    if not check_admin_password(request.args):
         return jsonify({"error": "Unauthorized"}), 401
-    return jsonify({"clients": clients_db})
+    return jsonify({"clients": get_all_clients()})
 
-@app.route("/admin/deploy", methods=["POST"])
-def admin_deploy():
-    data = request.get_json()
-    password = data.get("pw", "")
-    if password != os.environ.get("ADMIN_PASSWORD", "farman2024"):
+@app.route("/admin/clients", methods=["POST"])
+def admin_create_client():
+    data = request.get_json(silent=True) or {}
+    if not check_admin_password(data):
         return jsonify({"error": "Unauthorized"}), 401
-    access_code = data.get("access_code", "")
-    website_url = data.get("website_url", "")
-    notes = data.get("notes", "")
-    for client in clients_db:
-        if client.get("access_code") == access_code:
-            client["deployed"] = True
-            client["website_url"] = website_url
-            client["deploy_notes"] = notes
-            client["deployed_at"] = datetime.now().isoformat()
-            break
+    name = data.get("name", "").strip()
+    email = data.get("email", "").strip()
+    website = data.get("website", "").strip()
+    plan = data.get("plan", "basic").strip()
+    days = int(data.get("days_valid", 365) or 365)
+    if not name:
+        return jsonify({"error": "Name is required"}), 400
+    client_id, access_code = create_client(name, email, website, plan, days)
+    return jsonify({"success": True, "client_id": client_id, "access_code": access_code})
+
+@app.route("/admin/clients/<int:client_id>", methods=["DELETE"])
+def admin_delete_client(client_id):
+    pw = request.args.get("pw", "")
+    if pw != os.environ.get("ADMIN_PASSWORD", "farman2024"):
+        return jsonify({"error": "Unauthorized"}), 401
+    from database import delete_client
+    delete_client(client_id)
     return jsonify({"success": True})
+
+@app.route("/admin/clients/<int:client_id>/documents", methods=["GET"])
+def admin_client_documents(client_id):
+    if not check_admin_password(request.args):
+        return jsonify({"error": "Unauthorized"}), 401
+    return jsonify({"documents": get_documents(client_id)})
+
+@app.route("/admin/clients/<int:client_id>/documents", methods=["POST"])
+def admin_upload_client_document(client_id):
+    pw = request.form.get("pw", "")
+    if pw != os.environ.get("ADMIN_PASSWORD", "farman2024"):
+        return jsonify({"error": "Unauthorized"}), 401
+    if 'file' not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No file selected"}), 400
+    client = get_client(client_id)
+    if not client:
+        return jsonify({"error": "Client not found"}), 404
+    try:
+        text = extract_text_from_file(file, file.filename)
+    except Exception as e:
+        logger.error("Extraction failed: %s", e)
+        return jsonify({"error": "Failed to extract text from file"}), 500
+    if not text.strip():
+        return jsonify({"error": "No text could be extracted"}), 400
+    chunks = chunk_text(text)
+    doc_id = add_document(client_id, file.filename, text, len(chunks))
+    return jsonify({"success": True, "doc_id": doc_id, "chunks": len(chunks), "preview": text[:300].replace('\n', ' ')})
 
 @app.route("/save-lead", methods=["POST"])
 def save_lead():
@@ -627,33 +670,8 @@ def payment_success():
 
         logger.info(f"Payment successful: {payment_id} for order {order_id} - Plan: {plan}")
 
-        # Grant automatic access
-        access_code = access_code_in if access_code_in else generate_access_code(email, plan)
-
-        # Save to clients_db for admin panel
-        clients_db.append({
-            "name": name,
-            "email": email,
-            "website": website,
-            "plan": plan,
-            "access_code": access_code,
-            "payment_id": payment_id,
-            "order_id": order_id,
-            "paid_at": datetime.now().isoformat(),
-            "deployed": False,
-            "deploy_notes": ""
-        })
-        
-        # Store access record
-        access_record = {
-            "email": email,
-            "name": name,
-            "plan": plan,
-            "access_code": access_code,
-            "payment_id": payment_id,
-            "granted_at": datetime.now().isoformat(),
-            "expires_at": (datetime.now() + timedelta(days=30)).isoformat()
-        }
+        # Grant automatic access — create client in database
+        client_id, access_code = create_client(name, email, website, plan, days_valid=30)
         
         # In production, save to database
         logger.info(f"Access granted: {access_code} for {email}")
@@ -661,30 +679,19 @@ def payment_success():
         # Send access details via email (in production)
         send_access_email(email, name, access_code, plan)
         
+        client = get_client(client_id)
         return jsonify({
             "success": True,
             "message": "Payment processed successfully",
             "access_code": access_code,
             "redirect_url": f"/chat?access={access_code}",
             "plan": plan,
-            "expires_at": access_record["expires_at"]
+            "expires_at": client['expires_at']
         })
         
     except Exception as e:
         logger.error(f"Error processing payment success: {e}")
         return jsonify({"error": "Payment processing failed"}), 500
-
-def generate_access_code(email, plan):
-    """Generate unique access code for user"""
-    import uuid
-    import hashlib
-    
-    # Create unique code based on email and timestamp
-    timestamp = str(datetime.now().timestamp())
-    raw_string = f"{email}{plan}{timestamp}"
-    access_code = hashlib.md5(raw_string.encode()).hexdigest()[:12].upper()
-    
-    return f"AI-{access_code}"
 
 def send_access_email(email, name, access_code, plan):
     """Send access details via email (in production)"""
@@ -846,14 +853,13 @@ def verify_access():
         if not access_code:
             return jsonify({"error": "Access code required"}), 400
         
-        # In production, verify against database
-        # For now, accept any valid format
-        if access_code.startswith("AI-") and len(access_code) == 15:
+        client = get_client_by_access_code(access_code)
+        if client:
             return jsonify({
                 "success": True,
                 "message": "Access granted",
-                "plan": "professional",  # Would come from database
-                "expires_at": "2026-08-05T23:59:59"  # Would come from database
+                "plan": client['plan'],
+                "expires_at": client['expires_at']
             })
         else:
             return jsonify({"error": "Invalid access code"}), 401
@@ -1184,14 +1190,11 @@ def stripe_webhook():
         
         if event['type'] == 'checkout.session.completed':
             session = event['data']['object']
-            # Payment successful - grant access
-            access_code = generate_access_code(
-                session['customer_details']['email'], 
-                session['metadata']['plan']
-            )
-            
+            email = session['customer_details']['email']
+            plan = session['metadata'].get('plan', 'starter')
+            name = email.split('@')[0] if email else 'Stripe Client'
+            _, access_code = create_client(name, email, '', plan, days_valid=30)
             logger.info(f"Stripe payment completed: {session['id']} - Access: {access_code}")
-            
             return jsonify({"status": "success", "access_code": access_code})
         
         return jsonify({"status": "received"})
@@ -1232,10 +1235,23 @@ def chat():
         logger.warning("Received request with missing or empty 'message' field")
         return jsonify({"error": "Field 'message' is required and cannot be empty"}), 400
 
+    access_code = data.get("access_code", "").strip()
+    client = None
+    if access_code:
+        client = get_client_by_access_code(access_code)
+        if not client:
+            return jsonify({"error": "Invalid access code. Please check your embed code."}), 403
+
     language = data.get("language") or detect_language(user_message)
     timezone = data.get("timezone")
     history = data.get("history", [])
-    context = get_relevant_context(user_message)
+    context = ""
+    if client:
+        context = get_client_context(client['id'], user_message)
+        increment_message_count(access_code)
+        logger.info("Client chat: %s (id=%d, lang=%s)", access_code, client['id'], language)
+    else:
+        context = get_relevant_context(user_message)
     logger.info("Sending message to Claude (length=%d chars, lang=%s, tz=%s, history=%d, context=%d)", len(user_message), language, timezone, len(history), len(context))
 
     try:

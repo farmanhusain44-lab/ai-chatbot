@@ -119,17 +119,41 @@ function removeTyping() {
     if (t) t.remove();
 }
 
-function sendMsg() {
+const accessCode = params.get('access') || '';
+let chatHistory = [];
+
+async function sendMsg() {
     const inp = document.getElementById('user-input');
     const txt = inp.value.trim();
     if (!txt) return;
     inp.value = '';
     addMsg(txt, 'user');
     showTyping();
-    setTimeout(() => {
+
+    try {
+        const res = await fetch('/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message: txt,
+                access_code: accessCode,
+                history: chatHistory.slice(-10)
+            })
+        });
+        removeTyping();
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            addMsg(err.error || 'Sorry, something went wrong. Please try again.', 'bot');
+            return;
+        }
+        const data = await res.json();
+        addMsg(data.reply || getReply(txt), 'bot');
+        chatHistory.push({ role: 'user', content: txt });
+        chatHistory.push({ role: 'assistant', content: data.reply });
+    } catch (e) {
         removeTyping();
         addMsg(getReply(txt), 'bot');
-    }, 1000 + Math.random() * 500);
+    }
 }
 
 document.getElementById('user-input').addEventListener('keydown', function(e) {

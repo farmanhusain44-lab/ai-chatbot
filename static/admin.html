@@ -21,7 +21,7 @@
         }
         .login-box h1 { font-size:1.8rem; font-weight:800; margin-bottom:8px;
             background:linear-gradient(135deg,#a78bfa,#60a5fa);
-            -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+            -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
         .login-box p { color:#64748b; margin-bottom:28px; }
         .login-box input {
             width:100%; padding:13px 16px; background:rgba(255,255,255,.07);
@@ -44,7 +44,7 @@
         }
         .topbar h1 { font-size:1.3rem; font-weight:700;
             background:linear-gradient(135deg,#a78bfa,#60a5fa);
-            -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+            -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
         .logout-btn {
             padding:8px 18px; border-radius:8px; border:1px solid rgba(255,255,255,.15);
             background:transparent; color:#94a3b8; cursor:pointer; font-size:.85rem;
@@ -114,9 +114,20 @@
         .refresh-btn {
             padding:9px 18px; border-radius:8px; border:1px solid #a78bfa55;
             background:rgba(167,139,250,.1); color:#a78bfa; cursor:pointer;
-            font-size:.85rem; font-weight:600; margin-bottom:20px;
+            font-size:.85rem; font-weight:600;
         }
+        .create-btn {
+            padding:9px 18px; border-radius:8px; border:none;
+            background:linear-gradient(135deg,#34d399,#10b981); color:#fff; cursor:pointer;
+            font-size:.85rem; font-weight:600;
+        }
+        .action-btns { display:flex; gap:8px; flex-wrap:wrap; }
+        .action-btns button { padding:5px 12px; border-radius:6px; border:none; cursor:pointer; font-size:.75rem; font-weight:600; }
+        .btn-copy { background:rgba(96,165,250,.15); color:#60a5fa; }
+        .btn-doc  { background:rgba(167,139,250,.15); color:#a78bfa; }
+        .btn-del  { background:rgba(248,113,113,.15); color:#f87171; }
         .empty { text-align:center; padding:60px; color:#475569; }
+        .doc-count { font-size:.75rem; color:#64748b; }
     </style>
 </head>
 <body>
@@ -147,12 +158,12 @@
                 <div class="value" id="statTotal">0</div>
             </div>
             <div class="stat-card">
-                <div class="label">Deployed</div>
-                <div class="value" id="statDeployed">0</div>
+                <div class="label">Active Clients</div>
+                <div class="value" id="statActive">0</div>
             </div>
             <div class="stat-card">
-                <div class="label">Pending Deploy</div>
-                <div class="value" id="statPending">0</div>
+                <div class="label">Total Messages</div>
+                <div class="value" id="statMessages">0</div>
             </div>
             <div class="stat-card">
                 <div class="label">Revenue (AED)</div>
@@ -161,9 +172,12 @@
         </div>
 
         <!-- Clients Table -->
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap;">
             <div class="section-title">All Clients</div>
-            <button class="refresh-btn" onclick="loadClients()">🔄 Refresh</button>
+            <div style="display:flex;gap:10px;">
+                <button class="refresh-btn" onclick="loadClients()">🔄 Refresh</button>
+                <button class="create-btn" onclick="openCreate()">➕ Add Client</button>
+            </div>
         </div>
 
         <div class="table-wrap">
@@ -173,14 +187,12 @@
                         <th>#</th>
                         <th>Name</th>
                         <th>Email</th>
-                        <th>Website URL</th>
-                        <th>Platform</th>
+                        <th>Website</th>
                         <th>Plan</th>
                         <th>Access Code</th>
-                        <th>Paid At</th>
-                        <th>Status</th>
-                        <th>Embed Code</th>
-                        <th>Action</th>
+                        <th>Messages</th>
+                        <th>Created</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="clientsBody">
@@ -191,17 +203,40 @@
     </div>
 </div>
 
-<!-- Deploy Modal -->
-<div id="deployModal">
+<!-- Create Client Modal -->
+<div id="createModal">
     <div class="modal-box">
-        <h2>✅ Mark as Deployed</h2>
-        <label>Client Website URL</label>
-        <input type="url" id="deployUrl" placeholder="https://clientwebsite.ae">
-        <label>Notes (optional)</label>
-        <textarea id="deployNotes" placeholder="Deployed chatbot widget on homepage..."></textarea>
+        <h2>➕ Add New Client</h2>
+        <label>Client Name</label>
+        <input type="text" id="createName" placeholder="e.g. Dubai Spa">
+        <label>Email</label>
+        <input type="email" id="createEmail" placeholder="client@example.com">
+        <label>Website</label>
+        <input type="url" id="createWebsite" placeholder="https://clientwebsite.ae">
+        <label>Plan</label>
+        <select id="createPlan" style="width:100%;padding:11px 14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:9px;color:#fff;font-size:.95rem;outline:none;margin-bottom:16px;">
+            <option value="starter">Starter — AED 499/mo</option>
+            <option value="professional">Professional — AED 1,499/mo</option>
+            <option value="enterprise">Enterprise — AED 3,499/mo</option>
+        </select>
         <div class="modal-row">
-            <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-            <button class="btn-confirm" onclick="confirmDeploy()">Mark Deployed ✓</button>
+            <button class="btn-cancel" onclick="closeCreate()">Cancel</button>
+            <button class="btn-confirm" onclick="confirmCreate()">Create Client ✓</button>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Documents Modal -->
+<div id="docModal">
+    <div class="modal-box">
+        <h2>📁 Upload Training Documents</h2>
+        <div id="docClientInfo" style="color:#a78bfa;font-size:.85rem;margin-bottom:14px;"></div>
+        <label>PDF, DOCX, TXT file</label>
+        <input type="file" id="docFile" accept=".pdf,.docx,.doc,.txt,.md" style="color:#94a3b8;">
+        <div id="docList" style="max-height:160px;overflow-y:auto;margin-bottom:16px;"></div>
+        <div class="modal-row">
+            <button class="btn-cancel" onclick="closeDoc()">Close</button>
+            <button class="btn-confirm" onclick="uploadDoc()">Upload Document ✓</button>
         </div>
     </div>
 </div>
@@ -209,7 +244,7 @@
 <script>
     const ADMIN_PW = 'farman2024';
     let pw = '';
-    let currentCode = '';
+    let currentClient = null;
     const PRICES = { starter: 499, professional: 1499, enterprise: 3499 };
 
     function login() {
@@ -245,199 +280,143 @@
 
     function renderClients(clients) {
         const tbody = document.getElementById('clientsBody');
-
         if (!clients.length) {
-            tbody.innerHTML = '<tr><td colspan="9" class="empty">No clients yet. Share your payment link!</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="empty">No clients yet. Click "Add Client" to create one.</td></tr>';
             updateStats(clients);
             return;
         }
 
-        const platformIcons = { wordpress:'🟦', shopify:'🟩', wix:'⬛', squarespace:'⬜', custom:'🔧', other:'❓', unknown:'❓' };
         tbody.innerHTML = clients.map((c, i) => `
             <tr>
                 <td>${i + 1}</td>
                 <td style="color:#e2e8f0;font-weight:500;">${c.name || '—'}</td>
                 <td>${c.email || '—'}</td>
-                <td>
-                    ${c.website
-                        ? `<a href="${c.website}" target="_blank" style="color:#60a5fa;text-decoration:none;">${c.website}</a>`
-                        : '<span style="color:#475569;">—</span>'}
-                </td>
-                <td>
-                    <span style="font-size:.85rem;">${platformIcons[c.platform||'unknown']||'❓'} ${c.platform||'—'}</span>
-                    <button onclick="showGuide('${c.platform||'other'}','${c.access_code}')"
-                        style="display:block;margin-top:4px;padding:3px 8px;font-size:.7rem;border-radius:5px;border:1px solid #a78bfa55;background:rgba(167,139,250,.1);color:#a78bfa;cursor:pointer;">
-                        📖 How to add
-                    </button>
-                </td>
+                <td>${c.website ? `<a href="${c.website}" target="_blank" style="color:#60a5fa;text-decoration:none;">${c.website}</a>` : '<span style="color:#475569;">—</span>'}</td>
                 <td><span class="badge badge-${c.plan}">${c.plan || '—'}</span></td>
                 <td style="font-family:monospace;font-size:.82rem;color:#a78bfa;">${c.access_code || '—'}</td>
-                <td>${c.paid_at ? c.paid_at.substring(0,16).replace('T',' ') : '—'}</td>
-                <td><span class="badge badge-${c.deployed ? 'done' : 'pending'}">${c.deployed ? '✅ Deployed' : '⏳ Pending'}</span></td>
+                <td>${c.message_count || 0}</td>
+                <td>${c.created_at ? c.created_at.substring(0,10) : '—'}</td>
                 <td>
-                    <button class="deploy-btn" style="background:rgba(96,165,250,.15);color:#60a5fa;border:1px solid #60a5fa44;" onclick="copyEmbed('${c.access_code}')">
-                        📋 Copy
-                    </button>
-                </td>
-                <td>
-                    <button class="deploy-btn" onclick="openDeploy('${c.access_code}','${c.website || ''}')"
-                        ${c.deployed ? 'disabled' : ''}>
-                        ${c.deployed ? 'Done' : 'Deploy Bot'}
-                    </button>
+                    <div class="action-btns">
+                        <button class="btn-copy" onclick="copyEmbed('${c.access_code}')">📋 Copy</button>
+                        <button class="btn-doc" onclick="openDoc(${c.id}, '${c.name.replace(/'/g,"\\'")}', '${c.access_code}')">📁 Docs</button>
+                        <button class="btn-del" onclick="deleteClient(${c.id})">🗑</button>
+                    </div>
                 </td>
             </tr>
         `).join('');
-
         updateStats(clients);
     }
 
     function updateStats(clients) {
-        const deployed = clients.filter(c => c.deployed).length;
-        const revenue  = clients.reduce((sum, c) => sum + (PRICES[c.plan] || 0), 0);
-        document.getElementById('statTotal').textContent    = clients.length;
-        document.getElementById('statDeployed').textContent = deployed;
-        document.getElementById('statPending').textContent  = clients.length - deployed;
-        document.getElementById('statRevenue').textContent  = revenue.toLocaleString();
-    }
-
-    function openDeploy(code, website) {
-        currentCode = code;
-        document.getElementById('deployUrl').value    = website || '';
-        document.getElementById('deployNotes').value  = '';
-        document.getElementById('deployModal').classList.add('show');
-    }
-
-    function closeModal() {
-        document.getElementById('deployModal').classList.remove('show');
-        currentCode = '';
+        const active = clients.filter(c => c.active).length;
+        const messages = clients.reduce((sum, c) => sum + (c.message_count || 0), 0);
+        const revenue = clients.reduce((sum, c) => sum + (PRICES[c.plan] || 0), 0);
+        document.getElementById('statTotal').textContent = clients.length;
+        document.getElementById('statActive').textContent = active;
+        document.getElementById('statMessages').textContent = messages.toLocaleString();
+        document.getElementById('statRevenue').textContent = revenue.toLocaleString();
     }
 
     function copyEmbed(accessCode) {
         const code = `<script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-agent="AI Assistant" data-welcome="Hello! How can I help you?" data-access="${accessCode}"><\/script>`;
-        navigator.clipboard.writeText(code).then(() => alert('✅ Embed code copied!\n\nSend this to your client — they paste it before </body> in their website HTML.'));
+        navigator.clipboard.writeText(code).then(() => alert('✅ Embed code copied!\n\nClient should paste it before </body> on their website.'));
     }
 
-    function confirmDeploy() {
-        const url   = document.getElementById('deployUrl').value.trim();
-        const notes = document.getElementById('deployNotes').value.trim();
-        fetch('/admin/deploy', {
+    function deleteClient(id) {
+        if (!confirm('Are you sure you want to delete this client?')) return;
+        fetch('/admin/clients/' + id + '?pw=' + pw, { method: 'DELETE' })
+            .then(r => r.json())
+            .then(() => loadClients());
+    }
+
+    // Create client modal
+    function openCreate() {
+        document.getElementById('createModal').classList.add('show');
+    }
+    function closeCreate() {
+        document.getElementById('createModal').classList.remove('show');
+        document.getElementById('createName').value = '';
+        document.getElementById('createEmail').value = '';
+        document.getElementById('createWebsite').value = '';
+    }
+    function confirmCreate() {
+        const name = document.getElementById('createName').value.trim();
+        const email = document.getElementById('createEmail').value.trim();
+        const website = document.getElementById('createWebsite').value.trim();
+        const plan = document.getElementById('createPlan').value;
+        if (!name) return alert('Please enter client name');
+        fetch('/admin/clients', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pw, access_code: currentCode, website_url: url, notes })
+            body: JSON.stringify({ pw, name, email, website, plan })
         })
         .then(r => r.json())
-        .then(() => { closeModal(); loadClients(); });
+        .then(data => {
+            if (data.success) {
+                alert('✅ Client created!\nAccess Code: ' + data.access_code);
+                closeCreate();
+                loadClients();
+            } else {
+                alert(data.error || 'Failed to create client');
+            }
+        });
     }
 
-    // Auto-refresh every 30 seconds
+    // Upload documents modal
+    function openDoc(id, name, code) {
+        currentClient = { id, name, code };
+        document.getElementById('docClientInfo').textContent = `${name} · ${code}`;
+        document.getElementById('docModal').classList.add('show');
+        loadDocs(id);
+    }
+    function closeDoc() {
+        document.getElementById('docModal').classList.remove('show');
+        document.getElementById('docFile').value = '';
+        document.getElementById('docList').innerHTML = '';
+        currentClient = null;
+    }
+    function loadDocs(id) {
+        fetch('/admin/clients/' + id + '/documents?pw=' + pw)
+            .then(r => r.json())
+            .then(data => {
+                const list = document.getElementById('docList');
+                const docs = data.documents || [];
+                if (!docs.length) {
+                    list.innerHTML = '<div style="color:#475569;font-size:.85rem;padding:10px 0;">No documents yet. Upload one to train this client\'s bot.</div>';
+                    return;
+                }
+                list.innerHTML = docs.map(d => `
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);">
+                        <span style="color:#94a3b8;font-size:.85rem;">📄 ${d.filename}</span>
+                        <span class="doc-count">${d.chunk_count} chunks</span>
+                    </div>
+                `).join('');
+            });
+    }
+    function uploadDoc() {
+        const fileInput = document.getElementById('docFile');
+        if (!fileInput.files.length) return alert('Please select a file');
+        const form = new FormData();
+        form.append('pw', pw);
+        form.append('file', fileInput.files[0]);
+        fetch('/admin/clients/' + currentClient.id + '/documents', {
+            method: 'POST',
+            body: form
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                alert('✅ Document uploaded! ' + data.chunks + ' chunks added.');
+                fileInput.value = '';
+                loadDocs(currentClient.id);
+            } else {
+                alert(data.error || 'Upload failed');
+            }
+        });
+    }
+
     setInterval(() => { if (pw) loadClients(); }, 30000);
-
-    const GUIDES = {
-        wordpress: {
-            icon: '🟦', name: 'WordPress',
-            steps: [
-                '1️⃣ Client ki site ka <b>WP Admin</b> kholo: <code>mybusiness.ae/wp-admin</code>',
-                '2️⃣ Left menu: <b>Appearance → Theme Editor</b> (ya Appearance → Theme File Editor)',
-                '3️⃣ Right side se <b>footer.php</b> file select karo',
-                '4️⃣ File mein sabse neeche <b>&lt;/body&gt;</b> dhundho',
-                '5️⃣ Usse pehle <b>📋 Embed code paste</b> karo',
-                '6️⃣ <b>Update File</b> button dabao — Bot live! ✅',
-                '<hr style="border-color:#ffffff11;margin:8px 0">',
-                '💡 <b>Easy Option:</b> Plugin install karo <b>"Insert Headers and Footers"</b> → Settings → Footer mein paste karo — Done!'
-            ]
-        },
-        shopify: {
-            icon: '🟩', name: 'Shopify',
-            steps: [
-                '1️⃣ Client ka Shopify admin kholo: <code>store.myshopify.com/admin</code>',
-                '2️⃣ <b>Online Store → Themes</b> → Current theme ke <b>"..."</b> menu → <b>Edit Code</b>',
-                '3️⃣ Left side mein <b>Layout → theme.liquid</b> file click karo',
-                '4️⃣ File mein <b>&lt;/body&gt;</b> dhundho (Ctrl+F)',
-                '5️⃣ Usse pehle <b>📋 Embed code paste</b> karo',
-                '6️⃣ <b>Save</b> karo — Bot live! ✅'
-            ]
-        },
-        wix: {
-            icon: '⬛', name: 'Wix',
-            steps: [
-                '1️⃣ Client Wix Editor khole: <b>manage.wix.com</b>',
-                '2️⃣ <b>Settings → Custom Code</b> (Wix Premium feature hai)',
-                '3️⃣ <b>"+ Add Custom Code"</b> dabao',
-                '4️⃣ <b>📋 Embed code paste</b> karo',
-                '5️⃣ Place: <b>"Body - end"</b> select karo',
-                '6️⃣ Apply to: <b>All Pages</b> → <b>Apply</b> — Bot live! ✅',
-                '<hr style="border-color:#ffffff11;margin:8px 0">',
-                '⚠️ <b>Note:</b> Wix pe Custom Code sirf Premium plan mein hota hai'
-            ]
-        },
-        squarespace: {
-            icon: '⬜', name: 'Squarespace',
-            steps: [
-                '1️⃣ Client ka Squarespace dashboard kholo',
-                '2️⃣ <b>Settings → Advanced → Code Injection</b>',
-                '3️⃣ <b>Footer</b> box mein <b>📋 Embed code paste</b> karo',
-                '4️⃣ <b>Save</b> — Bot live! ✅'
-            ]
-        },
-        custom: {
-            icon: '🔧', name: 'Custom HTML',
-            steps: [
-                '1️⃣ Client se <b>FTP / cPanel / File Manager</b> access maango',
-                '2️⃣ Website ki main file kholo: <code>index.html</code> ya <code>index.php</code>',
-                '3️⃣ File mein <b>&lt;/body&gt;</b> dhundho (Ctrl+F)',
-                '4️⃣ Usse pehle <b>📋 Embed code paste</b> karo',
-                '5️⃣ File save karo → Upload karo → Bot live! ✅',
-                '<hr style="border-color:#ffffff11;margin:8px 0">',
-                '💡 <b>Ya client ke developer ko direct email bhejo</b> — embed code attach karo'
-            ]
-        },
-        other: {
-            icon: '❓', name: 'Platform Unknown',
-            steps: [
-                '1️⃣ <b>Client se poochho:</b> "Aapki website WordPress pe hai ya Shopify ya kisi aur pe?"',
-                '2️⃣ Agar pata nahi — <b>client ke developer ka number maango</b>',
-                '3️⃣ Developer ko yeh message bhejo:',
-                '<code style="display:block;background:#0d0d1f;padding:8px;border-radius:6px;margin:4px 0;font-size:.78rem;">"Please add this script before &lt;/body&gt; tag on all pages: [embed code]"</code>',
-                '4️⃣ Bot live! ✅',
-                '<hr style="border-color:#ffffff11;margin:8px 0">',
-                '🇦🇪 <b>UAE mein common platforms:</b> WordPress 60% · Shopify 20% · Custom 15% · Wix 5%'
-            ]
-        }
-    };
-    GUIDES.unknown = GUIDES.other;
-
-    function showGuide(platform, accessCode) {
-        const g = GUIDES[platform] || GUIDES.other;
-        const embedCode = `&lt;script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-agent="AI Assistant" data-welcome="Hello! How can I help you?" data-access="${accessCode}"&gt;&lt;/script&gt;`;
-        const rawEmbed  = `<script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-agent="AI Assistant" data-welcome="Hello! How can I help you?" data-access="${accessCode}"><\/script>`;
-
-        const modal = document.createElement('div');
-        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;';
-        modal.innerHTML = `
-            <div style="background:#13132a;border:1px solid rgba(167,139,250,.3);border-radius:18px;padding:28px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-                    <h2 style="color:#a78bfa;font-size:1.15rem;">${g.icon} How to Deploy on ${g.name}</h2>
-                    <button onclick="this.closest('div[style*=fixed]').remove()" style="background:rgba(255,255,255,.08);border:none;color:#94a3b8;padding:6px 12px;border-radius:7px;cursor:pointer;font-size:1rem;">✕</button>
-                </div>
-
-                <div style="margin-bottom:20px;">
-                    ${g.steps.map(s => `<div style="color:#94a3b8;font-size:.88rem;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);">${s}</div>`).join('')}
-                </div>
-
-                <div style="background:#0d0d1f;border:1px solid rgba(167,139,250,.2);border-radius:10px;padding:14px;margin-bottom:16px;">
-                    <div style="color:#64748b;font-size:.75rem;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">📋 Embed Code to Paste:</div>
-                    <code style="color:#60a5fa;font-size:.75rem;word-break:break-all;line-height:1.6;">${embedCode}</code>
-                </div>
-
-                <div style="display:flex;gap:10px;">
-                    <button onclick="navigator.clipboard.writeText('${rawEmbed.replace(/'/g,"\\'")}').then(()=>this.textContent='✅ Copied!')" style="flex:1;padding:11px;background:linear-gradient(135deg,#a78bfa,#60a5fa);color:#fff;border:none;border-radius:9px;font-weight:700;cursor:pointer;">📋 Copy Embed Code</button>
-                    <button onclick="this.closest('div[style*=fixed]').remove()" style="padding:11px 20px;background:rgba(255,255,255,.07);color:#94a3b8;border:none;border-radius:9px;cursor:pointer;">Close</button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modal);
-        modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
-    }
 </script>
 </body>
 </html>

@@ -8,6 +8,7 @@
     const baseUrl = currentScript.src.replace('/widget.js', '');
     const agentName = currentScript.getAttribute('data-agent') || 'Chat with us';
     const welcomeText = currentScript.getAttribute('data-welcome') || 'Welcome';
+    const accessCode = currentScript.getAttribute('data-access') || '';
     const position = currentScript.getAttribute('data-position') || 'bottom-right';
     const color = currentScript.getAttribute('data-color') || '#25D366';
 
@@ -131,7 +132,7 @@
     // Chat panel iframe
     const panel = document.createElement('iframe');
     panel.id = widgetId + '-panel';
-    panel.src = `${baseUrl}/widget.html?name=${encodeURIComponent(agentName)}&welcome=${encodeURIComponent(welcomeText)}`;
+    panel.src = `${baseUrl}/widget.html?name=${encodeURIComponent(agentName)}&welcome=${encodeURIComponent(welcomeText)}&access=${encodeURIComponent(accessCode)}`;
     panel.title = agentName;
     panel.setAttribute('allow', 'microphone');
 
