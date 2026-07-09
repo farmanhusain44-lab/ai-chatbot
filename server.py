@@ -456,10 +456,6 @@ def free_chatbot():
 def uae_landing():
     return app.send_static_file("uae-landing.html")
 
-@app.route("/india")
-def india_landing():
-    return app.send_static_file("india-landing.html")
-
 @app.route("/payment")
 def payment():
     return app.send_static_file("payment.html")
