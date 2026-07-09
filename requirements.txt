@@ -11,3 +11,4 @@ openai
 numpy
 stripe
 razorpay
+psycopg2-binary
