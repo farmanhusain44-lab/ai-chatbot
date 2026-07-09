@@ -394,26 +394,41 @@
                 `).join('');
             });
     }
-    function uploadDoc() {
+    async function uploadDoc() {
         const fileInput = document.getElementById('docFile');
+        if (!currentClient) {
+            alert('Client not selected. Please open the documents modal again.');
+            return;
+        }
         if (!fileInput.files.length) return alert('Please select a file');
-        const form = new FormData();
-        form.append('pw', pw);
-        form.append('file', fileInput.files[0]);
-        fetch('/admin/clients/' + currentClient.id + '/documents', {
-            method: 'POST',
-            body: form
-        })
-        .then(r => r.json())
-        .then(data => {
+        const btn = document.querySelector('#docModal .btn-confirm');
+        const originalText = btn.textContent;
+        btn.textContent = 'Uploading...';
+        btn.disabled = true;
+        try {
+            const form = new FormData();
+            form.append('pw', pw);
+            form.append('file', fileInput.files[0]);
+            const res = await fetch('/admin/clients/' + currentClient.id + '/documents', {
+                method: 'POST',
+                body: form
+            });
+            const data = await res.json();
             if (data.success) {
                 alert('✅ Document uploaded! ' + data.chunks + ' chunks added.');
                 fileInput.value = '';
                 loadDocs(currentClient.id);
             } else {
-                alert(data.error || 'Upload failed');
+                console.error('Upload error:', data);
+                alert(data.error || 'Upload failed (HTTP ' + res.status + ')');
             }
-        });
+        } catch (e) {
+            console.error('Upload exception:', e);
+            alert('Upload failed: ' + e.message);
+        } finally {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
     }
 
     setInterval(() => { if (pw) loadClients(); }, 30000);
