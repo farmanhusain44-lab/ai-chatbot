@@ -88,11 +88,11 @@
         .deploy-btn:disabled { opacity:.4; cursor:not-allowed; }
 
         /* Deploy Modal */
-        #deployModal {
+        #deployModal, #docModal, #textDocModal {
             display:none; position:fixed; inset:0; background:rgba(0,0,0,.7);
             z-index:9999; align-items:center; justify-content:center;
         }
-        #deployModal.show { display:flex; }
+        #deployModal.show, #docModal.show, #textDocModal.show { display:flex; }
         .modal-box {
             background:#1a1a2e; border:1px solid rgba(255,255,255,.12);
             border-radius:18px; padding:32px; max-width:480px; width:90%;
@@ -237,7 +237,25 @@
         <div id="docList" style="max-height:160px;overflow-y:auto;margin-bottom:16px;"></div>
         <div class="modal-row">
             <button class="btn-cancel" onclick="closeDoc()">Close</button>
+            <button class="btn-confirm" onclick="openTextDoc()">Add Text ✏️</button>
             <button class="btn-confirm" onclick="uploadDoc()">Upload Document ✓</button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Text Document Modal -->
+<div id="textDocModal">
+    <div class="modal-box">
+        <h2>✏️ Add Text Document</h2>
+        <div id="textDocClientInfo" style="color:#a78bfa;font-size:.85rem;margin-bottom:14px;"></div>
+        <label>Title</label>
+        <input type="text" id="textDocTitle" placeholder="e.g. Botify Intro" style="margin-bottom:12px;">
+        <label>Content</label>
+        <textarea id="textDocContent" placeholder="Paste your text here..." rows="10" style="resize:vertical;font-family:inherit;"></textarea>
+        <div style="color:#64748b;font-size:.75rem;margin:6px 0 12px;">Max 100,000 characters. Paste plain text only.</div>
+        <div class="modal-row">
+            <button class="btn-cancel" onclick="closeTextDoc()">Cancel</button>
+            <button class="btn-confirm" onclick="saveTextDoc()">Save Document ✓</button>
         </div>
     </div>
 </div>
@@ -426,6 +444,57 @@
         } catch (e) {
             console.error('Upload exception:', e);
             alert('Upload failed: ' + e.message);
+        } finally {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    // Add text document modal
+    function openTextDoc() {
+        if (!currentClient) {
+            alert('Client not selected. Please open the documents modal again.');
+            return;
+        }
+        document.getElementById('textDocClientInfo').textContent = `${currentClient.name} · ${currentClient.code}`;
+        document.getElementById('textDocModal').classList.add('show');
+    }
+    function closeTextDoc() {
+        document.getElementById('textDocModal').classList.remove('show');
+        document.getElementById('textDocTitle').value = '';
+        document.getElementById('textDocContent').value = '';
+    }
+    async function saveTextDoc() {
+        if (!currentClient) {
+            alert('Client not selected.');
+            return;
+        }
+        const title = document.getElementById('textDocTitle').value.trim();
+        const content = document.getElementById('textDocContent').value.trim();
+        if (!content) return alert('Please paste some content');
+        if (content.length > 100000) return alert('Content too long. Max 100,000 characters.');
+        const btn = document.querySelector('#textDocModal .btn-confirm');
+        const originalText = btn.textContent;
+        btn.textContent = 'Saving...';
+        btn.disabled = true;
+        try {
+            const res = await fetch('/admin/clients/' + currentClient.id + '/documents/text', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pw, title, content })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert('✅ Text document saved! ' + data.chunks + ' chunks added.');
+                closeTextDoc();
+                loadDocs(currentClient.id);
+            } else {
+                console.error('Save text error:', data);
+                alert(data.error || 'Save failed (HTTP ' + res.status + ')');
+            }
+        } catch (e) {
+            console.error('Save text exception:', e);
+            alert('Save failed: ' + e.message);
         } finally {
             btn.textContent = originalText;
             btn.disabled = false;

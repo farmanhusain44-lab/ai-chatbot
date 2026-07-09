@@ -591,6 +591,27 @@ def admin_upload_client_document(client_id):
     doc_id = add_document(client_id, file.filename, text, len(chunks))
     return jsonify({"success": True, "doc_id": doc_id, "chunks": len(chunks), "preview": text[:300].replace('\n', ' ')})
 
+@app.route("/admin/clients/<int:client_id>/documents/text", methods=["POST"])
+def admin_add_text_document(client_id):
+    """Add a document directly from pasted text."""
+    data = request.get_json() or request.form
+    pw = data.get("pw", "") if request.get_json() else request.form.get("pw", "")
+    if pw != os.environ.get("ADMIN_PASSWORD", "farman2024"):
+        return jsonify({"error": "Unauthorized"}), 401
+    client = get_client(client_id)
+    if not client:
+        return jsonify({"error": "Client not found"}), 404
+    title = (data.get("title") or "Pasted text").strip()
+    content = (data.get("content") or "").strip()
+    if not content:
+        return jsonify({"error": "Content is required"}), 400
+    if len(content) > 100000:
+        return jsonify({"error": "Content too large. Max 100,000 characters."}), 413
+    chunks = chunk_text(content)
+    logger.info(f"Text document: client={client_id} title={title} chars={len(content)} chunks={len(chunks)}")
+    doc_id = add_document(client_id, title + ".txt", content, len(chunks))
+    return jsonify({"success": True, "doc_id": doc_id, "chunks": len(chunks), "preview": content[:300].replace('\n', ' ')})
+
 @app.route("/save-lead", methods=["POST"])
 def save_lead():
     try:
