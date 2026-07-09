@@ -61,10 +61,10 @@ nav{padding:0 5%;position:fixed;top:0;width:100%;z-index:1000;background:rgba(2,
 .lock-overlay .lock-btn{padding:12px 32px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-radius:10px;font-weight:700;font-size:.88rem;display:inline-block;border:none;cursor:pointer;transition:.2s;text-decoration:none}
 .lock-overlay .lock-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(99,102,241,.4)}
 
-.copy-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:16px}
-.copy-btn{padding:13px 32px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-radius:10px;font-weight:700;font-size:.88rem;border:none;cursor:pointer;transition:.25s;box-shadow:0 4px 20px rgba(99,102,241,.3)}
+.copy-wrap{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:16px;min-height:48px}
+.copy-btn{padding:13px 32px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-radius:10px;font-weight:700;font-size:.88rem;border:none;cursor:pointer;transition:.25s;box-shadow:0 4px 20px rgba(99,102,241,.3);display:none}
 .copy-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(99,102,241,.4)}
-.copy-msg{color:#34d399;font-size:.83rem;display:none}
+.copy-btn.show{display:inline-block}
 .trust-row{display:flex;align-items:center;justify-content:center;gap:28px;flex-wrap:wrap;font-size:.78rem;color:#334155;font-weight:500;margin-bottom:70px}
 .trust-row span{display:flex;align-items:center;gap:6px;color:#475569}
 
@@ -236,9 +236,9 @@ footer p{font-size:.75rem;color:#1e293b}
         <a href="/payment" class="lock-btn">Get Your Access Code →</a>
       </div>
     </div>
-    <div class="copy-row">
-      <button class="copy-btn" id="copyBtnMain" onclick="copyCode()" style="opacity:.4;cursor:not-allowed">🔒 Unlock to Copy Code</button>
-      <span class="copy-msg" id="copyMsg">✅ Copied!</span>
+    <div class="copy-wrap">
+      <button class="copy-btn" id="copyBtnMain" onclick="copyCode()">📋 Copy Your Embed Code</button>
+      <span class="copy-msg" id="copyMsg" style="color:#34d399;font-size:.83rem;display:none">✅ Copied!</span>
     </div>
     <div class="trust-row">
       <span>✓ Works on any website</span>
@@ -603,8 +603,7 @@ if(ac){
   document.getElementById('lockOverlay').style.display='none';
   document.getElementById('codeBoxLabel').textContent='✅ Your Embed Code — Unlocked';
   document.getElementById('heroCode').innerHTML=`&lt;<span style="color:#f472b6">script</span><br>&nbsp;&nbsp;<span style="color:#a78bfa">src</span>=<span style="color:#34d399">"https://ai-chatbot-production-2f3a.up.railway.app/widget.js"</span><br>&nbsp;&nbsp;<span style="color:#a78bfa">data-agent</span>=<span style="color:#34d399">"BotifyAI Assistant"</span><br>&nbsp;&nbsp;<span style="color:#a78bfa">data-access</span>=<span style="color:#34d399">"${ac}"</span>&gt;&lt;/<span style="color:#f472b6">script</span>&gt;`;
-  const cb=document.getElementById('copyBtnMain');
-  cb.style.opacity='1';cb.style.cursor='pointer';cb.textContent='📋 Copy Your Embed Code';
+  document.getElementById('copyBtnMain').classList.add('show');
 }
 
 /* COPY */
