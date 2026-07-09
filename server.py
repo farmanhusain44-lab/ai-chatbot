@@ -222,6 +222,14 @@ def get_relevant_context(query, top_k=3):
 def serve_public(filename):
     return send_from_directory('public', filename)
 
+@app.route('/sitemap.xml')
+def sitemap():
+    return send_from_directory('static', 'sitemap.xml', mimetype='application/xml')
+
+@app.route('/robots.txt')
+def robots():
+    return send_from_directory('static', 'robots.txt', mimetype='text/plain')
+
 # Warn at startup if the API key is missing so it shows up in deploy logs
 api_key = os.environ.get("ANTHROPIC_API_KEY")
 if not api_key:
