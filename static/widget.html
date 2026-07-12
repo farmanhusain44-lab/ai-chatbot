@@ -70,21 +70,27 @@ document.getElementById('agent-name').textContent = agentName;
 document.documentElement.style.setProperty('--color', color);
 
 const REPLIES = {
-    'hello':     'Hello! 👋 How can I help you today?',
-    'hi':        'Hi there! 👋 How can I assist you?',
-    'price':     'Our plans start from AED 499/month for Starter, AED 1,499 for Professional, and AED 3,499 for Enterprise. All include free setup! 💼',
-    'pricing':   'Our plans start from AED 499/month for Starter, AED 1,499 for Professional, and AED 3,499 for Enterprise. All include free setup! 💼',
-    'service':   'We offer AI chatbots for websites that reply in Arabic & English 24/7. Setup takes just 5 minutes! 🚀',
-    'install':   'Easy! After payment, we send a step-by-step guide by email. Or WhatsApp us — we install it for free! 📱',
-    'arabic':    'Yes! The bot automatically detects Arabic or English and replies in the same language. No setup needed! 🌍',
-    'wordpress': 'On WordPress: Install "Insert Headers and Footers" plugin → paste your code in footer. Done in 2 minutes! ✅',
-    'shopify':   'On Shopify: Online Store → Themes → Edit Code → theme.liquid → paste before </body>. Done! ✅',
-    'help':      'Happy to help! Contact us on WhatsApp or visit our website for more info. We respond within minutes! ⚡',
-    'start':     'Great! Click "Get Started" on our website, pick a plan, fill your details, and pay. Your bot is live in 5 minutes! 🚀',
-    'مرحبا':     'مرحباً! 👋 كيف يمكنني مساعدتك اليوم؟',
-    'مرحباً':    'مرحباً! 👋 كيف يمكنني مساعدتك اليوم؟',
-    'السعر':     'تبدأ خططنا من 499 درهم شهرياً. جميع الخطط تشمل الإعداد المجاني! 💼',
-    'default':   'Thank you for your message! For more details, please visit our website or contact us on WhatsApp. We\'re happy to help! 😊'
+    'hello':     'Hello! 👋 I am BotifyAI Assistant. I help businesses automate customer support, answer FAQs, and capture leads 24/7. How can I help?',
+    'hi':        'Hi there! 👋 BotifyAI works on websites and WhatsApp, supports multilingual customers, and can be trained on your business information.',
+    'price':     'For UAE businesses, Starter is AED 499/month, Professional AED 1,499/month, and Enterprise AED 3,499/month. All plans include free installation support. 💼',
+    'pricing':   'For UAE businesses, Starter is AED 499/month, Professional AED 1,499/month, and Enterprise AED 3,499/month. All plans include free installation support. 💼',
+    'service':   'BotifyAI provides AI chatbots for websites and WhatsApp. The bot answers FAQs, shares products and prices, captures leads, and supports customers 24/7 in Arabic and English. 🚀',
+    'feature':   'Key features include multilingual replies, custom training on your PDFs and FAQs, lead capture, analytics, WhatsApp integration, and support for WordPress, Shopify, Wix, Webflow, and custom websites.',
+    'train':     'Yes. On Professional and Enterprise plans, you can train the bot on your products, services, prices, FAQs, and policies so it gives business-specific answers.',
+    'install':   'Setup usually takes about 5 minutes. Add one line of code to your website, or contact us on WhatsApp and our team can install it for you free. 📱',
+    'arabic':    'Yes! BotifyAI automatically detects Arabic or English and replies in the same language. 🌍',
+    'language':  'BotifyAI supports Arabic and English for UAE businesses, with multilingual support available for other markets.',
+    'whatsapp':  'The Professional plan includes WhatsApp bot integration. The bot can answer questions, share information, and capture leads from WhatsApp.',
+    'analytics': 'The dashboard can show conversations, common questions, and captured leads so you can understand your customers and improve your business.',
+    'wordpress': 'On WordPress, add the BotifyAI code using a header/footer plugin or your theme footer. Our team can help with installation.',
+    'shopify':   'On Shopify, add the BotifyAI code through Online Store → Themes → Edit Code → theme.liquid, before </body>. Our team can help.',
+    'trial':     'All plans include a 7-day money-back guarantee. Please check the current pricing page for the latest plan terms.',
+    'help':      'I can help with features, pricing, setup, languages, WhatsApp, training, and website compatibility. You can also contact us on WhatsApp for installation help.',
+    'start':     'Click Get Started, choose a plan, enter your details, and complete payment. You will receive setup instructions, and our team can help install the bot. 🚀',
+    'مرحبا':     'مرحباً! 👋 أنا مساعد BotifyAI. كيف يمكنني مساعدتك في خدمة العملاء أو إعداد روبوتك؟',
+    'مرحباً':    'مرحباً! 👋 أنا مساعد BotifyAI. كيف يمكنني مساعدتك في خدمة العملاء أو إعداد روبوتك؟',
+    'السعر':     'تبدأ خطط الإمارات من 499 درهماً شهرياً. تشمل جميع الخطط دعم التثبيت المجاني. 💼',
+    'default':   'BotifyAI helps businesses answer customer questions 24/7, train an AI bot on business information, capture leads, and support customers through websites and WhatsApp. Ask me about pricing, setup, languages, training, or features. 😊'
 };
 
 function getReply(text) {
