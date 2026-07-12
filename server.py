@@ -453,7 +453,7 @@ def get_system_prompt(language="en", timezone=None):
 
 @app.route("/")
 def home():
-    return app.send_static_file("index.html")
+    return app.send_static_file("india-landing.html")
 
 @app.route("/widget.js")
 def widget_js():
