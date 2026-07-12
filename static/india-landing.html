@@ -11,6 +11,7 @@
 html{scroll-behavior:smooth}
 body{font-family:'Inter',sans-serif;background:#02020a;color:#e2e8f0;overflow-x:hidden}
 a{text-decoration:none;color:inherit}
+#langBanner{display:none!important}
 
 /* ANNOUNCE */
 .announce{background:linear-gradient(90deg,#ff9933,#ffffff,#138808);background-size:300%;animation:gradshift 5s linear infinite;text-align:center;padding:11px;font-size:.78rem;font-weight:700;color:#1a1a1a;letter-spacing:.03em;position:fixed;top:0;left:0;right:0;z-index:1002}
@@ -1029,15 +1030,10 @@ function detectStateAndLanguage(){
 }
 function showLangBanner(){
   if(detectedLang==='en')return;
-  const banner=document.getElementById('langBanner');
-  const name=langNames[detectedLang]||'Hindi';
-  document.getElementById('langBannerDetected').textContent=name;
-  document.getElementById('langBannerText').textContent=detectedState?`We detected you are in ${detectedState}. View this page in ${name}?`:`View this page in ${name}?`;
-  document.querySelectorAll('#navDetectedLang,#desktopDetectedLang').forEach(btn=>{btn.textContent=name;btn.setAttribute('onclick',`setLanguage('${detectedLang}')`);btn.dataset.lang=detectedLang;});
-  banner.style.display='block';
+  document.querySelectorAll('#navDetectedLang,#desktopDetectedLang').forEach(btn=>{btn.textContent=langNames[detectedLang]||'Hindi';btn.setAttribute('onclick',`setLanguage('${detectedLang}')`);btn.dataset.lang=detectedLang;});
 }
 function toggleMenu(){document.getElementById('navLinks').classList.toggle('open');}
-window.addEventListener('load',()=>{const saved=localStorage.getItem('botifyai_lang');if(saved){const chk=setInterval(()=>{const s=document.querySelector('.goog-te-combo');if(s){s.value=saved;s.dispatchEvent(new Event('change'));updateLangUI(saved);clearInterval(chk);}},500);}detectStateAndLanguage();});
+window.addEventListener('load',()=>{const saved=localStorage.getItem('botifyai_lang');if(saved){const chk=setInterval(()=>{const s=document.querySelector('.goog-te-combo');if(s){s.value=saved;s.dispatchEvent(new Event('change'));updateLangUI(saved);clearInterval(chk);}},500);}else{updateLangUI('en');}});
 
 /* TYPING EFFECT */
 const phrases=['Every Indian Business','In 22+ Languages','That Never Sleeps','That Closes Deals','Available 24/7'];
