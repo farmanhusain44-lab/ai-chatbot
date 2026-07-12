@@ -683,9 +683,9 @@ def create_payment():
         
         # Plan pricing in INR
         pricing = {
-            'starter': {'amount': 300000, 'name': 'Starter Plan'},  # ₹3,000 in paise
-            'professional': {'amount': 1000000, 'name': 'Professional Plan'},  # ₹10,000 in paise
-            'enterprise': {'amount': 2500000, 'name': 'Enterprise Plan'}  # ₹25,000 in paise
+            'starter': {'amount': 10000, 'name': 'Starter Plan'},  # ₹100 in paise
+            'professional': {'amount': 15000, 'name': 'Professional Plan'},  # ₹150 in paise
+            'enterprise': {'amount': 20000, 'name': 'Enterprise Plan'}  # ₹200 in paise
         }
         
         if plan not in pricing:

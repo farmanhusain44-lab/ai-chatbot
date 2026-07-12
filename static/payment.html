@@ -231,6 +231,11 @@ const isIndia = urlParams.get('currency') === 'inr' || urlParams.get('region') =
 
 if (isIndia) {
     document.querySelector('.wyg-item:nth-child(2)').innerHTML = '<span class="ck">✓</span> 22+ Indian languages';
+} else {
+    document.getElementById('payBtn').textContent = 'Request Setup on WhatsApp';
+    document.querySelector('.secure-note').textContent = '📱 No online payment — contact us on WhatsApp';
+    document.querySelector('.trust-row').style.display = 'none';
+    document.querySelector('.form-box > div:last-child').innerHTML = '<span class="trust-pill">WhatsApp setup</span><span class="trust-pill">Free installation</span><span class="trust-pill">No hidden fees</span>';
 }
 
 const priceMap = isIndia ? {
@@ -282,7 +287,7 @@ function selectPlan(el, plan, priceId, price) {
 
 function updateBtn() {
     const pb = document.getElementById('payBtn');
-    if(pb) pb.textContent = `Pay ${selectedPrice} — Secure Checkout`;
+    if(pb) pb.textContent = isIndia ? `Pay ${selectedPrice} — Secure Checkout` : 'Request Setup on WhatsApp';
 }
 
 
@@ -310,6 +315,12 @@ function startPayment() {
     localStorage.setItem('clientWebsite',  website);
     localStorage.setItem('clientPlatform', platform);
     localStorage.setItem('clientPlan',     selectedPlan);
+
+    if (!isIndia) {
+        const message = `Hi! I want BotifyAI ${selectedPlan} setup. Name: ${name}. Email: ${email}. Website: ${website}. Platform: ${platform}.`;
+        window.location.href = `https://wa.me/917992111021?text=${encodeURIComponent(message)}`;
+        return;
+    }
 
     const btn = document.getElementById('payBtn');
     btn.disabled = true;
