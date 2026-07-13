@@ -520,6 +520,10 @@ def admin():
 def deploy_guide():
     return app.send_static_file("deploy-guide.html")
 
+@app.route("/india-deploy-guide")
+def india_deploy_guide():
+    return app.send_static_file("india-deploy-guide.html")
+
 @app.route("/my-business")
 def my_business():
     return app.send_static_file("my-business.html")

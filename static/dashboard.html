@@ -145,7 +145,7 @@ body{font-family:'Inter',sans-serif;background:#070714;color:#e2e8f0;min-height:
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
             <button class="code-btn copy" onclick="copyEmbed(null)">📋 Copy Embed Code</button>
-            <button class="code-btn outline" onclick="window.location.href='/deploy-guide'">📖 Full Setup Guide</button>
+            <button id="fullSetupGuideBtn" class="code-btn outline" onclick="window.location.href='/deploy-guide'">📖 Full Setup Guide</button>
         </div>
         <div class="embed-note">💡 Not sure how? Click "Full Setup Guide" — we show you exactly where to paste for WordPress, Shopify, Wix and more.</div>
     </div>
@@ -205,6 +205,9 @@ function getParam(key) {
 
 const accessCode = getParam('access');
 const plan       = getParam('plan') || localStorage.getItem('clientPlan') || 'starter';
+const region     = getParam('region') || localStorage.getItem('clientRegion') || 'uae';
+const fullSetupGuideBtn = document.getElementById('fullSetupGuideBtn');
+if (fullSetupGuideBtn) fullSetupGuideBtn.onclick = () => { window.location.href = region === 'india' ? '/india-deploy-guide' : '/deploy-guide'; };
 
 // Set access code display
 document.getElementById('codeDisplay').textContent = accessCode || '—';

@@ -216,7 +216,7 @@ nav{padding:16px 28px;display:flex;align-items:center;justify-content:space-betw
     </div>
     <div class="success-btns">
         <button class="s-btn primary" onclick="gotoDashboard()">Go to Dashboard →</button>
-        <button class="s-btn secondary" onclick="window.location.href='/deploy-guide'">Setup Guide</button>
+        <button id="setupGuideBtn" class="s-btn secondary" onclick="window.location.href='/deploy-guide'">Setup Guide</button>
     </div>
 </div>
 
@@ -228,6 +228,9 @@ let selectedPrice = 'AED 499';
 const urlParams = new URLSearchParams(window.location.search);
 const urlPlan = urlParams.get('plan');
 const isIndia = urlParams.get('currency') === 'inr' || urlParams.get('region') === 'in';
+localStorage.setItem('clientRegion', isIndia ? 'india' : 'uae');
+const setupGuideBtn = document.getElementById('setupGuideBtn');
+if (setupGuideBtn) setupGuideBtn.onclick = () => { window.location.href = isIndia ? '/india-deploy-guide' : '/deploy-guide'; };
 
 if (isIndia) {
     document.querySelector('.wyg-item:nth-child(2)').innerHTML = '<span class="ck">✓</span> 22+ Indian languages';
@@ -408,7 +411,8 @@ function showSuccess(code, plan) {
 function gotoDashboard() {
     const code = localStorage.getItem('accessCode');
     const plan = localStorage.getItem('clientPlan');
-    window.location.href = `/dashboard?access=${code}&plan=${plan}`;
+    const region = localStorage.getItem('clientRegion') || 'uae';
+    window.location.href = `/dashboard?access=${code}&plan=${plan}&region=${region}`;
 }
 </script>
 </body>
