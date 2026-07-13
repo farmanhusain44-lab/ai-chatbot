@@ -290,6 +290,9 @@ body{top:0 !important}
 .showcase-media{position:absolute;inset:0;overflow:hidden;z-index:0;perspective:1200px}
 .showcase-media-inner{width:100%;height:100%;background-size:cover;background-position:center;background-repeat:no-repeat;transform:scale(.72);transform-origin:50% 100%;filter:blur(4px) brightness(.65);opacity:.6;transition:transform .8s cubic-bezier(.34,1.56,.64,1),filter .7s ease,opacity .5s ease;will-change:transform,filter,opacity}
 .showcase-card.active .showcase-media-inner{transform:scale(1) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));filter:blur(0) brightness(1);opacity:1}
+.showcase-card[data-index="0"].active .showcase-media-inner,
+.showcase-card[data-index="2"].active .showcase-media-inner,
+.showcase-card[data-index="3"].active .showcase-media-inner{filter:blur(0) brightness(.8)}
 .showcase-card::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(2,2,10,.96) 0%,rgba(2,2,10,.82) 40%,rgba(2,2,10,.35) 100%);pointer-events:none;z-index:1;transition:opacity 1s}
 .showcase-card::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 0%,rgba(2,2,10,.55) 70%,rgba(2,2,10,.9) 100%);pointer-events:none;z-index:1}
 @media(max-width:900px){.showcase-card::before{background:linear-gradient(180deg,rgba(2,2,10,.4) 0%,rgba(2,2,10,.85) 55%,rgba(2,2,10,.97) 100%)}}
