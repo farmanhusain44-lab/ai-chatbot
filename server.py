@@ -477,22 +477,9 @@ def widget_js():
 def widget_html():
     return app.send_static_file("widget.html")
 
-@app.route("/demo.html")
-def demo_page():
-    return app.send_static_file("demo.html")
-
 @app.route("/india")
 def india_landing():
     return app.send_static_file("india-landing.html")
-
-@app.route("/boss-demo")
-def boss_demo():
-    return app.send_static_file("boss-demo.html")
-
-
-@app.route("/free-chatbot")
-def free_chatbot():
-    return app.send_static_file("free-chatbot.html")
 
 @app.route("/uae")
 def uae_landing():
