@@ -6,14 +6,22 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>AI Chatbot Service</title>
-    <script>
-        // Check if user has provided lead information
-        if (!localStorage.getItem('userLead')) {
-            // Redirect to lead capture if no lead data exists
-            window.location.href = '/lead-capture.html';
-        }
-    </script>
+    <title>BotifyAI — AI Chatbot Assistant</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Create FREE AI chatbot in 2 minutes. No coding required. Perfect for restaurants, retail, service businesses. Generate custom AI bot instantly. Free trial available.">
+    <meta name="keywords" content="AI chatbot, AI bot, chatbot generator, create AI bot, free AI chatbot, business chatbot, customer service bot, no coding bot, AI assistant">
+    <meta name="author" content="AI Chatbot Services">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="AI Chatbot Generator - Create Free AI Bot in 2 Minutes">
+    <meta property="og:description" content="Create FREE AI chatbot for your business. No coding required. Perfect for restaurants, retail, and service businesses.">
+    <meta property="og:url" content="https://ai-chatbot-production-2f3a.up.railway.app">
+    <meta property="og:type" content="website">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://ai-chatbot-production-2f3a.up.railway.app">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -31,7 +39,7 @@
         .left-panel {
             width: 50%;
             height: 100%;
-            background: url('/public/banner.jpg') center/cover no-repeat;
+            background: url('/static/images/C68AE661-3F1A-47E8-BBD3-F62E8E9F9B0E.PNG') center/cover no-repeat;
             position: relative;
             display: flex;
             flex-direction: column;
@@ -338,18 +346,18 @@
     <div class="container">
         <div class="left-panel">
             <div class="left-content">
-                <h1>🤖 AI Chatbot Solutions</h1>
-                <p>We build intelligent chatbots for your business. Ask me anything — I can help with knowledge, coding, advice, and more.</p>
+                <h1>BotifyAI</h1>
+                <p>AI Chatbots for UAE Businesses — Arabic & English, 24/7, Live in 5 Minutes.</p>
             </div>
         </div>
 
         <div class="right-panel">
             <div class="chat-header">
-                <h3>🤖 Smart AI Assistant</h3>
+                <div style="display:flex;align-items:center;gap:10px"><img src="https://i.imgur.com/FfNwGyA.png" width="32" height="32" style="border-radius:50%;object-fit:cover"/><h3>BotifyAI Assistant</h3></div>
             </div>
             <div class="chat-messages" id="messages">
                 <div class="message-row bot-row" id="welcomeRow">
-                    <div class="avatar bot-avatar">🤖</div>
+                    <div class="avatar bot-avatar" style="background:none;padding:0"><img src="https://i.imgur.com/FfNwGyA.png" width="34" height="34" style="border-radius:50%;object-fit:cover"/></div>
                     <div class="message bot-message" id="welcomeMsg">
                         <span class="bot-text">Hello! I am your AI assistant. I know about many topics — ask me anything! 😊</span>
                         <div class="msg-actions">
@@ -887,16 +895,6 @@
                 typing.style.display = 'none';
                 addBotMessage('⚠️ Could not reach the server. Please try again.', 'en');
             }
-        }
-
-        // Display lead information at the top
-        const leadData = JSON.parse(localStorage.getItem('userLead') || '{}');
-        if (leadData.name) {
-            const leadInfo = document.createElement('div');
-            leadInfo.style.cssText = 'background: rgba(255,255,255,0.1); padding: 10px; border-radius: 10px; margin-bottom: 10px; font-size: 12px; text-align: center;';
-            leadInfo.innerHTML = `👋 Welcome <strong>${leadData.name}</strong>! ${leadData.company ? `from ${leadData.company}` : ''}`;
-            const messages = document.getElementById('messages');
-            messages.insertBefore(leadInfo, messages.firstChild);
         }
 
         // Add voice player to the welcome message

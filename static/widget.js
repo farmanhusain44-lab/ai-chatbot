@@ -8,6 +8,7 @@
     const baseUrl = currentScript.src.replace('/widget.js', '');
     const agentName = currentScript.getAttribute('data-agent') || 'Chat with us';
     const welcomeText = currentScript.getAttribute('data-welcome') || 'Welcome';
+    const accessCode = currentScript.getAttribute('data-access') || '';
     const position = currentScript.getAttribute('data-position') || 'bottom-right';
     const color = currentScript.getAttribute('data-color') || '#25D366';
 
@@ -115,27 +116,23 @@
     const container = document.createElement('div');
     container.id = widgetId + '-container';
 
-    // Cycling tooltip above button
     const tooltip = document.createElement('div');
     tooltip.id = widgetId + '-tooltip';
-    tooltip.textContent = 'Welcome';
-    tooltip.style.direction = 'ltr';
+    tooltip.style.display = 'none';
 
     // Floating button
     const button = document.createElement('button');
     button.id = widgetId + '-button';
     button.setAttribute('aria-label', 'Open chat');
     button.innerHTML = `
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-        </svg>
+        <img src="https://i.imgur.com/FfNwGyA.png" width="42" height="42" style="border-radius:50%;object-fit:cover;" alt="BotifyAI"/>
         <span class="${widgetId}-badge"></span>
     `;
 
     // Chat panel iframe
     const panel = document.createElement('iframe');
     panel.id = widgetId + '-panel';
-    panel.src = `${baseUrl}/widget.html?name=${encodeURIComponent(agentName)}&welcome=${encodeURIComponent(welcomeText)}`;
+    panel.src = `${baseUrl}/widget.html?name=${encodeURIComponent(agentName)}&welcome=${encodeURIComponent(welcomeText)}&access=${encodeURIComponent(accessCode)}`;
     panel.title = agentName;
     panel.setAttribute('allow', 'microphone');
 
@@ -180,7 +177,7 @@
         tooltip.classList.remove('show');
     }
 
-    startTooltipCycle();
+    // Tooltip disabled — clean button only
 
     // Toggle panel
     let isOpen = false;

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /my-business
+
+Sitemap: https://botifyai.xyz/sitemap.xml

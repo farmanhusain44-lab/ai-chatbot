@@ -3,7 +3,12 @@ from flask_cors import CORS
 import anthropic
 import os
 import re
-from datetime import datetime
+import tempfile
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from datetime import datetime, timedelta
+from database import init_db, create_client, get_client, get_client_by_access_code, get_all_clients, add_document, get_documents, get_client_context, increment_message_count
 from twilio.rest import Client as TwilioClient
 from twilio.twiml.messaging_response import MessagingResponse
 from langdetect import detect
@@ -11,7 +16,6 @@ from langdetect.lang_detect_exception import LangDetectException
 import requests
 import logging
 from io import BytesIO
-import numpy as np
 
 try:
     import openai
@@ -39,6 +43,9 @@ app = Flask(__name__, static_folder='static')
 CORS(app)
 port = int(os.environ.get("PORT", 8080))
 
+# Initialize database
+init_db()
+
 # In-memory document knowledge base
 DOCUMENT_CHUNKS = []
 MAX_DOCUMENT_CHUNKS = 2000
@@ -47,6 +54,9 @@ CHUNK_OVERLAP = 100
 
 # In-memory lead storage (in production, use database)
 LEADS = []
+
+# In-memory clients DB (payment records)
+clients_db = []
 
 
 def normalize_arabic(text):
@@ -62,12 +72,15 @@ def normalize_arabic(text):
     return text
 
 
-def extract_text_from_file(file_obj, filename):
-    """Extract text from PDF, DOCX, or TXT files."""
+def extract_text_from_file(file_input, filename):
+    """Extract text from PDF, DOCX, or TXT files. file_input can be a file object or a path string."""
     ext = os.path.splitext(filename.lower())[1]
     try:
         if ext == '.pdf' and PyPDF2:
-            reader = PyPDF2.PdfReader(BytesIO(file_obj.read()))
+            if isinstance(file_input, str):
+                reader = PyPDF2.PdfReader(file_input)
+            else:
+                reader = PyPDF2.PdfReader(BytesIO(file_input.read()))
             parts = []
             for page in reader.pages:
                 try:
@@ -76,12 +89,22 @@ def extract_text_from_file(file_obj, filename):
                     pass
             return '\n'.join(parts)
         elif ext in ('.docx', '.doc') and Document:
-            doc = Document(BytesIO(file_obj.read()))
+            if isinstance(file_input, str):
+                with open(file_input, 'rb') as f:
+                    doc = Document(BytesIO(f.read()))
+            else:
+                doc = Document(BytesIO(file_input.read()))
             return '\n'.join(p.text for p in doc.paragraphs if p.text)
         elif ext in ('.txt', '.md', '.csv', '.json'):
-            return file_obj.read().decode('utf-8', errors='ignore')
+            if isinstance(file_input, str):
+                with open(file_input, 'r', encoding='utf-8', errors='ignore') as f:
+                    return f.read()
+            return file_input.read().decode('utf-8', errors='ignore')
         else:
-            return file_obj.read().decode('utf-8', errors='ignore')
+            if isinstance(file_input, str):
+                with open(file_input, 'r', encoding='utf-8', errors='ignore') as f:
+                    return f.read()
+            return file_input.read().decode('utf-8', errors='ignore')
     except Exception as e:
         logger.error("Document extraction failed for %s: %s", filename, e)
         return ""
@@ -110,10 +133,11 @@ def chunk_text(text, chunk_size=CHUNK_SIZE, overlap=CHUNK_OVERLAP):
 
 def embed_texts(texts):
     """Get OpenAI embeddings for a list of texts. Falls back to None if unavailable."""
-    if not openai_client or not texts:
+    oc = get_openai_client()
+    if not oc or not texts:
         return None
     try:
-        response = openai_client.embeddings.create(
+        response = oc.embeddings.create(
             model="text-embedding-3-small",
             input=texts
         )
@@ -124,6 +148,7 @@ def embed_texts(texts):
 
 
 def cosine_similarity(a, b):
+    import numpy as np
     return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
 
 
@@ -186,9 +211,10 @@ def get_relevant_context(query, top_k=3):
         return ""
 
     # If we have embeddings, do vector search
-    if openai_client and any("embedding" in c for c in DOCUMENT_CHUNKS):
+    if get_openai_client() and any("embedding" in c for c in DOCUMENT_CHUNKS):
         query_embedding = embed_texts([query])
         if query_embedding and query_embedding[0]:
+            import numpy as np
             q_vec = np.array(query_embedding[0])
             scored = []
             for chunk in DOCUMENT_CHUNKS:
@@ -216,21 +242,38 @@ def get_relevant_context(query, top_k=3):
 def serve_public(filename):
     return send_from_directory('public', filename)
 
+@app.route('/sitemap.xml')
+def sitemap():
+    return send_from_directory('static', 'sitemap.xml', mimetype='application/xml')
+
+@app.route('/robots.txt')
+def robots():
+    return send_from_directory('static', 'robots.txt', mimetype='text/plain')
+
 # Warn at startup if the API key is missing so it shows up in deploy logs
 api_key = os.environ.get("ANTHROPIC_API_KEY")
 if not api_key:
     logger.warning("ANTHROPIC_API_KEY environment variable is not set — API calls will fail")
 
-client = anthropic.Anthropic(api_key=api_key)
+_anthropic_client = None
+def get_anthropic_client():
+    global _anthropic_client
+    if _anthropic_client is None and api_key:
+        import anthropic
+        _anthropic_client = anthropic.Anthropic(api_key=api_key)
+    return _anthropic_client
 
 # Optional OpenAI client for document embeddings (vector search)
 openai_api_key = os.environ.get("OPENAI_API_KEY")
-openai_client = None
-if openai and openai_api_key:
-    try:
-        openai_client = openai.OpenAI(api_key=openai_api_key)
-    except Exception as e:
-        logger.warning("OpenAI client failed to initialize: %s", e)
+_openai_client = None
+def get_openai_client():
+    global _openai_client
+    if _openai_client is None and openai and openai_api_key:
+        try:
+            _openai_client = openai.OpenAI(api_key=openai_api_key)
+        except Exception as e:
+            logger.warning("OpenAI client failed to initialize: %s", e)
+    return _openai_client
 
 twilio_sid = os.environ.get("TWILIO_ACCOUNT_SID")
 twilio_token = os.environ.get("TWILIO_AUTH_TOKEN")
@@ -373,7 +416,10 @@ def get_ai_reply(message, language, timezone=None, history=None, context=None):
             "Question:\n"
         )
         messages[-1]["content"] = context_prompt + messages[-1]["content"]
-    response = client.messages.create(
+    anthropic_client = get_anthropic_client()
+    if not anthropic_client:
+        return "I'm sorry, the AI service is not configured right now."
+    response = anthropic_client.messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=2048,
         system=get_system_prompt(language, timezone),
@@ -390,6 +436,14 @@ def get_system_prompt(language="en", timezone=None):
     now = datetime.now(tz) if tz else datetime.now()
     now_str = now.strftime("%A, %B %d, %Y at %I:%M %p %Z")
     return (
+        "You are BotifyAI Assistant for BotifyAI, a business customer-support chatbot service for websites and WhatsApp. "
+        "BotifyAI helps businesses answer customer questions, capture leads, and provide multilingual support. "
+        "You are not the unrelated Botify AI character-roleplay app, and you must not describe its features, subscriptions, characters, or mobile app. "
+        "If asked about that unrelated app, clearly say you are the business-support BotifyAI service and answer only about this service. "
+        "Use this verified BotifyAI business information: BotifyAI answers customer questions 24/7 on websites and WhatsApp, supports multilingual replies, can be trained on products, services, prices, FAQs, and policies, captures leads, and provides conversation and analytics insights. It works with WordPress, Shopify, Wix, Webflow, custom HTML, and most platforms that allow a small code snippet. Typical setup takes about 5 minutes, and free installation help is available through WhatsApp. "
+        "India plans shown on the India page are Starter ₹100/month with 500 conversations and 22+ Indian languages, Professional ₹150/month with 3,000 conversations, custom training, WhatsApp integration, analytics and lead capture, and Enterprise ₹200/month with unlimited conversations, custom AI, multi-website deployment and custom integrations. "
+        "UAE plans shown on the UAE page are Starter AED 499/month, Professional AED 1,499/month, and Enterprise AED 3,499/month. All plans include free installation support; Professional adds WhatsApp integration and custom training. "
+        "All plans show a 7-day money-back guarantee. Do not promise features, discounts, refunds, integrations, or timelines beyond this information. If the customer asks for account-specific help or something unknown, collect their name, business, contact details, and question for the team instead of guessing. "
         "You are a smart, warm, and professional multilingual AI assistant. Talk like an intelligent, well-mannered human friend. "
         "You can speak many languages fluently. Whatever language the user writes or speaks in, reply directly in that same language. "
         "Switch languages instantly and naturally. Never say you can only speak one language. "
@@ -407,15 +461,7 @@ def get_system_prompt(language="en", timezone=None):
 
 @app.route("/")
 def home():
-    return app.send_static_file("professional-landing.html")
-
-@app.route("/chat")
-def chat():
-    return app.send_static_file("index.html")
-
-@app.route("/lead-capture")
-def lead_capture():
-    return app.send_static_file("lead-capture.html")
+    return app.send_static_file("india-landing.html")
 
 @app.route("/widget.js")
 def widget_js():
@@ -429,6 +475,827 @@ def widget_html():
 def demo_page():
     return app.send_static_file("demo.html")
 
+@app.route("/india")
+def india_landing():
+    return app.send_static_file("india-landing.html")
+
+@app.route("/boss-demo")
+def boss_demo():
+    return app.send_static_file("boss-demo.html")
+
+
+@app.route("/free-chatbot")
+def free_chatbot():
+    return app.send_static_file("free-chatbot.html")
+
+@app.route("/uae")
+def uae_landing():
+    return app.send_static_file("uae-landing.html")
+
+@app.route("/payment")
+def payment():
+    return app.send_static_file("payment.html")
+
+@app.route("/dashboard")
+def dashboard():
+    return app.send_static_file("dashboard.html")
+
+@app.route("/terms")
+def terms():
+    return app.send_static_file("terms.html")
+
+@app.route("/privacy")
+def privacy():
+    return app.send_static_file("privacy.html")
+
+@app.route("/refund")
+def refund():
+    return app.send_static_file("refund.html")
+
+@app.route("/admin")
+def admin():
+    return app.send_static_file("admin.html")
+
+@app.route("/deploy-guide")
+def deploy_guide():
+    return app.send_static_file("deploy-guide.html")
+
+@app.route("/india-deploy-guide")
+def india_deploy_guide():
+    return app.send_static_file("india-deploy-guide.html")
+
+@app.route("/my-business")
+def my_business():
+    return app.send_static_file("my-business.html")
+
+
+
+def check_admin_password(data_or_args):
+    pw = (data_or_args.get("pw", "") if isinstance(data_or_args, dict) else data_or_args.get("pw", ""))
+    return pw == os.environ.get("ADMIN_PASSWORD", "farman2024")
+
+@app.route("/admin/clients", methods=["GET"])
+def admin_clients():
+    if not check_admin_password(request.args):
+        return jsonify({"error": "Unauthorized"}), 401
+    return jsonify({"clients": get_all_clients()})
+
+@app.route("/admin/clients", methods=["POST"])
+def admin_create_client():
+    data = request.get_json(silent=True) or {}
+    if not check_admin_password(data):
+        return jsonify({"error": "Unauthorized"}), 401
+    name = data.get("name", "").strip()
+    email = data.get("email", "").strip()
+    website = data.get("website", "").strip()
+    plan = data.get("plan", "basic").strip()
+    region = data.get("region", "uae").strip().lower()
+    if region not in {"india", "uae"}:
+        region = "uae"
+    days = int(data.get("days_valid", 365) or 365)
+    if not name:
+        return jsonify({"error": "Name is required"}), 400
+    client_id, access_code = create_client(name, email, website, plan, days, region)
+    return jsonify({"success": True, "client_id": client_id, "access_code": access_code})
+
+@app.route("/admin/clients/<int:client_id>", methods=["DELETE"])
+def admin_delete_client(client_id):
+    pw = request.args.get("pw", "")
+    if pw != os.environ.get("ADMIN_PASSWORD", "farman2024"):
+        return jsonify({"error": "Unauthorized"}), 401
+    from database import delete_client
+    delete_client(client_id)
+    return jsonify({"success": True})
+
+@app.route("/admin/clients/<int:client_id>/documents", methods=["GET"])
+def admin_client_documents(client_id):
+    if not check_admin_password(request.args):
+        return jsonify({"error": "Unauthorized"}), 401
+    return jsonify({"documents": get_documents(client_id)})
+
+@app.route("/admin/clients/<int:client_id>/documents", methods=["POST"])
+def admin_upload_client_document(client_id):
+    pw = request.form.get("pw", "")
+    if pw != os.environ.get("ADMIN_PASSWORD", "farman2024"):
+        return jsonify({"error": "Unauthorized"}), 401
+    if 'file' not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No file selected"}), 400
+    client = get_client(client_id)
+    if not client:
+        return jsonify({"error": "Client not found"}), 404
+    file.seek(0, os.SEEK_END)
+    file_size = file.tell()
+    file.seek(0)
+    logger.info(f"Upload: client={client_id} file={file.filename} size={file_size} bytes")
+    if file_size > 5 * 1024 * 1024:
+        return jsonify({"error": "File too large. Maximum size is 5MB. Please upload a smaller text-based PDF, DOCX, or TXT file."}), 413
+    try:
+        text = extract_text_from_file(file, file.filename)
+    except Exception as e:
+        logger.error("Extraction failed: %s", e)
+        return jsonify({"error": "Failed to extract text from file: " + str(e)}), 500
+    text_len = len(text.strip())
+    logger.info(f"Extracted text length: {text_len} chars")
+    if not text.strip():
+        return jsonify({"error": "No text could be extracted. If this is a scanned/image PDF, please upload a text-based PDF, DOCX, or TXT file."}), 400
+    chunks = chunk_text(text)
+    logger.info(f"Created {len(chunks)} chunks")
+    doc_id = add_document(client_id, file.filename, text, len(chunks))
+    return jsonify({"success": True, "doc_id": doc_id, "chunks": len(chunks), "preview": text[:300].replace('\n', ' ')})
+
+@app.route("/admin/clients/<int:client_id>/documents/text", methods=["POST"])
+def admin_add_text_document(client_id):
+    """Add a document directly from pasted text."""
+    data = request.get_json() or request.form
+    pw = data.get("pw", "") if request.get_json() else request.form.get("pw", "")
+    if pw != os.environ.get("ADMIN_PASSWORD", "farman2024"):
+        return jsonify({"error": "Unauthorized"}), 401
+    client = get_client(client_id)
+    if not client:
+        return jsonify({"error": "Client not found"}), 404
+    title = (data.get("title") or "Pasted text").strip()
+    content = (data.get("content") or "").strip()
+    if not content:
+        return jsonify({"error": "Content is required"}), 400
+    if len(content) > 100000:
+        return jsonify({"error": "Content too large. Max 100,000 characters."}), 413
+    chunks = chunk_text(content)
+    logger.info(f"Text document: client={client_id} title={title} chars={len(content)} chunks={len(chunks)}")
+    doc_id = add_document(client_id, title + ".txt", content, len(chunks))
+    return jsonify({"success": True, "doc_id": doc_id, "chunks": len(chunks), "preview": content[:300].replace('\n', ' ')})
+
+@app.route("/save-lead", methods=["POST"])
+def save_lead():
+    try:
+        data = request.get_json()
+
+        # Validate required fields
+        required_fields = ['name', 'email', 'phone']
+        for field in required_fields:
+            if not data.get(field, '').strip():
+                return jsonify({"error": f"Missing required field: {field}"}), 400
+
+        # Create lead record
+        lead = {
+            "id": len(LEADS) + 1,
+            "name": data['name'].strip(),
+            "email": data['email'].strip().lower(),
+            "phone": data['phone'].strip(),
+            "company": data.get('company', '').strip(),
+            "timestamp": data.get('timestamp', datetime.now().isoformat()),
+            "source": data.get('source', 'unknown'),
+            "status": "new"
+        }
+
+        # Check for duplicate leads
+        for existing_lead in LEADS:
+            if (existing_lead['email'] == lead['email'] or
+                existing_lead['phone'] == lead['phone']):
+                # Update existing lead instead of creating duplicate
+                existing_lead.update(lead)
+                logger.info(f"Updated existing lead: {lead['email']}")
+                return jsonify({"success": True, "lead_id": existing_lead['id'], "updated": True})
+
+        # Add new lead
+        LEADS.append(lead)
+        logger.info(f"New lead captured: {lead['name']} - {lead['email']}")
+
+        return jsonify({
+            "success": True,
+            "lead_id": lead['id'],
+            "message": "Lead saved successfully"
+        })
+
+    except Exception as e:
+        logger.error(f"Error saving lead: {e}")
+        return jsonify({"error": "Failed to save lead"}), 500
+
+@app.route("/leads", methods=["GET"])
+def get_leads():
+    # Simple endpoint to view leads (in production, add authentication)
+    return jsonify({
+        "leads": LEADS,
+        "total": len(LEADS)
+    })
+
+@app.route("/create-payment", methods=["POST"])
+def create_payment():
+    """Create Razorpay payment order for Indian customers"""
+    try:
+        data = request.get_json()
+        plan = data.get('plan', 'starter')
+
+        # Plan pricing in INR
+        pricing = {
+            'starter': {'amount': 10000, 'name': 'Starter Plan'},  # ₹100 in paise
+            'professional': {'amount': 15000, 'name': 'Professional Plan'},  # ₹150 in paise
+            'enterprise': {'amount': 20000, 'name': 'Enterprise Plan'}  # ₹200 in paise
+        }
+
+        if plan not in pricing:
+            return jsonify({"error": "Invalid plan selected"}), 400
+
+        plan_details = pricing[plan]
+
+        # In production, integrate with actual Razorpay API
+        # For now, return mock payment order
+        payment_order = {
+            "id": f"order_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            "amount": plan_details['amount'],
+            "currency": "INR",
+            "name": "AI Chatbot India",
+            "description": plan_details['name'],
+            "customer_email": data.get('email', ''),
+            "customer_phone": data.get('phone', ''),
+            "callback_url": f"{request.url_root}payment-success",
+            "notes": {
+                "plan": plan,
+                "customer_name": data.get('name', '')
+            }
+        }
+
+        logger.info(f"Payment order created: {payment_order['id']} for plan {plan}")
+        return jsonify({
+            "success": True,
+            "order": payment_order,
+            "key": "rzp_test_1234567890"  # Test key in production
+        })
+
+    except Exception as e:
+        logger.error(f"Error creating payment: {e}")
+        return jsonify({"error": "Failed to create payment"}), 500
+
+@app.route("/payment-success", methods=["POST"])
+def payment_success():
+    """Handle successful payment callback and grant automatic access"""
+    try:
+        data = request.get_json()
+        payment_id = data.get('payment_id')
+        order_id = data.get('order_id')
+        plan = data.get('plan', 'starter')
+        email = data.get('email', '')
+        name = data.get('name', '')
+        website = data.get('website', '')
+        access_code_in = data.get('access_code', '')
+
+        logger.info(f"Payment successful: {payment_id} for order {order_id} - Plan: {plan}")
+
+        # Grant automatic access — create client in database
+        client_id, access_code = create_client(name, email, website, plan, days_valid=30)
+
+        # In production, save to database
+        logger.info(f"Access granted: {access_code} for {email}")
+
+        # Send access details via email (in production)
+        send_access_email(email, name, access_code, plan)
+
+        client = get_client(client_id)
+        return jsonify({
+            "success": True,
+            "message": "Payment processed successfully",
+            "access_code": access_code,
+            "redirect_url": f"/chat?access={access_code}",
+            "plan": plan,
+            "expires_at": client['expires_at']
+        })
+
+    except Exception as e:
+        logger.error(f"Error processing payment success: {e}")
+        return jsonify({"error": "Payment processing failed"}), 500
+
+def send_access_email(email, name, access_code, plan):
+    """Send access details via email (in production)"""
+    logger.info(f"Email sent to {email}: Access Code: {access_code}, Plan: {plan}")
+    send_welcome_email(email, name, access_code, plan)
+
+
+def send_welcome_email(to_email, name, access_code, plan):
+    """Send beautiful welcome email with embed code to new client"""
+    gmail_user = os.environ.get('GMAIL_USER', '')
+    gmail_pass = os.environ.get('GMAIL_APP_PASSWORD', '')
+    if not gmail_user or not gmail_pass:
+        logger.warning('GMAIL_USER or GMAIL_APP_PASSWORD not set — skipping welcome email')
+        return
+
+    plan_prices = {'starter': 'AED 499', 'professional': 'AED 1,499', 'enterprise': 'AED 3,499'}
+    plan_label  = plan.title()
+    price       = plan_prices.get(plan, '')
+    embed_code  = f'<script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-agent="AI Assistant" data-welcome="Hello! How can I help you?" data-access="{access_code}"></script>'
+    dashboard_url = f'https://ai-chatbot-production-2f3a.up.railway.app/dashboard?access={access_code}&plan={plan}'
+    guide_url = f'https://ai-chatbot-production-2f3a.up.railway.app/deploy-guide?access={access_code}'
+
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+    <body style="margin:0;padding:0;background:#0a0a1a;font-family:Inter,Arial,sans-serif;">
+      <div style="max-width:600px;margin:0 auto;padding:40px 20px;">
+
+        <div style="text-align:center;margin-bottom:32px;">
+          <div style="font-size:48px;">🤖</div>
+          <h1 style="color:#a78bfa;font-size:1.8rem;margin:12px 0 4px;">Your AI Bot is Ready!</h1>
+          <p style="color:#64748b;margin:0;">Payment confirmed — here's everything you need</p>
+        </div>
+
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(167,139,250,.3);border-radius:16px;padding:24px;margin-bottom:20px;">
+          <p style="color:#94a3b8;margin:0 0 4px;font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;">Welcome</p>
+          <p style="color:#e2e8f0;font-size:1.1rem;font-weight:600;margin:0;">Hi {name}!</p>
+        </div>
+
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(167,139,250,.3);border-radius:16px;padding:24px;margin-bottom:20px;">
+          <p style="color:#94a3b8;margin:0 0 8px;font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;">Your Access Code</p>
+          <div style="background:#0d0d1f;border-radius:8px;padding:14px;font-family:monospace;font-size:1.3rem;color:#a78bfa;letter-spacing:2px;text-align:center;">{access_code}</div>
+          <p style="color:#475569;font-size:.8rem;margin:8px 0 0;text-align:center;">Keep this safe — it's your key to the dashboard</p>
+        </div>
+
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(167,139,250,.3);border-radius:16px;padding:24px;margin-bottom:20px;">
+          <p style="color:#94a3b8;margin:0 0 8px;font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;">Plan</p>
+          <p style="color:#34d399;font-size:1.1rem;font-weight:700;margin:0;">{plan_label} — {price}/month</p>
+        </div>
+
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(167,139,250,.3);border-radius:16px;padding:24px;margin-bottom:20px;">
+          <p style="color:#94a3b8;margin:0 0 12px;font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;">🚀 Add Bot to Your Website</p>
+          <p style="color:#94a3b8;font-size:.9rem;margin:0 0 12px;">Copy this one line and paste it in your website HTML before <code style="color:#a78bfa;">&lt;/body&gt;</code>:</p>
+          <div style="background:#0d0d1f;border-radius:8px;padding:14px;font-family:monospace;font-size:.78rem;color:#60a5fa;word-break:break-all;line-height:1.6;">{embed_code}</div>
+        </div>
+
+        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(167,139,250,.3);border-radius:16px;padding:24px;margin-bottom:28px;text-align:center;">
+          <p style="color:#94a3b8;margin:0 0 6px;font-size:.85rem;">Step-by-step guide for WordPress, Shopify, Wix &amp; more:</p>
+          <a href="{guide_url}" style="display:inline-block;background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.3);color:#a78bfa;text-decoration:none;padding:12px 28px;border-radius:9px;font-weight:700;font-size:.95rem;">📖 View Full Deploy Guide →</a>
+          <p style="color:#475569;font-size:.8rem;margin:12px 0 0;">Can't do it? Reply to this email — we'll add it for you free! ✅</p>
+        </div>
+
+        <div style="text-align:center;margin-bottom:32px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+          <a href="{dashboard_url}" style="display:inline-block;background:linear-gradient(135deg,#a78bfa,#60a5fa);color:#fff;text-decoration:none;padding:15px 36px;border-radius:10px;font-weight:700;font-size:1rem;">Go to My Dashboard →</a>
+        </div>
+
+        <p style="color:#334155;font-size:.82rem;text-align:center;">Questions? Reply to this email or contact <a href="mailto:support@aichatbot.ae" style="color:#60a5fa;">support@aichatbot.ae</a></p>
+      </div>
+    </body>
+    </html>
+    """
+
+    try:
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = f'🤖 Your AI Bot is Ready — {plan_label} Plan Activated!'
+        msg['From']    = f'AI Chatbot <{gmail_user}>'
+        msg['To']      = to_email
+        msg.attach(MIMEText(html, 'html'))
+
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+            server.login(gmail_user, gmail_pass)
+            server.sendmail(gmail_user, to_email, msg.as_string())
+        logger.info(f'Welcome email sent to {to_email}')
+    except Exception as e:
+        logger.error(f'Failed to send welcome email to {to_email}: {e}')
+
+def notify_owner(name, email, website, plan, access_code):
+    """Notify owner via WhatsApp + email when a new client pays"""
+    plan_prices = {'starter':'AED 499','professional':'AED 1,499','enterprise':'AED 3,499'}
+    price = plan_prices.get(plan, '')
+    owner_phone = os.environ.get('OWNER_WHATSAPP', '')
+    twilio_sid  = os.environ.get('TWILIO_ACCOUNT_SID', '')
+    twilio_tok  = os.environ.get('TWILIO_AUTH_TOKEN', '')
+    twilio_wa   = os.environ.get('TWILIO_WHATSAPP_NUMBER', 'whatsapp:+14155238886')
+
+    # WhatsApp notification
+    if owner_phone and twilio_sid and twilio_tok:
+        try:
+            from twilio.rest import Client as TwilioClient
+            tc = TwilioClient(twilio_sid, twilio_tok)
+            tc.messages.create(
+                body=(
+                    f"🎉 NEW CLIENT PAID!\n\n"
+                    f"👤 Name: {name}\n"
+                    f"📧 Email: {email}\n"
+                    f"🌐 Website: {website or 'Not provided'}\n"
+                    f"📦 Plan: {plan.title()} — {price}/month\n"
+                    f"🔑 Code: {access_code}\n\n"
+                    f"👉 Admin: https://ai-chatbot-production-2f3a.up.railway.app/admin"
+                ),
+                from_=twilio_wa,
+                to=f'whatsapp:{owner_phone}'
+            )
+            logger.info(f'Owner WhatsApp notification sent for {email}')
+        except Exception as e:
+            logger.error(f'Owner WhatsApp notify failed: {e}')
+
+    # Email notification to owner
+    gmail_user = os.environ.get('GMAIL_USER', '')
+    gmail_pass = os.environ.get('GMAIL_APP_PASSWORD', '')
+    owner_email = os.environ.get('OWNER_EMAIL', gmail_user)
+    if gmail_user and gmail_pass and owner_email:
+        try:
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = f'🎉 New Client Paid — {plan.title()} Plan — {name}'
+            msg['From']    = f'AI Chatbot <{gmail_user}>'
+            msg['To']      = owner_email
+            body = f"""
+            <div style="font-family:Arial;padding:20px;background:#0a0a1a;color:#e2e8f0;">
+            <h2 style="color:#34d399;">🎉 New Client Paid!</h2>
+            <table style="border-collapse:collapse;width:100%;">
+              <tr><td style="padding:8px;color:#94a3b8;">Name</td><td style="padding:8px;color:#fff;font-weight:600;">{name}</td></tr>
+              <tr><td style="padding:8px;color:#94a3b8;">Email</td><td style="padding:8px;color:#60a5fa;">{email}</td></tr>
+              <tr><td style="padding:8px;color:#94a3b8;">Website</td><td style="padding:8px;color:#60a5fa;">{website or '—'}</td></tr>
+              <tr><td style="padding:8px;color:#94a3b8;">Plan</td><td style="padding:8px;color:#a78bfa;font-weight:700;">{plan.title()} — {price}/month</td></tr>
+              <tr><td style="padding:8px;color:#94a3b8;">Access Code</td><td style="padding:8px;font-family:monospace;color:#a78bfa;">{access_code}</td></tr>
+            </table>
+            <br>
+            <a href="https://ai-chatbot-production-2f3a.up.railway.app/admin" style="background:linear-gradient(135deg,#a78bfa,#60a5fa);color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;">Open Admin Panel →</a>
+            </div>
+            """
+            msg.attach(MIMEText(body, 'html'))
+            with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+                server.login(gmail_user, gmail_pass)
+                server.sendmail(gmail_user, owner_email, msg.as_string())
+            logger.info(f'Owner email notification sent for {email}')
+        except Exception as e:
+            logger.error(f'Owner email notify failed: {e}')
+
+
+@app.route("/verify-access", methods=["POST"])
+def verify_access():
+    """Verify access code and grant chatbot access"""
+    try:
+        data = request.get_json()
+        access_code = data.get('access_code')
+
+        if not access_code:
+            return jsonify({"error": "Access code required"}), 400
+
+        client = get_client_by_access_code(access_code)
+        if client:
+            return jsonify({
+                "success": True,
+                "message": "Access granted",
+                "plan": client['plan'],
+                "expires_at": client['expires_at']
+            })
+        else:
+            return jsonify({"error": "Invalid access code"}), 401
+
+    except Exception as e:
+        logger.error(f"Error verifying access: {e}")
+        return jsonify({"error": "Access verification failed"}), 500
+
+@app.route("/payment-instructions", methods=["GET"])
+def payment_instructions():
+    """Display payment instructions with account details"""
+    return jsonify({
+        "success": True,
+        "payment_methods": {
+            "stripe": {
+                "enabled": true,
+                "publishable_key": "pk_live_YOUR_STRIPE_KEY",
+                "supported_cards": ["Visa", "Mastercard", "RuPay", "Amex"],
+                "currencies": ["INR", "USD", "EUR", "GBP", "AED", "SGD"]
+            },
+            "paypal": {
+                "enabled": true,
+                "client_id": "YOUR_PAYPAL_CLIENT_ID",
+                "supported_countries": 195
+            },
+            "upi": {
+                "enabled": true,
+                "apps": ["PhonePe", "Google Pay", "Paytm", "BHIM"]
+            }
+        },
+        "instructions": {
+            "step1": "Choose your plan (Starter: ₹3,000, Professional: ₹10,000, Enterprise: ₹25,000)",
+            "step2": "Make payment to any of the above methods",
+            "step3": "Send payment screenshot with your email to payments@aichatbot.in",
+            "step4": "Receive access code within 2 hours",
+            "step5": "Use access code to activate your AI chatbot"
+        },
+        "note": "Please include your email address in payment description for faster processing"
+    })
+
+@app.route("/upi-payment", methods=["POST"])
+def upi_payment():
+    """Handle UPI payment requests"""
+    try:
+        data = request.get_json()
+        plan = data.get('plan', 'starter')
+
+        pricing = {
+            'starter': 3000,
+            'professional': 10000,
+            'enterprise': 25000
+        }
+
+        if plan not in pricing:
+            return jsonify({"error": "Invalid plan selected"}), 400
+
+        amount = pricing[plan]
+
+        # UPI details for payment
+        upi_details = {
+            "upi_id": "aichatbot@okicici",
+            "amount": amount,
+            "note": f"AI Chatbot {plan.title()} Plan",
+            "customer_name": data.get('name', ''),
+            "customer_phone": data.get('phone', ''),
+            "transaction_id": f"UPI_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        }
+
+        logger.info(f"UPI payment initiated: {upi_details['transaction_id']}")
+
+        return jsonify({
+            "success": True,
+            "upi_details": upi_details,
+            "qr_code_url": f"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa={upi_details['upi_id']}&pn=AI%20Chatbot&am={amount}&cu=INR&tn={upi_details['note']}"
+        })
+
+    except Exception as e:
+        logger.error(f"Error creating UPI payment: {e}")
+        return jsonify({"error": "Failed to create UPI payment"}), 500
+
+@app.route("/wise-payment", methods=["POST"])
+def wise_payment():
+    """Handle Wise (TransferWise) international payment requests"""
+    try:
+        data = request.get_json()
+        plan = data.get('plan', 'starter')
+        country = data.get('country', 'IN')
+
+        # International pricing in local currencies
+        pricing = {
+            'IN': {'starter': 3000, 'professional': 10000, 'enterprise': 25000, 'currency': 'INR'},
+            'AE': {'starter': 499, 'professional': 1499, 'enterprise': 3499, 'currency': 'AED'},
+            'SG': {'starter': 89, 'professional': 269, 'enterprise': 629, 'currency': 'SGD'},
+            'GB': {'starter': 49, 'professional': 149, 'enterprise': 349, 'currency': 'GBP'},
+            'US': {'starter': 59, 'professional': 179, 'enterprise': 419, 'currency': 'USD'}
+        }
+
+        if country not in pricing:
+            return jsonify({"error": "Country not supported"}), 400
+
+        if plan not in ['starter', 'professional', 'enterprise']:
+            return jsonify({"error": "Invalid plan selected"}), 400
+
+        country_pricing = pricing[country]
+        amount = country_pricing[plan]
+        currency = country_pricing['currency']
+
+        # Wise payment details
+        wise_details = {
+            "amount": amount,
+            "currency": currency,
+            "recipient_name": "AI Chatbot Services",
+            "recipient_email": "payments@aichatbot.in",
+            "wise_account_id": "AI123456789",
+            "reference": f"Chatbot_{plan}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            "customer_name": data.get('name', ''),
+            "customer_email": data.get('email', ''),
+            "description": f"AI Chatbot {plan.title()} Plan - {country}",
+            "payment_url": f"https://wise.com/pay/{wise_details['reference']}",
+            "bank_details": {
+                "account_name": "AI Chatbot Services",
+                "account_number": "1234567890",
+                "ifsc_code": "ICIC0001234",
+                "bank_name": "ICICI Bank",
+                "branch": "Mumbai Main"
+            }
+        }
+
+        logger.info(f"Wise payment initiated: {wise_details['reference']} for {amount} {currency}")
+
+        return jsonify({
+            "success": True,
+            "payment_method": "wise",
+            "details": wise_details,
+            "instructions": f"Transfer {amount} {currency} to the provided bank details or use the Wise payment link"
+        })
+
+    except Exception as e:
+        logger.error(f"Error creating Wise payment: {e}")
+        return jsonify({"error": "Failed to create Wise payment"}), 500
+
+@app.route("/paypal-payment", methods=["POST"])
+def paypal_payment():
+    """Handle PayPal international payment requests"""
+    try:
+        data = request.get_json()
+        plan = data.get('plan', 'starter')
+        country = data.get('country', 'IN')
+
+        # PayPal pricing in local currencies
+        pricing = {
+            'IN': {'starter': 3000, 'professional': 10000, 'enterprise': 25000, 'currency': 'INR'},
+            'AE': {'starter': 499, 'professional': 1499, 'enterprise': 3499, 'currency': 'AED'},
+            'SG': {'starter': 89, 'professional': 269, 'enterprise': 629, 'currency': 'SGD'},
+            'GB': {'starter': 49, 'professional': 149, 'enterprise': 349, 'currency': 'GBP'},
+            'US': {'starter': 59, 'professional': 179, 'enterprise': 419, 'currency': 'USD'}
+        }
+
+        if country not in pricing:
+            return jsonify({"error": "Country not supported"}), 400
+
+        if plan not in ['starter', 'professional', 'enterprise']:
+            return jsonify({"error": "Invalid plan selected"}), 400
+
+        country_pricing = pricing[country]
+        amount = country_pricing[plan]
+        currency = country_pricing['currency']
+
+        # PayPal payment details
+        paypal_details = {
+            "amount": amount,
+            "currency": currency,
+            "merchant_id": "AI_CHATBOT_MERCHANT",
+            "paypal_email": "payments@aichatbot.in",
+            "item_name": f"AI Chatbot {plan.title()} Plan",
+            "item_number": f"CHATBOT_{plan.upper()}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            "custom": f"customer:{data.get('email', '')};plan:{plan};country:{country}",
+            "return_url": f"{request.url_root}payment-success",
+            "cancel_url": f"{request.url_root}payment-cancelled",
+            "notify_url": f"{request.url_root}paypal-ipn",
+            "payment_url": f"https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business={paypal_details['paypal_email']}&item_name={paypal_details['item_name']}&amount={amount}&currency_code={currency}&return={paypal_details['return_url']}&cancel_return={paypal_details['cancel_url']}"
+        }
+
+        logger.info(f"PayPal payment initiated: {paypal_details['item_number']} for {amount} {currency}")
+
+        return jsonify({
+            "success": True,
+            "payment_method": "paypal",
+            "details": paypal_details,
+            "redirect_url": paypal_details['payment_url']
+        })
+
+    except Exception as e:
+        logger.error(f"Error creating PayPal payment: {e}")
+        return jsonify({"error": "Failed to create PayPal payment"}), 500
+
+@app.route("/razorpay-order", methods=["POST"])
+def razorpay_order():
+    try:
+        import razorpay
+        data = request.get_json()
+        plan  = data.get('plan', 'starter')
+        name  = data.get('name', '')
+        email = data.get('email', '')
+        # India pricing in paise (₹100, ₹150, ₹200)
+        prices = {'starter': 10000, 'professional': 15000, 'enterprise': 20000}
+        amount = prices.get(plan, 10000)
+        client = razorpay.Client(auth=(
+            os.environ.get("RAZORPAY_KEY_ID", ""),
+            os.environ.get("RAZORPAY_KEY_SECRET", "")
+        ))
+        order = client.order.create({
+            'amount': amount,
+            'currency': 'INR',
+            'notes': {'plan': plan, 'name': name, 'email': email}
+        })
+        return jsonify({
+            'success': True,
+            'order_id': order['id'],
+            'amount': amount,
+            'currency': 'INR',
+            'key_id': os.environ.get("RAZORPAY_KEY_ID", "")
+        })
+    except Exception as e:
+        logger.error(f"Razorpay order error: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route("/stripe-checkout", methods=["POST"])
+def stripe_checkout():
+    """Create Stripe Checkout session and return URL"""
+    try:
+        data = request.get_json()
+        plan     = data.get('plan', 'starter')
+        name     = data.get('name', '')
+        email    = data.get('email', '')
+        currency = data.get('currency', 'aed')
+
+        # AED pricing (in fils = AED * 100)
+        aed_prices = {'starter': 49900, 'professional': 149900, 'enterprise': 349900}
+        inr_prices = {'starter': 300000, 'professional': 1000000, 'enterprise': 2500000}
+
+        stripe_key = os.environ.get("STRIPE_SECRET_KEY", "")
+
+        if stripe_key:
+            import stripe as stripe_lib
+            stripe_lib.api_key = stripe_key
+            amount   = aed_prices.get(plan, 49900) if currency == 'aed' else inr_prices.get(plan, 300000)
+            cur_code = 'aed' if currency == 'aed' else 'inr'
+            session  = stripe_lib.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[{
+                    'price_data': {
+                        'currency': cur_code,
+                        'unit_amount': amount,
+                        'product_data': {
+                            'name': f'AI Chatbot {plan.title()} Plan',
+                            'description': f'Monthly subscription — {plan.title()} plan'
+                        },
+                    },
+                    'quantity': 1,
+                }],
+                mode='payment',
+                customer_email=email,
+                metadata={'plan': plan, 'name': name, 'email': email},
+                success_url=request.url_root + f'dashboard?access={{CHECKOUT_SESSION_ID}}&plan={plan}&name={name}&email={email}',
+                cancel_url=request.url_root + 'uae',
+            )
+            return jsonify({"success": True, "checkout_url": session.url})
+        else:
+            # Stripe key not set yet — return empty so frontend falls back
+            return jsonify({"success": False, "checkout_url": None})
+
+    except Exception as e:
+        logger.error(f"Stripe checkout error: {e}")
+        return jsonify({"success": False, "checkout_url": None})
+
+@app.route("/stripe-payment", methods=["POST"])
+def stripe_payment():
+    """Handle Stripe payment session creation"""
+    try:
+        data = request.get_json()
+        plan = data.get('plan', 'starter')
+        name = data.get('name', '')
+        email = data.get('email', '')
+        amount = data.get('amount', 3000)  # Amount in paise
+        currency = data.get('currency', 'inr')
+
+        if not plan or not name or not email:
+            return jsonify({"error": "Missing required fields"}), 400
+
+        # In production, use actual Stripe API
+        # For now, simulate session creation
+        session_id = f"cs_test_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{hash(email + plan)}"
+
+        # Create checkout session details
+        session_data = {
+            "session_id": session_id,
+            "publishable_key": "pk_test_51234567890abcdef",  # Test key
+            "checkout_url": f"https://checkout.stripe.com/pay/{session_id}",
+            "amount": amount,
+            "currency": currency,
+            "plan": plan,
+            "customer_email": email,
+            "customer_name": name,
+            "success_url": f"{request.url_root}payment-success?session_id={session_id}",
+            "cancel_url": f"{request.url_root}payment-cancelled"
+        }
+
+        logger.info(f"Stripe session created: {session_id} for {email}")
+
+        return jsonify({
+            "success": True,
+            "session_id": session_id,
+            "checkout_url": session_data["checkout_url"],
+            "publishable_key": session_data["publishable_key"]
+        })
+
+    except Exception as e:
+        logger.error(f"Error creating Stripe session: {e}")
+        return jsonify({"error": "Failed to create payment session"}), 500
+
+@app.route("/stripe-webhook", methods=["POST"])
+def stripe_webhook():
+    """Handle Stripe webhook events"""
+    try:
+        # Verify webhook signature in production
+        event = request.get_json()
+
+        if event['type'] == 'checkout.session.completed':
+            session = event['data']['object']
+            email = session['customer_details']['email']
+            plan = session['metadata'].get('plan', 'starter')
+            name = email.split('@')[0] if email else 'Stripe Client'
+            _, access_code = create_client(name, email, '', plan, days_valid=30)
+            logger.info(f"Stripe payment completed: {session['id']} - Access: {access_code}")
+            return jsonify({"status": "success", "access_code": access_code})
+
+        return jsonify({"status": "received"})
+
+    except Exception as e:
+        logger.error(f"Stripe webhook error: {e}")
+        return jsonify({"error": "Webhook processing failed"}), 500
+
+@app.route("/payment-cancelled", methods=["GET", "POST"])
+def payment_cancelled():
+    """Handle cancelled payments"""
+    return jsonify({
+        "success": False,
+        "message": "Payment was cancelled",
+        "redirect_url": "/"
+    })
+
+@app.route("/paypal-ipn", methods=["POST"])
+def paypal_ipn():
+    """Handle PayPal Instant Payment Notification"""
+    try:
+        # In production, verify IPN data with PayPal
+        logger.info("PayPal IPN received")
+        return jsonify({"status": "verified"}), 200
+    except Exception as e:
+        logger.error(f"Error processing PayPal IPN: {e}")
+        return jsonify({"status": "error"}), 500
+
 @app.route("/chat", methods=["POST"])
 def chat():
     data = request.get_json(silent=True)
@@ -441,10 +1308,23 @@ def chat():
         logger.warning("Received request with missing or empty 'message' field")
         return jsonify({"error": "Field 'message' is required and cannot be empty"}), 400
 
+    access_code = data.get("access_code", "").strip()
+    client = None
+    if access_code:
+        client = get_client_by_access_code(access_code)
+        if not client:
+            return jsonify({"error": "Invalid access code. Please check your embed code."}), 403
+
     language = data.get("language") or detect_language(user_message)
     timezone = data.get("timezone")
     history = data.get("history", [])
-    context = get_relevant_context(user_message)
+    context = ""
+    if client:
+        context = get_client_context(client['id'], user_message)
+        increment_message_count(access_code)
+        logger.info("Client chat: %s (id=%d, lang=%s)", access_code, client['id'], language)
+    else:
+        context = get_relevant_context(user_message)
     logger.info("Sending message to Claude (length=%d chars, lang=%s, tz=%s, history=%d, context=%d)", len(user_message), language, timezone, len(history), len(context))
 
     try:
@@ -524,67 +1404,16 @@ def speak():
 
     try:
         resp = requests.post(url, json=payload, headers=headers, timeout=60)
+        if resp.status_code == 401 or resp.status_code == 429:
+            logger.warning("ElevenLabs quota exceeded or unauthorized - client will use browser TTS")
+            return jsonify({"error": "quota_exceeded"}), 503
         if resp.status_code != 200:
             logger.error("ElevenLabs error: status=%s, body=%s", resp.status_code, resp.text[:500])
-            return jsonify({"error": "ElevenLabs error", "details": resp.text[:200]}), 500
+            return jsonify({"error": "ElevenLabs error"}), 503
         return Response(resp.content, mimetype="audio/mpeg")
     except Exception as e:
         logger.error("ElevenLabs error: %s", e)
-        return jsonify({"error": "Failed to generate audio"}), 500
-
-@app.route("/save-lead", methods=["POST"])
-def save_lead():
-    try:
-        data = request.get_json()
-        
-        # Validate required fields
-        required_fields = ['name', 'email', 'phone']
-        for field in required_fields:
-            if not data.get(field, '').strip():
-                return jsonify({"error": f"Missing required field: {field}"}), 400
-        
-        # Create lead record
-        lead = {
-            "id": len(LEADS) + 1,
-            "name": data['name'].strip(),
-            "email": data['email'].strip().lower(),
-            "phone": data['phone'].strip(),
-            "company": data.get('company', '').strip(),
-            "timestamp": data.get('timestamp', datetime.now().isoformat()),
-            "source": data.get('source', 'unknown'),
-            "status": "new"
-        }
-        
-        # Check for duplicate leads
-        for existing_lead in LEADS:
-            if (existing_lead['email'] == lead['email'] or 
-                existing_lead['phone'] == lead['phone']):
-                # Update existing lead instead of creating duplicate
-                existing_lead.update(lead)
-                logger.info(f"Updated existing lead: {lead['email']}")
-                return jsonify({"success": True, "lead_id": existing_lead['id'], "updated": True})
-        
-        # Add new lead
-        LEADS.append(lead)
-        logger.info(f"New lead captured: {lead['name']} - {lead['email']}")
-        
-        return jsonify({
-            "success": True, 
-            "lead_id": lead['id'],
-            "message": "Lead saved successfully"
-        })
-        
-    except Exception as e:
-        logger.error(f"Error saving lead: {e}")
-        return jsonify({"error": "Failed to save lead"}), 500
-
-@app.route("/leads", methods=["GET"])
-def get_leads():
-    # Simple endpoint to view leads (in production, add authentication)
-    return jsonify({
-        "leads": LEADS,
-        "total": len(LEADS)
-    })
+        return jsonify({"error": "Failed to generate audio"}), 503
 
 @app.route("/whatsapp", methods=["POST"])
 def whatsapp():
