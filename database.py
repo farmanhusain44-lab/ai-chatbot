@@ -111,6 +111,13 @@ def init_db():
             )
         ''')
 
+    for alter_sql in [
+        "ALTER TABLE clients ADD COLUMN region TEXT DEFAULT 'uae'",
+    ]:
+        try:
+            cursor.execute(alter_sql)
+        except Exception:
+            pass
     conn.commit()
     conn.close()
 
@@ -119,23 +126,23 @@ def generate_access_code(email="", plan="basic"):
     code = hashlib.sha256(raw.encode()).hexdigest()[:16].upper()
     return f"BOT-{code}"
 
-def create_client(name, email="", website="", plan="basic", days_valid=365):
+def create_client(name, email="", website="", plan="basic", days_valid=365, region="uae"):
     access_code = generate_access_code(email, plan)
     created_at = datetime.utcnow().isoformat()
     expires_at = (datetime.utcnow() + timedelta(days=days_valid)).isoformat() if days_valid else None
 
     conn = get_db()
     cursor = conn.cursor()
-    cols = "name, email, website, access_code, plan, active, created_at, expires_at"
+    cols = "name, email, website, access_code, plan, active, created_at, expires_at, region"
     if IS_POSTGRES:
         cursor.execute(f'''
-            INSERT INTO clients ({cols}) VALUES ({ph(8)}) RETURNING id
-        ''', (name, email, website, access_code, plan, True, created_at, expires_at))
+            INSERT INTO clients ({cols}) VALUES ({ph(9)}) RETURNING id
+        ''', (name, email, website, access_code, plan, True, created_at, expires_at, region))
         client_id = cursor.fetchone()[0]
     else:
         cursor.execute(f'''
-            INSERT INTO clients ({cols}) VALUES ({ph(8)})
-        ''', (name, email, website, access_code, plan, 1, created_at, expires_at))
+            INSERT INTO clients ({cols}) VALUES ({ph(9)})
+        ''', (name, email, website, access_code, plan, 1, created_at, expires_at, region))
         client_id = cursor.lastrowid
     conn.commit()
     conn.close()

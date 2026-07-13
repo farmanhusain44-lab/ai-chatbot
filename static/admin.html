@@ -188,6 +188,7 @@
                         <th>Name</th>
                         <th>Email</th>
                         <th>Website</th>
+                        <th>Region</th>
                         <th>Plan</th>
                         <th>Access Code</th>
                         <th>Messages</th>
@@ -196,7 +197,7 @@
                     </tr>
                 </thead>
                 <tbody id="clientsBody">
-                    <tr><td colspan="9" class="empty">Loading...</td></tr>
+                    <tr><td colspan="10" class="empty">Loading...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -213,11 +214,16 @@
         <input type="email" id="createEmail" placeholder="client@example.com">
         <label>Website</label>
         <input type="url" id="createWebsite" placeholder="https://clientwebsite.ae">
+        <label>Region</label>
+        <select id="createRegion" style="width:100%;padding:11px 14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:9px;color:#fff;font-size:.95rem;outline:none;margin-bottom:16px;">
+            <option value="india">India</option>
+            <option value="uae" selected>UAE</option>
+        </select>
         <label>Plan</label>
         <select id="createPlan" style="width:100%;padding:11px 14px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:9px;color:#fff;font-size:.95rem;outline:none;margin-bottom:16px;">
-            <option value="starter">Starter — AED 499/mo</option>
-            <option value="professional">Professional — AED 1,499/mo</option>
-            <option value="enterprise">Enterprise — AED 3,499/mo</option>
+            <option value="starter">Starter</option>
+            <option value="professional">Professional</option>
+            <option value="enterprise">Enterprise</option>
         </select>
         <div class="modal-row">
             <button class="btn-cancel" onclick="closeCreate()">Cancel</button>
@@ -264,7 +270,10 @@
     const ADMIN_PW = 'farman2024';
     let pw = '';
     let currentClient = null;
-    const PRICES = { starter: 499, professional: 1499, enterprise: 3499 };
+    const PRICES = {
+        india: { starter: 100, professional: 150, enterprise: 200 },
+        uae: { starter: 499, professional: 1499, enterprise: 3499 }
+    };
 
     function login() {
         pw = document.getElementById('pwInput').value;
@@ -300,7 +309,7 @@
     function renderClients(clients) {
         const tbody = document.getElementById('clientsBody');
         if (!clients.length) {
-            tbody.innerHTML = '<tr><td colspan="9" class="empty">No clients yet. Click "Add Client" to create one.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" class="empty">No clients yet. Click "Add Client" to create one.</td></tr>';
             updateStats(clients);
             return;
         }
@@ -311,6 +320,7 @@
                 <td style="color:#e2e8f0;font-weight:500;">${c.name || '—'}</td>
                 <td>${c.email || '—'}</td>
                 <td>${c.website ? `<a href="${c.website}" target="_blank" style="color:#60a5fa;text-decoration:none;">${c.website}</a>` : '<span style="color:#475569;">—</span>'}</td>
+                <td><span class="badge badge-${c.region || 'uae'}">${(c.region || 'uae').toUpperCase()}</span></td>
                 <td><span class="badge badge-${c.plan}">${c.plan || '—'}</span></td>
                 <td style="font-family:monospace;font-size:.82rem;color:#a78bfa;">${c.access_code || '—'}</td>
                 <td>${c.message_count || 0}</td>
@@ -330,7 +340,7 @@
     function updateStats(clients) {
         const active = clients.filter(c => c.active).length;
         const messages = clients.reduce((sum, c) => sum + (c.message_count || 0), 0);
-        const revenue = clients.reduce((sum, c) => sum + (PRICES[c.plan] || 0), 0);
+        const revenue = clients.reduce((sum, c) => sum + ((PRICES[c.region || 'uae'] || PRICES.uae)[c.plan] || 0), 0);
         document.getElementById('statTotal').textContent = clients.length;
         document.getElementById('statActive').textContent = active;
         document.getElementById('statMessages').textContent = messages.toLocaleString();
@@ -364,11 +374,12 @@
         const email = document.getElementById('createEmail').value.trim();
         const website = document.getElementById('createWebsite').value.trim();
         const plan = document.getElementById('createPlan').value;
+        const region = document.getElementById('createRegion').value;
         if (!name) return alert('Please enter client name');
         fetch('/admin/clients', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pw, name, email, website, plan })
+            body: JSON.stringify({ pw, name, email, website, plan, region })
         })
         .then(r => r.json())
         .then(data => {

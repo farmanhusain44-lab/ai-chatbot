@@ -549,10 +549,13 @@ def admin_create_client():
     email = data.get("email", "").strip()
     website = data.get("website", "").strip()
     plan = data.get("plan", "basic").strip()
+    region = data.get("region", "uae").strip().lower()
+    if region not in {"india", "uae"}:
+        region = "uae"
     days = int(data.get("days_valid", 365) or 365)
     if not name:
         return jsonify({"error": "Name is required"}), 400
-    client_id, access_code = create_client(name, email, website, plan, days)
+    client_id, access_code = create_client(name, email, website, plan, days, region)
     return jsonify({"success": True, "client_id": client_id, "access_code": access_code})
 
 @app.route("/admin/clients/<int:client_id>", methods=["DELETE"])
