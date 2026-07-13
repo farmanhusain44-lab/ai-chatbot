@@ -284,11 +284,11 @@ body{top:0 !important}
 
 /* FULL-SCREEN 3D FEATURE SHOWCASE — Apple hero style */
 .showcase-section{position:relative;height:500vh;background:#02020a}
-.showcase-sticky{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.showcase-sticky{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:flex-start}
 .showcase-track{display:flex;transition:transform 1.1s cubic-bezier(.16,1,.3,1);width:fit-content}
 .showcase-card{width:100vw;height:100vh;flex-shrink:0;display:flex;align-items:flex-end;justify-content:center;padding:0;position:relative;background-color:#111827}
 .showcase-media{position:absolute;inset:0;overflow:hidden;z-index:0;perspective:1200px}
-.showcase-media-inner{width:100%;height:100%;background-size:cover;background-position:center;background-repeat:no-repeat;transform:scale(1.18) rotate(-3deg);filter:blur(10px) brightness(.6);opacity:0;transition:transform 1.3s cubic-bezier(.16,1,.3,1),filter 1.3s ease,opacity 1.1s ease;will-change:transform,filter,opacity}
+.showcase-media-inner{width:100%;height:100%;background-size:cover;background-position:center;background-repeat:no-repeat;transform:scale(1.1) rotate(-2deg);filter:blur(6px) brightness(.65);opacity:.55;transition:transform .7s cubic-bezier(.16,1,.3,1),filter .7s ease,opacity .5s ease;will-change:transform,filter,opacity}
 .showcase-card.active .showcase-media-inner{transform:scale(1) rotate(0deg) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));filter:blur(0) brightness(1);opacity:1}
 .showcase-card::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(2,2,10,.96) 0%,rgba(2,2,10,.82) 40%,rgba(2,2,10,.35) 100%);pointer-events:none;z-index:1;transition:opacity 1s}
 .showcase-card::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 0%,rgba(2,2,10,.55) 70%,rgba(2,2,10,.9) 100%);pointer-events:none;z-index:1}
