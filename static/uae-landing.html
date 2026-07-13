@@ -1020,8 +1020,8 @@ function updateShowcaseFromScroll(){
   const rect=showcase.getBoundingClientRect();
   const vh=window.innerHeight;
   const sectionHeight=showcase.offsetHeight;
-  if(rect.top>0||rect.bottom<vh)return;
-  const progress=Math.abs(rect.top)/(sectionHeight-vh);
+  if(rect.bottom<=0||rect.top>=vh)return;
+  const progress=Math.max(0,Math.min(1,Math.abs(rect.top)/(sectionHeight-vh)));
   const index=Math.max(0,Math.min(total-1,Math.floor(progress*total)));
   if(index!==currentIndex)goTo(index);
   if(!hintHidden&&progress>0.05){

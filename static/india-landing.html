@@ -14,8 +14,6 @@ a{text-decoration:none;color:inherit}
 #langBanner{display:none!important}
 
 /* ANNOUNCE */
-.announce{background:linear-gradient(90deg,#ff9933,#ffffff,#138808);background-size:300%;animation:gradshift 5s linear infinite;text-align:center;padding:11px;font-size:.78rem;font-weight:700;color:#1a1a1a;letter-spacing:.03em;position:fixed;top:0;left:0;right:0;z-index:1002}
-@keyframes gradshift{0%{background-position:0%}100%{background-position:300%}}
 
 /* NAV */
 nav{padding:0 5%;position:sticky;top:0;width:100%;z-index:1000;background:rgba(2,2,10,.96);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.05)}
@@ -23,6 +21,8 @@ nav{padding:0 5%;position:sticky;top:0;width:100%;z-index:1000;background:rgba(2
 .logo{display:flex;align-items:center;gap:10px;cursor:pointer}
 .logo img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid rgba(99,102,241,.3)}
 .logo-text{font-size:1.1rem;font-weight:800;background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.made-in-badge{font-size:.56rem;font-weight:700;color:#cbd5e1;background:rgba(255,153,51,.1);border:1px solid rgba(255,153,51,.3);padding:2px 8px;border-radius:20px;letter-spacing:.02em;white-space:nowrap}
+@media(max-width:640px){.made-in-badge{display:none}}
 .nav-links{display:flex;align-items:center;gap:30px}
 .nav-links a{font-size:.84rem;font-weight:500;color:#475569;transition:.2s}
 .nav-links a:hover{color:#e2e8f0}
@@ -231,7 +231,7 @@ footer{padding:50px 5% 30px;border-top:1px solid rgba(255,255,255,.05)}
 .goog-te-banner-frame.skiptranslate{display:none !important}
 body{top:0 !important}
 #goog-gt-tt,.goog-te-balloon-frame{display:none !important}
-.lang-banner{position:fixed;top:100px;left:0;right:0;z-index:999;background:linear-gradient(90deg,#ff9933,#ffffff,#138808);color:#1a1a1a;padding:12px 20px;text-align:center;display:none;font-size:.95rem;font-weight:500}
+.lang-banner{position:fixed;top:68px;left:0;right:0;z-index:999;background:linear-gradient(90deg,#ff9933,#ffffff,#138808);color:#1a1a1a;padding:12px 20px;text-align:center;display:none;font-size:.95rem;font-weight:500}
 .lang-banner .inner{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
 .lang-banner button{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:.85rem}
 .lang-banner .detected{background:#000080;color:#fff}
@@ -339,13 +339,12 @@ body{top:0 !important}
 
 <div id="progress-bar"></div>
 
-<div class="announce">🇮🇳 Serving businesses across all 28 states of India · 22+ languages supported</div>
-
 <nav>
   <div class="nav-inner">
     <div class="logo" onclick="window.scrollTo({top:0,behavior:'smooth'})">
       <img src="https://i.imgur.com/FfNwGyA.png" alt="BotifyAI"/>
       <span class="logo-text">BotifyAI</span>
+      <span class="made-in-badge">🇮🇳 Made in India</span>
     </div>
     <div class="nav-links" id="navLinks">
       <a href="#features">Features</a>
@@ -1116,9 +1115,9 @@ function updateShowcaseFromScroll(){
   const rect=showcase.getBoundingClientRect();
   const vh=window.innerHeight;
   const sectionHeight=showcase.offsetHeight;
-  // only when section is in view
-  if(rect.top>0||rect.bottom<vh)return;
-  const progress=Math.abs(rect.top)/(sectionHeight-vh);
+  // only when section is at least partly in view
+  if(rect.bottom<=0||rect.top>=vh)return;
+  const progress=Math.max(0,Math.min(1,Math.abs(rect.top)/(sectionHeight-vh)));
   const index=Math.max(0,Math.min(total-1,Math.floor(progress*total)));
   if(index!==currentIndex)goTo(index);
   if(!hintHidden&&progress>0.05){
