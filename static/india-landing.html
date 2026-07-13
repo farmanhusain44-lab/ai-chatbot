@@ -286,7 +286,10 @@ body{top:0 !important}
 .showcase-section{position:relative;height:500vh;background:#02020a}
 .showcase-sticky{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .showcase-track{display:flex;transition:transform 1.1s cubic-bezier(.16,1,.3,1);width:fit-content}
-.showcase-card{width:100vw;height:100vh;flex-shrink:0;display:flex;align-items:flex-end;justify-content:center;padding:0;position:relative;background-color:#111827;background-size:cover;background-position:center;background-repeat:no-repeat}
+.showcase-card{width:100vw;height:100vh;flex-shrink:0;display:flex;align-items:flex-end;justify-content:center;padding:0;position:relative;background-color:#111827}
+.showcase-media{position:absolute;inset:0;overflow:hidden;z-index:0;perspective:1200px}
+.showcase-media-inner{width:100%;height:100%;background-size:cover;background-position:center;background-repeat:no-repeat;transform:scale(1.18) rotate(-3deg);filter:blur(10px) brightness(.6);opacity:0;transition:transform 1.3s cubic-bezier(.16,1,.3,1),filter 1.3s ease,opacity 1.1s ease;will-change:transform,filter,opacity}
+.showcase-card.active .showcase-media-inner{transform:scale(1) rotate(0deg) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));filter:blur(0) brightness(1);opacity:1}
 .showcase-card::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(2,2,10,.96) 0%,rgba(2,2,10,.82) 40%,rgba(2,2,10,.35) 100%);pointer-events:none;z-index:1;transition:opacity 1s}
 .showcase-card::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 0%,rgba(2,2,10,.55) 70%,rgba(2,2,10,.9) 100%);pointer-events:none;z-index:1}
 @media(max-width:900px){.showcase-card::before{background:linear-gradient(180deg,rgba(2,2,10,.4) 0%,rgba(2,2,10,.85) 55%,rgba(2,2,10,.97) 100%)}}
@@ -484,7 +487,8 @@ body{top:0 !important}
     <div class="showcase-track" id="showcaseTrack">
 
       <!-- Slide 1: Indian Languages -->
-      <article class="showcase-card active" data-index="0" style="background-image:url('/static/images/languages.jpg')">
+      <article class="showcase-card active" data-index="0">
+        <div class="showcase-media"><div class="showcase-media-inner" style="background-image:url('/static/images/languages.jpg')"></div></div>
         <div class="showcase-card-inner">
           <div class="showcase-content">
             <div class="showcase-label">01 / Platform Capabilities</div>
@@ -511,7 +515,8 @@ body{top:0 !important}
       </article>
 
       <!-- Slide 2: Instant Responses -->
-      <article class="showcase-card" data-index="1" style="background-image:url('/static/images/instant.jpg')">
+      <article class="showcase-card" data-index="1">
+        <div class="showcase-media"><div class="showcase-media-inner" style="background-image:url('/static/images/instant.jpg')"></div></div>
         <div class="showcase-card-inner">
           <div class="showcase-content">
             <div class="showcase-label">02 / Platform Capabilities</div>
@@ -538,7 +543,8 @@ body{top:0 !important}
       </article>
 
       <!-- Slide 3: Custom AI Training -->
-      <article class="showcase-card" data-index="2" style="background-image:url('/static/images/C68AE661-3F1A-47E8-BBD3-F62E8E9F9B0E.PNG')">
+      <article class="showcase-card" data-index="2">
+        <div class="showcase-media"><div class="showcase-media-inner" style="background-image:url('/static/images/C68AE661-3F1A-47E8-BBD3-F62E8E9F9B0E.PNG')"></div></div>
         <div class="showcase-card-inner">
           <div class="showcase-content">
             <div class="showcase-label">03 / Platform Capabilities</div>
@@ -565,7 +571,8 @@ body{top:0 !important}
       </article>
 
       <!-- Slide 4: Real-Time Analytics -->
-      <article class="showcase-card" data-index="3" style="background-image:url('/static/images/analytics.png')">
+      <article class="showcase-card" data-index="3">
+        <div class="showcase-media"><div class="showcase-media-inner" style="background-image:url('/static/images/analytics.png')"></div></div>
         <div class="showcase-card-inner">
           <div class="showcase-content">
             <div class="showcase-label">04 / Platform Capabilities</div>
@@ -592,7 +599,8 @@ body{top:0 !important}
       </article>
 
       <!-- Slide 5: Mobile Perfect -->
-      <article class="showcase-card" data-index="4" style="background-image:url('/static/images/mobile.jpg')">
+      <article class="showcase-card" data-index="4">
+        <div class="showcase-media"><div class="showcase-media-inner" style="background-image:url('/static/images/mobile.jpg')"></div></div>
         <div class="showcase-card-inner">
           <div class="showcase-content">
             <div class="showcase-label">05 / Platform Capabilities</div>
@@ -1144,6 +1152,23 @@ showcase.addEventListener('touchend',e=>{
     if(diff<0)goTo(currentIndex+1);else goTo(currentIndex-1);
   }
 },{passive:true});
+
+// Tilt-on-hover for showcase images
+cards.forEach(card=>{
+  const media=card.querySelector('.showcase-media-inner');
+  if(!media)return;
+  card.addEventListener('mousemove',e=>{
+    const r=card.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-0.5;
+    const y=(e.clientY-r.top)/r.height-0.5;
+    media.style.setProperty('--ry',(x*8)+'deg');
+    media.style.setProperty('--rx',(-y*8)+'deg');
+  });
+  card.addEventListener('mouseleave',()=>{
+    media.style.setProperty('--rx','0deg');
+    media.style.setProperty('--ry','0deg');
+  });
+});
 
 // Initialize
 updateShowcaseFromScroll();
