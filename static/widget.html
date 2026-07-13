@@ -136,6 +136,8 @@ async function sendMsg() {
     addMsg(txt, 'user');
     showTyping();
 
+    chatHistory.push({ role: 'user', content: txt });
+
     try {
         const res = await fetch('/chat', {
             method: 'POST',
@@ -154,7 +156,6 @@ async function sendMsg() {
         }
         const data = await res.json();
         addMsg(data.reply || getReply(txt), 'bot');
-        chatHistory.push({ role: 'user', content: txt });
         chatHistory.push({ role: 'assistant', content: data.reply });
     } catch (e) {
         removeTyping();

@@ -425,6 +425,9 @@ def get_ai_reply(message, language, timezone=None, history=None, context=None):
         system=get_system_prompt(language, timezone),
         messages=messages
     )
+    if not response.content:
+        logger.warning("Anthropic response had no content blocks (stop_reason=%s)", response.stop_reason)
+        return "I'm sorry, I couldn't generate a reply for that. Could you rephrase your message?"
     return response.content[0].text
 
 def get_system_prompt(language="en", timezone=None):
