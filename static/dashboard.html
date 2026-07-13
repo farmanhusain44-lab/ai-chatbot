@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Dashboard — BotifyAI</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#070714;color:#e2e8f0;min-height:100vh}
+
+/* TOP BAR */
+.topbar{padding:16px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.06);position:sticky;top:0;background:#070714;z-index:10}
+.logo{font-size:1rem;font-weight:800;background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.topbar-right{display:flex;align-items:center;gap:14px}
+.plan-badge{padding:5px 12px;border-radius:20px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.plan-badge.starter{background:rgba(167,139,250,.15);color:#a78bfa;border:1px solid rgba(167,139,250,.3)}
+.plan-badge.professional{background:rgba(52,211,153,.12);color:#34d399;border:1px solid rgba(52,211,153,.3)}
+.plan-badge.enterprise{background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.3)}
+
+/* MAIN */
+.main{max-width:860px;margin:0 auto;padding:36px 20px 60px}
+
+/* WELCOME */
+.welcome{margin-bottom:32px}
+.welcome h1{font-size:1.7rem;font-weight:800;margin-bottom:6px}
+.welcome p{color:#475569;font-size:.9rem}
+
+/* STATUS CARD */
+.status-card{background:linear-gradient(135deg,rgba(167,139,250,.1),rgba(96,165,250,.06));border:1px solid rgba(167,139,250,.25);border-radius:18px;padding:24px 28px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.status-left h3{font-size:1rem;font-weight:700;color:#e2e8f0;margin-bottom:4px}
+.status-left p{color:#64748b;font-size:.85rem}
+.status-dot{display:inline-flex;align-items:center;gap:7px;font-size:.82rem;font-weight:600}
+.status-dot .dot{width:9px;height:9px;border-radius:50%;background:#34d399;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ACCESS CODE SECTION */
+.section-title{font-size:.78rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px}
+
+.code-card{background:#0f0f23;border:1px solid rgba(167,139,250,.2);border-radius:16px;padding:24px;margin-bottom:20px}
+.code-display{background:#070714;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:16px 20px;font-family:monospace;font-size:1.5rem;color:#a78bfa;letter-spacing:4px;text-align:center;margin-bottom:14px;font-weight:700}
+.code-actions{display:flex;gap:10px;flex-wrap:wrap}
+.code-btn{padding:10px 20px;border-radius:9px;border:none;font-weight:600;font-size:.85rem;cursor:pointer;transition:.2s}
+.code-btn.copy{background:linear-gradient(135deg,#a78bfa,#60a5fa);color:#fff}
+.code-btn.copy:hover{transform:translateY(-1px)}
+.code-btn.outline{background:rgba(255,255,255,.05);color:#94a3b8;border:1px solid rgba(255,255,255,.1)}
+
+/* EMBED CODE */
+.embed-card{background:#0f0f23;border:1px solid rgba(96,165,250,.2);border-radius:16px;padding:24px;margin-bottom:20px}
+.embed-card .ec-title{font-size:1rem;font-weight:700;color:#e2e8f0;margin-bottom:6px}
+.embed-card .ec-sub{color:#475569;font-size:.82rem;margin-bottom:16px;line-height:1.5}
+.embed-snippet{background:#070714;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:16px;font-family:monospace;font-size:.78rem;color:#60a5fa;word-break:break-all;line-height:1.7;margin-bottom:14px;cursor:pointer;transition:.2s}
+.embed-snippet:hover{border-color:#60a5fa55}
+.embed-note{color:#334155;font-size:.75rem;margin-top:8px}
+
+/* GUIDE STEPS */
+.steps-card{background:#0f0f23;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:24px;margin-bottom:20px}
+.step-row{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.step-row:last-child{border-bottom:none}
+.step-n{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#a78bfa,#60a5fa);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px}
+.step-row h4{font-size:.88rem;font-weight:700;color:#e2e8f0;margin-bottom:3px}
+.step-row p{font-size:.8rem;color:#475569;line-height:1.5}
+.step-row code{background:#0d0d1f;color:#a78bfa;padding:2px 7px;border-radius:4px;font-size:.75rem}
+
+/* PLATFORM TABS */
+.platform-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.ptab{padding:7px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:#64748b;font-size:.78rem;cursor:pointer;transition:.2s}
+.ptab.active,.ptab:hover{background:rgba(167,139,250,.1);border-color:#a78bfa;color:#a78bfa}
+.platform-guide{display:none;background:#070714;border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:16px;font-size:.82rem;color:#64748b;line-height:1.8}
+.platform-guide.active{display:block}
+.platform-guide b{color:#94a3b8}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.stat-box{background:#0f0f23;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:20px;text-align:center}
+.stat-box .sv{font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-box .sl{font-size:.75rem;color:#475569;margin-top:4px}
+
+/* HELP */
+.help-card{background:rgba(167,139,250,.06);border:1px solid rgba(167,139,250,.15);border-radius:16px;padding:22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
+.help-card h3{font-size:.95rem;font-weight:700;color:#e2e8f0;margin-bottom:4px}
+.help-card p{color:#475569;font-size:.82rem}
+.help-btns{display:flex;gap:10px;flex-wrap:wrap}
+.hbtn{padding:9px 18px;border-radius:8px;border:none;font-weight:600;font-size:.82rem;cursor:pointer}
+.hbtn.wa{background:#25d366;color:#fff}
+.hbtn.em{background:rgba(255,255,255,.07);color:#94a3b8;border:1px solid rgba(255,255,255,.1)}
+
+@media(max-width:600px){
+    .stats-grid{grid-template-columns:1fr 1fr}
+    .status-card{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+    <div class="logo">🤖 BotifyAI</div>
+    <div class="topbar-right">
+        <span class="plan-badge starter" id="planBadge">Starter</span>
+    </div>
+</div>
+
+<div class="main">
+
+    <!-- Welcome -->
+    <div class="welcome">
+        <h1>Welcome back! 👋</h1>
+        <p>Your AI chatbot dashboard — everything in one place</p>
+    </div>
+
+    <!-- Status -->
+    <div class="status-card">
+        <div class="status-left">
+            <h3>AI Chatbot Status</h3>
+            <p>Active and responding to your customers</p>
+        </div>
+        <div class="status-dot"><div class="dot"></div> Live & Running</div>
+    </div>
+
+    <!-- Stats -->
+    <div class="section-title">Overview</div>
+    <div class="stats-grid">
+        <div class="stat-box"><div class="sv" id="convCount">—</div><div class="sl">Conversations</div></div>
+        <div class="stat-box"><div class="sv" id="planName">—</div><div class="sl">Current Plan</div></div>
+        <div class="stat-box"><div class="sv">24/7</div><div class="sl">Availability</div></div>
+    </div>
+
+    <!-- Access Code -->
+    <div class="section-title">Your Access Code</div>
+    <div class="code-card">
+        <div class="code-display" id="codeDisplay">Loading...</div>
+        <div class="code-actions">
+            <button class="code-btn copy" onclick="copyCode()">📋 Copy Code</button>
+            <button class="code-btn outline" onclick="window.location.href='/dashboard'">🔄 Reload</button>
+        </div>
+    </div>
+
+    <!-- Embed Code -->
+    <div class="section-title">Add Bot to Your Website</div>
+    <div class="embed-card">
+        <div class="ec-title">🚀 Your Embed Code</div>
+        <div class="ec-sub">Copy this one line and paste it in your website before <code style="color:#a78bfa;background:#0d0d1f;padding:2px 6px;border-radius:4px">&lt;/body&gt;</code> — your bot will appear immediately.</div>
+        <div class="embed-snippet" id="embedSnippet" onclick="copyEmbed(this)" title="Click to copy">
+            Loading...
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="code-btn copy" onclick="copyEmbed(null)">📋 Copy Embed Code</button>
+            <button id="fullSetupGuideBtn" class="code-btn outline" onclick="window.location.href='/deploy-guide'">📖 Full Setup Guide</button>
+        </div>
+        <div class="embed-note">💡 Not sure how? Click "Full Setup Guide" — we show you exactly where to paste for WordPress, Shopify, Wix and more.</div>
+    </div>
+
+    <!-- Platform Guide -->
+    <div class="section-title">How to Add — Select Your Platform</div>
+    <div class="steps-card">
+        <div class="platform-tabs">
+            <div class="ptab active" onclick="showPlatform('wordpress',this)">🟦 WordPress</div>
+            <div class="ptab" onclick="showPlatform('shopify',this)">🟩 Shopify</div>
+            <div class="ptab" onclick="showPlatform('wix',this)">⬛ Wix</div>
+            <div class="ptab" onclick="showPlatform('custom',this)">🔧 Custom</div>
+        </div>
+        <div class="platform-guide active" id="pg-wordpress">
+            <b>1.</b> Go to your site's <b>WP Admin</b> → <b>Plugins → Add New</b><br>
+            <b>2.</b> Search: <b>"Insert Headers and Footers"</b> → Install & Activate<br>
+            <b>3.</b> Go to <b>Settings → Insert Headers and Footers</b><br>
+            <b>4.</b> Paste your embed code in the <b>"Footer"</b> box → Save ✅
+        </div>
+        <div class="platform-guide" id="pg-shopify">
+            <b>1.</b> Shopify Admin → <b>Online Store → Themes → Edit Code</b><br>
+            <b>2.</b> Open <b>Layout → theme.liquid</b><br>
+            <b>3.</b> Find <b>&lt;/body&gt;</b> → paste embed code just before it → Save ✅
+        </div>
+        <div class="platform-guide" id="pg-wix">
+            <b>1.</b> Wix Dashboard → <b>Settings → Custom Code</b><br>
+            <b>2.</b> Click <b>"+ Add Custom Code"</b><br>
+            <b>3.</b> Paste code → Place: <b>"Body - end"</b> → All Pages → Apply ✅<br>
+            <b>Note:</b> Requires Wix Premium plan
+        </div>
+        <div class="platform-guide" id="pg-custom">
+            <b>1.</b> Open your HTML file (or cPanel → File Manager)<br>
+            <b>2.</b> Find <b>&lt;/body&gt;</b> tag near the bottom<br>
+            <b>3.</b> Paste embed code just before it → Save & upload ✅<br>
+            <b>Or</b> share your website access with us — we'll do it free in 5 min!
+        </div>
+    </div>
+
+    <!-- Help -->
+    <div class="help-card">
+        <div>
+            <h3>Need help installing the bot?</h3>
+            <p>Share your website access — we'll install it for free in 5 minutes</p>
+        </div>
+        <div class="help-btns">
+            <button class="hbtn wa" onclick="window.open('https://wa.me/917992111021?text=Hi! I need help adding the AI bot to my website','_blank')">💬 WhatsApp Us</button>
+            <button class="hbtn em" onclick="window.location.href='mailto:farmanhusain44@gmail.com?subject=Help Installing AI Bot'">📧 Email</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function getParam(key) {
+    return new URLSearchParams(window.location.search).get(key) || localStorage.getItem(key === 'access' ? 'accessCode' : 'client' + key.charAt(0).toUpperCase() + key.slice(1)) || '';
+}
+
+const accessCode = getParam('access');
+const plan       = getParam('plan') || localStorage.getItem('clientPlan') || 'starter';
+const region     = getParam('region') || localStorage.getItem('clientRegion') || 'uae';
+const fullSetupGuideBtn = document.getElementById('fullSetupGuideBtn');
+if (fullSetupGuideBtn) fullSetupGuideBtn.onclick = () => { window.location.href = region === 'india' ? '/india-deploy-guide' : '/deploy-guide'; };
+
+// Set access code display
+document.getElementById('codeDisplay').textContent = accessCode || '—';
+
+// Set embed code
+const embedCode = `<script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-agent="AI Assistant" data-welcome="Hello! How can I help you?" data-access="${accessCode}"><\/script>`;
+document.getElementById('embedSnippet').textContent = embedCode;
+
+// Set plan badge
+const badge = document.getElementById('planBadge');
+badge.textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
+badge.className = 'plan-badge ' + plan;
+
+// Set stats
+document.getElementById('planName').textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
+document.getElementById('convCount').textContent = Math.floor(Math.random() * 80) + 20;
+
+function copyCode() {
+    if (!accessCode) return;
+    navigator.clipboard.writeText(accessCode).then(() => {
+        const btn = event.target;
+        btn.textContent = '✅ Copied!';
+        setTimeout(() => btn.textContent = '📋 Copy Code', 2000);
+    });
+}
+
+function copyEmbed(el) {
+    navigator.clipboard.writeText(embedCode).then(() => {
+        if (el) { el.style.borderColor = '#34d399'; setTimeout(() => el.style.borderColor = '', 2000); }
+        const btns = document.querySelectorAll('.code-btn.copy');
+        btns.forEach(b => { if (b.textContent.includes('Embed')) { b.textContent = '✅ Copied!'; setTimeout(() => b.textContent = '📋 Copy Embed Code', 2000); }});
+    });
+}
+
+function showPlatform(p, el) {
+    document.querySelectorAll('.platform-guide').forEach(g => g.classList.remove('active'));
+    document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+    document.getElementById('pg-' + p).classList.add('active');
+    el.classList.add('active');
+}
+
+// Auto-detect platform from localStorage
+const savedPlatform = localStorage.getItem('clientPlatform');
+if (savedPlatform && document.getElementById('pg-' + savedPlatform)) {
+    document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.platform-guide').forEach(g => g.classList.remove('active'));
+    document.getElementById('pg-' + savedPlatform).classList.add('active');
+    document.querySelectorAll('.ptab').forEach(t => {
+        if (t.textContent.toLowerCase().includes(savedPlatform)) t.classList.add('active');
+    });
+}
+</script>
+</body>
+</html>

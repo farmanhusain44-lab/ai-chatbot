@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Business Dashboard — Owner Guide</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',sans-serif; background:#0a0a1a; color:#e2e8f0; min-height:100vh; }
+
+        /* Password gate */
+        #gate {
+            display:flex; align-items:center; justify-content:center;
+            min-height:100vh; padding:20px;
+        }
+        .gate-box {
+            background:rgba(255,255,255,.05); border:1px solid rgba(167,139,250,.3);
+            border-radius:20px; padding:40px; max-width:380px; width:100%; text-align:center;
+        }
+        .gate-box .lock { font-size:3rem; margin-bottom:16px; }
+        .gate-box h2 { font-size:1.4rem; font-weight:800; margin-bottom:6px;
+            background:linear-gradient(135deg,#a78bfa,#60a5fa);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .gate-box p { color:#475569; font-size:.85rem; margin-bottom:24px; }
+        .gate-box input {
+            width:100%; padding:13px 16px; background:rgba(255,255,255,.07);
+            border:1px solid rgba(255,255,255,.15); border-radius:10px;
+            color:#fff; font-size:1rem; outline:none; margin-bottom:12px; text-align:center; letter-spacing:2px;
+        }
+        .gate-btn {
+            width:100%; padding:13px; border-radius:10px; border:none;
+            background:linear-gradient(135deg,#a78bfa,#60a5fa); color:#fff;
+            font-weight:700; font-size:1rem; cursor:pointer;
+        }
+        .gate-err { color:#f87171; font-size:.85rem; margin-top:10px; }
+
+        /* Main content */
+        #main { display:none; }
+
+        .topbar {
+            background:rgba(255,255,255,.03); border-bottom:1px solid rgba(255,255,255,.07);
+            padding:16px 28px; display:flex; align-items:center; justify-content:space-between;
+        }
+        .topbar h1 { font-size:1.1rem; font-weight:700;
+            background:linear-gradient(135deg,#a78bfa,#60a5fa);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .topbar span { color:#475569; font-size:.82rem; }
+
+        .content { max-width:900px; margin:0 auto; padding:28px 20px 60px; }
+
+        /* Alert banner */
+        .alert {
+            background:rgba(52,211,153,.08); border:1px solid rgba(52,211,153,.25);
+            border-radius:12px; padding:16px 20px; margin-bottom:28px;
+            color:#34d399; font-size:.9rem; line-height:1.6;
+        }
+
+        /* Section title */
+        .sec-title {
+            font-size:1rem; font-weight:700; color:#94a3b8;
+            text-transform:uppercase; letter-spacing:.8px;
+            margin:32px 0 14px; padding-bottom:8px;
+            border-bottom:1px solid rgba(255,255,255,.06);
+        }
+
+        /* Quick links grid */
+        .links-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:14px; margin-bottom:8px; }
+        .link-card {
+            background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+            border-radius:14px; padding:20px; text-decoration:none; color:inherit;
+            transition:.2s; display:flex; align-items:flex-start; gap:14px;
+        }
+        .link-card:hover { border-color:#a78bfa; background:rgba(167,139,250,.07); }
+        .link-card .icon { font-size:1.8rem; flex-shrink:0; }
+        .link-card h3 { font-size:.95rem; font-weight:700; color:#e2e8f0; margin-bottom:4px; }
+        .link-card p  { font-size:.78rem; color:#475569; line-height:1.5; }
+        .link-card .url { font-size:.72rem; color:#60a5fa; margin-top:6px; font-family:monospace; word-break:break-all; }
+        .badge-new { background:#34d399; color:#0a0a1a; font-size:.65rem; font-weight:800; padding:2px 6px; border-radius:4px; margin-left:6px; vertical-align:middle; }
+
+        /* Step cards */
+        .step-card {
+            background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.07);
+            border-radius:14px; padding:20px 22px; margin-bottom:12px;
+            display:flex; gap:16px; align-items:flex-start;
+        }
+        .step-num {
+            background:linear-gradient(135deg,#a78bfa,#60a5fa);
+            min-width:34px; height:34px; border-radius:50%;
+            display:flex; align-items:center; justify-content:center;
+            font-weight:800; font-size:.9rem; color:#fff; flex-shrink:0;
+        }
+        .step-card h3 { font-size:.95rem; font-weight:700; color:#e2e8f0; margin-bottom:5px; }
+        .step-card p  { font-size:.85rem; color:#64748b; line-height:1.6; }
+        .step-card code {
+            background:#0d0d1f; color:#a78bfa; padding:2px 8px;
+            border-radius:5px; font-size:.8rem;
+        }
+        .step-card .highlight {
+            background:rgba(167,139,250,.1); border:1px solid rgba(167,139,250,.2);
+            border-radius:8px; padding:10px 12px; margin-top:10px;
+            font-size:.82rem; color:#94a3b8; line-height:1.6;
+        }
+
+        /* Info table */
+        .info-table {
+            width:100%; border-collapse:collapse; margin-bottom:20px;
+        }
+        .info-table tr { border-bottom:1px solid rgba(255,255,255,.05); }
+        .info-table td { padding:12px 14px; font-size:.88rem; }
+        .info-table td:first-child { color:#64748b; width:40%; }
+        .info-table td:last-child { color:#e2e8f0; font-weight:500; }
+        .info-table td code {
+            background:#0d0d1f; color:#a78bfa; padding:3px 8px;
+            border-radius:5px; font-family:monospace; font-size:.82rem;
+        }
+        .copy-inline {
+            background:rgba(96,165,250,.1); border:none; color:#60a5fa;
+            padding:3px 8px; border-radius:5px; font-size:.75rem;
+            cursor:pointer; margin-left:8px;
+        }
+
+        /* Flow */
+        .flow {
+            display:flex; flex-direction:column; gap:0;
+        }
+        .flow-item {
+            display:flex; gap:16px; align-items:flex-start; position:relative;
+        }
+        .flow-item:not(:last-child)::before {
+            content:''; position:absolute; left:17px; top:38px;
+            width:2px; height:calc(100% + 4px);
+            background:rgba(167,139,250,.2);
+        }
+        .flow-dot {
+            width:34px; height:34px; border-radius:50%;
+            background:rgba(167,139,250,.15); border:2px solid rgba(167,139,250,.4);
+            display:flex; align-items:center; justify-content:center;
+            font-size:1rem; flex-shrink:0; margin-top:2px;
+        }
+        .flow-body { padding:4px 0 24px; }
+        .flow-body h3 { font-size:.95rem; font-weight:700; color:#e2e8f0; margin-bottom:4px; }
+        .flow-body p  { font-size:.83rem; color:#64748b; line-height:1.5; }
+
+        /* Env vars */
+        .env-box {
+            background:#0d0d1f; border:1px solid rgba(167,139,250,.2);
+            border-radius:12px; padding:18px 20px; font-family:monospace;
+            font-size:.82rem; line-height:2;
+        }
+        .env-key { color:#a78bfa; }
+        .env-val { color:#60a5fa; }
+        .env-comment { color:#334155; }
+    </style>
+</head>
+<body>
+
+<!-- Password Gate -->
+<div id="gate">
+    <div class="gate-box">
+        <div class="lock">🔐</div>
+        <h2>Owner Access Only</h2>
+        <p>This page is private — for business owner only</p>
+        <input type="password" id="pwInput" placeholder="Enter your password" onkeydown="if(event.key==='Enter')unlock()">
+        <button class="gate-btn" onclick="unlock()">Enter →</button>
+        <div class="gate-err" id="gateErr"></div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div id="main">
+    <div class="topbar">
+        <h1>🤖 AI Chatbot — My Business Guide</h1>
+        <span>Owner: Farman Husain</span>
+    </div>
+
+    <div class="content">
+
+        <div class="alert">
+            ✅ <strong>Sab kuch yahan hai!</strong> — Aapke saare important links, passwords, aur step-by-step guide ek hi jagah. Bookmark kar lo: <strong>/my-business</strong>
+        </div>
+
+        <!-- ═══ IMPORTANT LINKS ═══ -->
+        <div class="sec-title">🔗 Aapke Important Links</div>
+        <div class="links-grid">
+            <a class="link-card" href="/admin" target="_blank">
+                <div class="icon">🛡️</div>
+                <div>
+                    <h3>Admin Panel <span class="badge-new">MAIN</span></h3>
+                    <p>Naye clients dekhne ke liye, deploy karne ke liye, embed code copy karne ke liye</p>
+                    <div class="url">/admin</div>
+                </div>
+            </a>
+            <a class="link-card" href="/payment" target="_blank">
+                <div class="icon">💳</div>
+                <div>
+                    <h3>Payment Page</h3>
+                    <p>Yeh link clients ko bhejte hain — yahan se woh plan choose karke pay karte hain</p>
+                    <div class="url">/payment</div>
+                </div>
+            </a>
+            <a class="link-card" href="/uae-landing" target="_blank">
+                <div class="icon">🇦🇪</div>
+                <div>
+                    <h3>UAE Landing Page</h3>
+                    <p>Marketing page — clients ko yeh link share karo social media pe ya WhatsApp pe</p>
+                    <div class="url">/uae-landing</div>
+                </div>
+            </a>
+            <a class="link-card" href="/deploy-guide" target="_blank">
+                <div class="icon">📖</div>
+                <div>
+                    <h3>Deploy Guide</h3>
+                    <p>Client ko yeh page bhejo — WordPress, Shopify, Wix sab ka guide hai yahan</p>
+                    <div class="url">/deploy-guide</div>
+                </div>
+            </a>
+            <a class="link-card" href="/dashboard" target="_blank">
+                <div class="icon">📊</div>
+                <div>
+                    <h3>Client Dashboard</h3>
+                    <p>Client jab pay kare to yahan jaata hai — embed code milta hai, bot test kar sakta hai</p>
+                    <div class="url">/dashboard</div>
+                </div>
+            </a>
+            <a class="link-card" href="https://railway.com" target="_blank">
+                <div class="icon">🚂</div>
+                <div>
+                    <h3>Railway (Server)</h3>
+                    <p>Aapka server yahan host hai — logs, variables, deployments sab yahan dekhte hain</p>
+                    <div class="url">railway.com</div>
+                </div>
+            </a>
+        </div>
+
+        <!-- ═══ PASSWORDS ═══ -->
+        <div class="sec-title">🔑 Passwords & Credentials</div>
+        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden;margin-bottom:8px;">
+            <table class="info-table">
+                <tr>
+                    <td>Admin Panel Password</td>
+                    <td><code>farman2024</code> <button class="copy-inline" onclick="cp('farman2024',this)">Copy</button></td>
+                </tr>
+                <tr>
+                    <td>Admin Panel URL</td>
+                    <td><code>https://ai-chatbot-production-2f3a.up.railway.app/admin</code> <button class="copy-inline" onclick="cp('https://ai-chatbot-production-2f3a.up.railway.app/admin',this)">Copy</button></td>
+                </tr>
+                <tr>
+                    <td>Railway Login</td>
+                    <td><code>railway.com</code> — aapke email se login karo</td>
+                </tr>
+                <tr>
+                    <td>Server URL (Live)</td>
+                    <td><code>https://ai-chatbot-production-2f3a.up.railway.app</code></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- ═══ ADMIN PANEL GUIDE ═══ -->
+        <div class="sec-title">🛡️ Admin Panel Kaise Use Karein</div>
+
+        <div class="step-card">
+            <div class="step-num">1</div>
+            <div>
+                <h3>Admin Panel Kholein</h3>
+                <p>Browser mein jaao: <code>https://ai-chatbot-production-2f3a.up.railway.app/admin</code></p>
+                <div class="highlight">Password: <strong style="color:#a78bfa;">farman2024</strong> — enter karo aur Login dabao</div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-num">2</div>
+            <div>
+                <h3>Dashboard Dekhein</h3>
+                <p>Login hone ke baad aapko yeh dikhega:</p>
+                <div class="highlight">
+                    📊 <strong>Total Clients</strong> — kitne log pay kar chuke hain<br>
+                    ✅ <strong>Deployed</strong> — jinke websites pe bot lag gaya<br>
+                    ⏳ <strong>Pending</strong> — jinhe abhi deploy karna hai<br>
+                    💰 <strong>Revenue (AED)</strong> — total kamai
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-num">3</div>
+            <div>
+                <h3>Client Table Samjhein</h3>
+                <p>Har client ki row mein yeh columns hain:</p>
+                <div class="highlight">
+                    👤 <strong>Name</strong> — client ka naam<br>
+                    📧 <strong>Email</strong> — client ka email<br>
+                    🌐 <strong>Website</strong> — client ki website URL (click karo to khulegi)<br>
+                    🟦 <strong>Platform</strong> — WordPress / Shopify / Wix etc.<br>
+                    📦 <strong>Plan</strong> — Starter / Professional / Enterprise<br>
+                    🔑 <strong>Access Code</strong> — client ka unique code<br>
+                    ⏳ <strong>Status</strong> — Pending ya Deployed<br>
+                    📋 <strong>Embed Code</strong> — Copy button (bot ka code)<br>
+                    🚀 <strong>Action</strong> — Deploy Bot button
+                </div>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-num">4</div>
+            <div>
+                <h3>📖 "How to Add" Button Dabao</h3>
+                <p>Platform column mein <strong>"📖 How to add"</strong> button hai — dabao to ek popup khulega jisme us platform ke liye exact steps aur embed code dono milenge</p>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-num">5</div>
+            <div>
+                <h3>📋 Embed Code Copy Karein</h3>
+                <p>"Embed Code" column mein <strong>"📋 Copy"</strong> button dabao — code copy ho jaata hai clipboard mein — phir client ki website pe paste karo</p>
+            </div>
+        </div>
+
+        <div class="step-card">
+            <div class="step-num">6</div>
+            <div>
+                <h3>✅ Deploy Mark Karein</h3>
+                <p>"Action" column mein <strong>"Deploy Bot"</strong> dabao → website URL confirm karo → <strong>"Mark Deployed ✓"</strong> dabao → Status change ho jaayega <code>⏳ Pending</code> se <code>✅ Deployed</code></p>
+            </div>
+        </div>
+
+        <!-- ═══ DAILY FLOW ═══ -->
+        <div class="sec-title">📅 Roz Ka Kaam — Step by Step</div>
+        <div class="flow">
+            <div class="flow-item">
+                <div class="flow-dot">📱</div>
+                <div class="flow-body">
+                    <h3>Notification Aaye (WhatsApp ya Email)</h3>
+                    <p>"🎉 NEW CLIENT PAID! — Ahmed Al Mansoori — mybusiness.ae — Starter Plan"</p>
+                </div>
+            </div>
+            <div class="flow-item">
+                <div class="flow-dot">🛡️</div>
+                <div class="flow-body">
+                    <h3>Admin Panel Kholo</h3>
+                    <p>Link: <strong>ai-chatbot-production-2f3a.up.railway.app/admin</strong> → Password enter karo</p>
+                </div>
+            </div>
+            <div class="flow-item">
+                <div class="flow-dot">🔍</div>
+                <div class="flow-body">
+                    <h3>Client Dhundho Table Mein</h3>
+                    <p>Naye client ki row mein Platform dekho — WordPress hai ya Shopify?</p>
+                </div>
+            </div>
+            <div class="flow-item">
+                <div class="flow-dot">📖</div>
+                <div class="flow-body">
+                    <h3>"How to Add" Dabao</h3>
+                    <p>Platform ke hisaab se exact steps popup mein milenge — wahan se "📋 Copy Embed Code" dabao</p>
+                </div>
+            </div>
+            <div class="flow-item">
+                <div class="flow-dot">🌐</div>
+                <div class="flow-body">
+                    <h3>Client ki Website Pe Jao</h3>
+                    <p>Website URL pe click karo → Admin login karo (client se maango) → Guide ke steps follow karo → Code paste karo</p>
+                </div>
+            </div>
+            <div class="flow-item">
+                <div class="flow-dot">✅</div>
+                <div class="flow-body">
+                    <h3>Deploy Mark Karo + Client Ko Batao</h3>
+                    <p>Admin Panel → "Deploy Bot" → Mark Deployed ✓<br>
+                    Client ko WhatsApp karo: <em>"Aapka AI bot live ho gaya! 🎉 Website ka bottom right check karein"</em></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ RAILWAY ENV VARS ═══ -->
+        <div class="sec-title">⚙️ Railway Variables (Email/WhatsApp Setup)</div>
+        <p style="color:#64748b;font-size:.85rem;margin-bottom:14px;">Yeh variables Railway pe set karne hain — <strong>railway.com → Project → Variables</strong></p>
+        <div class="env-box">
+            <span class="env-comment"># Gmail se auto email bhejne ke liye</span><br>
+            <span class="env-key">GMAIL_USER</span>         = <span class="env-val">aapka@gmail.com</span><br>
+            <span class="env-key">GMAIL_APP_PASSWORD</span> = <span class="env-val">xxxx xxxx xxxx xxxx</span> <span class="env-comment">(App Password — Google Account se banao)</span><br>
+            <br>
+            <span class="env-comment"># Aapko notifications aane ke liye</span><br>
+            <span class="env-key">OWNER_EMAIL</span>        = <span class="env-val">aapka@gmail.com</span><br>
+            <span class="env-key">OWNER_WHATSAPP</span>     = <span class="env-val">+971xxxxxxxxx</span> <span class="env-comment">(aapka UAE number)</span><br>
+            <br>
+            <span class="env-comment"># Admin panel password change karna ho to</span><br>
+            <span class="env-key">ADMIN_PASSWORD</span>     = <span class="env-val">farman2024</span>
+        </div>
+
+        <div style="background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.2);border-radius:10px;padding:14px 16px;margin-top:14px;color:#fbbf24;font-size:.85rem;line-height:1.6;">
+            ⚠️ <strong>Gmail App Password kaise banate hain:</strong><br>
+            1. <strong>myaccount.google.com</strong> kholo<br>
+            2. Security → <strong>2-Step Verification</strong> ON karo<br>
+            3. Phir Security → <strong>App Passwords</strong> → "Mail" select karo → Generate<br>
+            4. 16 digit code milega — woh Railway mein <code>GMAIL_APP_PASSWORD</code> mein paste karo
+        </div>
+
+        <!-- ═══ SHARE LINKS ═══ -->
+        <div class="sec-title">📤 Clients Ko Kya Bhejein</div>
+        <div class="step-card">
+            <div class="step-num">📢</div>
+            <div>
+                <h3>Marketing ke liye (Social Media / WhatsApp)</h3>
+                <p>Yeh link share karo:</p>
+                <div class="highlight">
+                    <code>https://ai-chatbot-production-2f3a.up.railway.app/uae-landing</code>
+                    <button class="copy-inline" onclick="cp('https://ai-chatbot-production-2f3a.up.railway.app/uae-landing',this)">Copy</button>
+                </div>
+            </div>
+        </div>
+        <div class="step-card">
+            <div class="step-num">💳</div>
+            <div>
+                <h3>Payment ke liye (Seedha pay karna ho to)</h3>
+                <div class="highlight">
+                    <code>https://ai-chatbot-production-2f3a.up.railway.app/payment</code>
+                    <button class="copy-inline" onclick="cp('https://ai-chatbot-production-2f3a.up.railway.app/payment',this)">Copy</button>
+                </div>
+            </div>
+        </div>
+        <div class="step-card">
+            <div class="step-num">📖</div>
+            <div>
+                <h3>Deploy Guide (client khud lagana chahein to)</h3>
+                <div class="highlight">
+                    <code>https://ai-chatbot-production-2f3a.up.railway.app/deploy-guide</code>
+                    <button class="copy-inline" onclick="cp('https://ai-chatbot-production-2f3a.up.railway.app/deploy-guide',this)">Copy</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const OWNER_PW = 'farman2024';
+
+    function unlock() {
+        const val = document.getElementById('pwInput').value;
+        if (val === OWNER_PW) {
+            document.getElementById('gate').style.display = 'none';
+            document.getElementById('main').style.display = 'block';
+        } else {
+            document.getElementById('gateErr').textContent = '❌ Wrong password';
+        }
+    }
+    document.getElementById('pwInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') unlock();
+    });
+
+    function cp(text, btn) {
+        navigator.clipboard.writeText(text).then(() => {
+            const orig = btn.textContent;
+            btn.textContent = '✅ Copied';
+            setTimeout(() => btn.textContent = orig, 2000);
+        });
+    }
+</script>
+</body>
+</html>
