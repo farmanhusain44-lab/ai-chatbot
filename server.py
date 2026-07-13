@@ -825,7 +825,7 @@ def send_welcome_email(to_email, name, access_code, plan):
           <a href="{dashboard_url}" style="display:inline-block;background:linear-gradient(135deg,#a78bfa,#60a5fa);color:#fff;text-decoration:none;padding:15px 36px;border-radius:10px;font-weight:700;font-size:1rem;">Go to My Dashboard →</a>
         </div>
 
-        <p style="color:#334155;font-size:.82rem;text-align:center;">Questions? Reply to this email or contact <a href="mailto:support@aichatbot.ae" style="color:#60a5fa;">support@aichatbot.ae</a></p>
+        <p style="color:#334155;font-size:.82rem;text-align:center;">Questions? Reply to this email or message us on <a href="https://wa.me/917992111021" style="color:#60a5fa;">WhatsApp</a></p>
       </div>
     </body>
     </html>
