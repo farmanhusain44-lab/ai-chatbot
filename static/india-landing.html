@@ -691,7 +691,7 @@ body{top:0 !important}
           </div>
         </div>
         <div class="chat-body" id="chatBody">
-          <div class="msg msg-bot">👋 Namaste! Main BotifyAI hoon — aapka 24/7 AI assistant. Hindi, English ya kisi bhi Indian language mein madad kar sakta hoon. Kaise sahayata karun?</div>
+          <div class="msg msg-bot">👋 Hello! Main BotifyAI hoon — aapka 24/7 AI assistant. Hindi, English ya kisi bhi Indian language mein madad kar sakta hoon. Kaise sahayata karun?</div>
         </div>
         <div class="chat-input-row">
           <input class="chat-input" id="chatInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter')demoSend()"/>
@@ -963,7 +963,7 @@ const botReplies={
   'what services do you offer':['BotifyAI helps Indian businesses answer customer questions 24/7 on websites and WhatsApp. It supports Hindi, English, Tamil, Telugu, Bengali, Marathi, Gujarati and 22+ languages, captures leads, and can be trained on your products and FAQs.'],
   'price':['Our India plans are Starter ₹100/month, Professional ₹150/month, and Enterprise ₹200/month. All include free installation support.'],
   'pricing':['Our India plans are Starter ₹100/month, Professional ₹150/month, and Enterprise ₹200/month. All include free installation support.'],
-  'आपकी कीमतें क्या हैं':['Namaste! 😊 Hamare India plans Starter ₹100, Professional ₹150 aur Enterprise ₹200 per month se shuru hote hain. Free installation support included hai.'],
+  'आपकी कीमतें क्या हैं':['Hello! 😊 Hamare India plans Starter ₹100, Professional ₹150 aur Enterprise ₹200 per month se shuru hote hain. Free installation support included hai.'],
   'language':['BotifyAI 22+ Indian languages support karta hai, including Hindi, Tamil, Telugu, Bengali, Marathi, Gujarati, Punjabi, Malayalam, Kannada, Urdu and Odia. Bot customer ki language automatically detect karta hai.'],
   'train':['Haan. Professional aur Enterprise plans mein bot ko aapke products, services, prices, FAQs aur policies par train kiya ja sakta hai.'],
   'install':['Setup normally 5 minutes leta hai. Website mein ek line of code add karni hoti hai, ya hamari team WhatsApp par free installation help karti hai.'],
@@ -973,6 +973,7 @@ const botReplies={
   'how do i get started':['Getting started is super easy! 🚀\n\n1️⃣ Choose a plan\n2️⃣ Enter your business details\n3️⃣ Add the code to your website\n4️⃣ Your AI bot goes live\n\nOur team can help with installation.'],
   'default':["Great question! 😊 BotifyAI Indian businesses ko 24/7 customer support, 22+ languages, WhatsApp integration, custom training, lead capture aur analytics deta hai. Pricing, setup, languages ya features ke baare mein pooch sakte hain."]
 };
+const demoHistory=[];
 function demoSend(txt){
   const input=document.getElementById('chatInput');
   const msg=txt||input.value.trim();
@@ -982,13 +983,23 @@ function demoSend(txt){
   body.innerHTML+=`<div class="msg msg-user">${msg}</div>`;
   body.innerHTML+=`<div class="typing" id="typing"><span></span><span></span><span></span></div>`;
   body.scrollTop=body.scrollHeight;
-  setTimeout(()=>{
-    const key=Object.keys(botReplies).find(k=>msg.toLowerCase().includes(k))||'default';
-    const reply=botReplies[key][0];
-    document.getElementById('typing')?.remove();
-    body.innerHTML+=`<div class="msg msg-bot">${reply.replace(/\n/g,'<br>')}</div>`;
-    body.scrollTop=body.scrollHeight;
-  },1400);
+  demoHistory.push({role:'user',content:msg});
+  fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,history:demoHistory.slice(-10)})})
+    .then(r=>r.json())
+    .then(data=>{
+      const reply=data.reply||botReplies.default[0];
+      demoHistory.push({role:'assistant',content:reply});
+      document.getElementById('typing')?.remove();
+      body.innerHTML+=`<div class="msg msg-bot">${reply.replace(/\n/g,'<br>')}</div>`;
+      body.scrollTop=body.scrollHeight;
+    })
+    .catch(()=>{
+      const key=Object.keys(botReplies).find(k=>msg.toLowerCase().includes(k))||'default';
+      const reply=botReplies[key][0];
+      document.getElementById('typing')?.remove();
+      body.innerHTML+=`<div class="msg msg-bot">${reply.replace(/\n/g,'<br>')}</div>`;
+      body.scrollTop=body.scrollHeight;
+    });
 }
 
 /* SCROLL PROGRESS BAR */

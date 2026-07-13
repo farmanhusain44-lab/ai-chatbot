@@ -923,6 +923,7 @@ const botReplies={
   'how do i get started':['Getting started is super easy! 🚀\n\n1️⃣ Choose a plan\n2️⃣ Enter your business details\n3️⃣ Add the code to your website\n4️⃣ Your AI bot goes live\n\nOur team can help with installation.'],
   'default':["Great question! 😊 BotifyAI helps UAE businesses with 24/7 Arabic and English support, custom AI training, WhatsApp integration, lead capture, and analytics. Ask me about pricing, setup, languages, or features."]
 };
+const demoHistory=[];
 function demoSend(txt){
   const input=document.getElementById('chatInput');
   const msg=txt||input.value.trim();
@@ -932,13 +933,23 @@ function demoSend(txt){
   body.innerHTML+=`<div class="msg msg-user">${msg}</div>`;
   body.innerHTML+=`<div class="typing" id="typing"><span></span><span></span><span></span></div>`;
   body.scrollTop=body.scrollHeight;
-  setTimeout(()=>{
-    const key=Object.keys(botReplies).find(k=>msg.toLowerCase().includes(k))||'default';
-    const reply=botReplies[key][0];
-    document.getElementById('typing')?.remove();
-    body.innerHTML+=`<div class="msg msg-bot">${reply.replace(/\n/g,'<br>')}</div>`;
-    body.scrollTop=body.scrollHeight;
-  },1400);
+  demoHistory.push({role:'user',content:msg});
+  fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,history:demoHistory.slice(-10)})})
+    .then(r=>r.json())
+    .then(data=>{
+      const reply=data.reply||botReplies.default[0];
+      demoHistory.push({role:'assistant',content:reply});
+      document.getElementById('typing')?.remove();
+      body.innerHTML+=`<div class="msg msg-bot">${reply.replace(/\n/g,'<br>')}</div>`;
+      body.scrollTop=body.scrollHeight;
+    })
+    .catch(()=>{
+      const key=Object.keys(botReplies).find(k=>msg.toLowerCase().includes(k))||'default';
+      const reply=botReplies[key][0];
+      document.getElementById('typing')?.remove();
+      body.innerHTML+=`<div class="msg msg-bot">${reply.replace(/\n/g,'<br>')}</div>`;
+      body.scrollTop=body.scrollHeight;
+    });
 }
 
 /* SCROLL PROGRESS BAR */
