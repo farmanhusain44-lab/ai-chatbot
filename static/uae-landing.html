@@ -51,7 +51,8 @@ nav{padding:0 5%;position:sticky;top:0;width:100%;z-index:1000;background:rgba(2
 .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(99,102,241,.1);color:#a78bfa;font-size:.72rem;font-weight:700;padding:8px 20px;border-radius:30px;margin-bottom:28px;border:1px solid rgba(99,102,241,.2);letter-spacing:.05em;text-transform:uppercase}
 .hero-badge .dot{width:7px;height:7px;background:#34d399;border-radius:50%;animation:pulse 1.8s infinite}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
-.hero h1{font-size:clamp(2.5rem,6vw,4.5rem);font-weight:900;letter-spacing:-.04em;line-height:1.05;margin-bottom:24px;color:#fff}
+.hero h1{font-size:clamp(2.5rem,6vw,4.5rem);font-weight:900;letter-spacing:-.04em;line-height:1.05;margin-bottom:24px;color:#fff;min-height:3.3em}
+@media(min-width:769px){.hero h1{min-height:2.3em}}
 .hero h1 .grad{background:linear-gradient(135deg,#a78bfa 0%,#60a5fa 50%,#34d399 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .hero-sub{font-size:1.1rem;color:#475569;line-height:1.85;max-width:640px;margin:0 auto 44px}
 .hero-sub strong{color:#94a3b8}
