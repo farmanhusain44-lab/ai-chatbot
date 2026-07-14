@@ -242,7 +242,11 @@ const urlPlan = urlParams.get('plan');
 const isIndia = urlParams.get('currency') === 'inr' || urlParams.get('region') === 'in';
 localStorage.setItem('clientRegion', isIndia ? 'india' : 'uae');
 const setupGuideBtn = document.getElementById('setupGuideBtn');
-if (setupGuideBtn) setupGuideBtn.onclick = () => { window.location.href = isIndia ? '/india-deploy-guide' : '/deploy-guide'; };
+if (setupGuideBtn) setupGuideBtn.onclick = () => {
+    const code = localStorage.getItem('accessCode') || '';
+    const base = isIndia ? '/india-deploy-guide' : '/deploy-guide';
+    window.location.href = code ? `${base}?access=${code}` : base;
+};
 
 const freeNote = document.getElementById('netbankingNote');
 if (isIndia) {
