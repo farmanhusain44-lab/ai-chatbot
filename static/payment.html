@@ -205,7 +205,7 @@ nav{padding:16px 28px;display:flex;align-items:center;justify-content:space-betw
           Continue
         </button>
         <div class="secure-note">🔒 Secure setup · Cancel anytime</div>
-        <div style="display:flex;justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap">
+        <div id="methodPills" style="display:flex;justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap">
           <span class="trust-pill">UPI</span>
           <span class="trust-pill">Cards</span>
           <span class="trust-pill">Net Banking</span>
@@ -244,14 +244,18 @@ localStorage.setItem('clientRegion', isIndia ? 'india' : 'uae');
 const setupGuideBtn = document.getElementById('setupGuideBtn');
 if (setupGuideBtn) setupGuideBtn.onclick = () => { window.location.href = isIndia ? '/india-deploy-guide' : '/deploy-guide'; };
 
+const freeNote = document.getElementById('netbankingNote');
 if (isIndia) {
     document.querySelector('.wyg-item:nth-child(2)').innerHTML = '<span class="ck">✓</span> 22+ Indian languages';
-    document.getElementById('netbankingNote').style.display = 'block';
+    freeNote.textContent = '🎉 Net Banking payments are auto-confirmed right now — enjoy it free while we finish setting up our full payment system!';
+    freeNote.style.display = 'block';
 } else {
     document.getElementById('payBtn').textContent = 'Request Setup on WhatsApp';
     document.querySelector('.secure-note').textContent = '📱 No online payment — contact us on WhatsApp';
     document.querySelector('.trust-row').style.display = 'none';
-    document.querySelector('.form-box > div:last-child').innerHTML = '<span class="trust-pill">WhatsApp setup</span><span class="trust-pill">Free installation</span><span class="trust-pill">No hidden fees</span>';
+    document.getElementById('methodPills').innerHTML = '<span class="trust-pill">WhatsApp setup</span><span class="trust-pill">Free installation</span><span class="trust-pill">No hidden fees</span>';
+    freeNote.textContent = '🎉 Full setup is free right now while we finish our online payment system — just message us on WhatsApp!';
+    freeNote.style.display = 'block';
 }
 
 const priceMap = isIndia ? {
