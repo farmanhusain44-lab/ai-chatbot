@@ -351,6 +351,18 @@ body{top:0 !important}
 </style>
 </head>
 <body>
+<script>
+(function(){
+  if(sessionStorage.getItem('botifyai_geo_checked'))return;
+  sessionStorage.setItem('botifyai_geo_checked','1');
+  fetch('https://ipapi.co/json/').then(r=>r.json()).then(data=>{
+    const gulfCountries=['AE','SA','QA','KW','BH','OM'];
+    if(gulfCountries.includes(data.country_code)){
+      window.location.replace('/uae');
+    }
+  }).catch(()=>{});
+})();
+</script>
 <div id="google_translate_element"></div>
 <div class="lang-banner" id="langBanner">
   <div class="inner">
