@@ -336,15 +336,41 @@ function startPayment() {
     localStorage.setItem('clientPlatform', platform);
     localStorage.setItem('clientPlan',     selectedPlan);
 
-    if (!isIndia) {
-        const message = `Hi! I want BotifyAI ${selectedPlan} setup. Name: ${name}. Email: ${email}. Website: ${website}. Platform: ${platform}.`;
-        window.location.href = `https://wa.me/917992111021?text=${encodeURIComponent(message)}`;
-        return;
-    }
-
     const btn = document.getElementById('payBtn');
     btn.disabled = true;
     btn.classList.add('loading');
+
+    if (!isIndia) {
+        btn.textContent = 'Setting up your free access...';
+        fetch('/payment-success', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({
+                plan: selectedPlan, name, email, website,
+                payment_id: 'free-access-' + Date.now(),
+                order_id: 'free-access'
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) {
+                btn.disabled = false;
+                btn.classList.remove('loading');
+                updateBtn();
+                alert(data.error || 'Something went wrong. Please try again.');
+                return;
+            }
+            showSuccess(data.access_code, selectedPlan);
+        })
+        .catch(() => {
+            btn.disabled = false;
+            btn.classList.remove('loading');
+            updateBtn();
+            alert('Network error. Please try again.');
+        });
+        return;
+    }
+
     btn.textContent = 'Opening secure payment...';
 
     fetch('/razorpay-order', {
