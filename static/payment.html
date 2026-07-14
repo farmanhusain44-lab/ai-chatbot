@@ -250,11 +250,11 @@ if (isIndia) {
     freeNote.textContent = '🎉 Net Banking payments are auto-confirmed right now — enjoy it free while we finish setting up our full payment system!';
     freeNote.style.display = 'block';
 } else {
-    document.getElementById('payBtn').textContent = 'Request Setup on WhatsApp';
-    document.querySelector('.secure-note').textContent = '📱 No online payment — contact us on WhatsApp';
+    document.getElementById('payBtn').textContent = 'Get Free Access →';
+    document.querySelector('.secure-note').textContent = '🎉 Free access — no payment required right now';
     document.querySelector('.trust-row').style.display = 'none';
-    document.getElementById('methodPills').innerHTML = '<span class="trust-pill">WhatsApp setup</span><span class="trust-pill">Free installation</span><span class="trust-pill">No hidden fees</span>';
-    freeNote.textContent = '🎉 Full setup is free right now while we finish our online payment system — just message us on WhatsApp!';
+    document.getElementById('methodPills').innerHTML = '<span class="trust-pill">Instant access</span><span class="trust-pill">Free installation</span><span class="trust-pill">No hidden fees</span>';
+    freeNote.textContent = '🎉 Full access is free right now while we finish setting up our online payment system!';
     freeNote.style.display = 'block';
 }
 
@@ -307,7 +307,7 @@ function selectPlan(el, plan, priceId, price) {
 
 function updateBtn() {
     const pb = document.getElementById('payBtn');
-    if(pb) pb.textContent = isIndia ? `Pay ${selectedPrice} — Secure Checkout` : 'Request Setup on WhatsApp';
+    if(pb) pb.textContent = isIndia ? `Pay ${selectedPrice} — Secure Checkout` : 'Get Free Access →';
 }
 
 
