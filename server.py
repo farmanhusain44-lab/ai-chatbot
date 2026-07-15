@@ -485,6 +485,18 @@ def india_landing():
 def uae_landing():
     return app.send_static_file("uae-landing.html")
 
+@app.route("/saudi")
+def saudi_landing():
+    return app.send_static_file("saudi-landing.html")
+
+@app.route("/saudi-arabia")
+def saudi_arabia_landing():
+    return app.send_static_file("saudi-landing.html")
+
+@app.route("/ksa")
+def ksa_landing():
+    return app.send_static_file("saudi-landing.html")
+
 @app.route("/payment")
 def payment():
     return app.send_static_file("payment.html")
