@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory, Response
+from flask import Flask, request, jsonify, send_from_directory, Response, redirect
 from flask_cors import CORS
 import anthropic
 import os
@@ -465,8 +465,43 @@ def get_system_prompt(language="en", timezone=None):
         "you must answer using this exact date and time. Do not say you lack real-time information. "
     )
 
+def _detect_country_code():
+    """Return an uppercase ISO country code for the current request, or None."""
+    # 1. Cloudflare (if the site is behind CF)
+    cc = request.headers.get("CF-IPCountry")
+    if cc and cc.upper() not in ("XX", "T1"):
+        return cc.upper()
+    # 2. Vercel / other CDNs
+    for h in ("X-Vercel-IP-Country", "X-Country-Code", "X-AppEngine-Country", "X-Country"):
+        v = request.headers.get(h)
+        if v:
+            return v.upper()
+    # 3. Fall back to IP lookup (Railway forwards real IP in X-Forwarded-For)
+    try:
+        fwd = request.headers.get("X-Forwarded-For", "")
+        ip = fwd.split(",")[0].strip() if fwd else request.remote_addr
+        if ip and ip not in ("127.0.0.1", "::1"):
+            r = requests.get(f"https://ipapi.co/{ip}/country/", timeout=2)
+            if r.ok:
+                code = r.text.strip().upper()
+                if len(code) == 2:
+                    return code
+    except Exception:
+        pass
+    return None
+
 @app.route("/")
 def home():
+    # Skip auto-redirect if the visitor explicitly asked for the default page
+    if request.args.get("noredirect") == "1":
+        return app.send_static_file("india-landing.html")
+    country = _detect_country_code()
+    country_routes = {
+        "SA": "/saudi",
+        "AE": "/uae", "QA": "/uae", "KW": "/uae", "BH": "/uae", "OM": "/uae",
+    }
+    if country in country_routes:
+        return redirect(country_routes[country], code=302)
     return app.send_static_file("india-landing.html")
 
 @app.route("/widget.js")
