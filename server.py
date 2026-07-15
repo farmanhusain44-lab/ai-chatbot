@@ -579,6 +579,137 @@ def my_business():
 def partners():
     return app.send_static_file("partners.html")
 
+@app.route("/onboard")
+def onboard():
+    return app.send_static_file("onboard.html")
+
+@app.route("/onboard/verify", methods=["POST"])
+def onboard_verify():
+    """Check whether an access code is valid before showing the onboarding form."""
+    try:
+        data = request.get_json() or {}
+        code = (data.get("access_code") or "").strip().upper()
+        if not code:
+            return jsonify({"valid": False, "message": "Please enter your access code."}), 400
+        client = get_client_by_access_code(code)
+        if not client:
+            return jsonify({"valid": False, "message": "This access code was not found."}), 404
+        # Detect if already onboarded (any existing docs)
+        docs = get_documents(client["id"]) or []
+        onboarded = any((d.get("filename") or "").startswith("onboard_") for d in docs)
+        return jsonify({
+            "valid": True,
+            "name": client.get("name", ""),
+            "website": client.get("website", ""),
+            "already_onboarded": onboarded,
+        })
+    except Exception as e:
+        logger.error(f"onboard/verify error: {e}")
+        return jsonify({"valid": False, "message": "Server error, please try again."}), 500
+
+@app.route("/onboard/submit", methods=["POST"])
+def onboard_submit():
+    """Save the onboarding form's answers as bot training documents."""
+    try:
+        raw = request.form.get("data")
+        if not raw:
+            return jsonify({"success": False, "message": "Missing data"}), 400
+        import json as _json
+        payload = _json.loads(raw)
+        code = (payload.get("access_code") or "").strip().upper()
+        if not code:
+            return jsonify({"success": False, "message": "Missing access code"}), 400
+        client = get_client_by_access_code(code)
+        if not client:
+            return jsonify({"success": False, "message": "Access code not found"}), 404
+        client_id = client["id"]
+
+        # Compose a single training document from all fields
+        parts = [f"BUSINESS: {payload.get('name','')}"]
+        if payload.get("business_type"): parts.append(f"Type: {payload['business_type']}")
+        if payload.get("city"): parts.append(f"City: {payload['city']}")
+        if payload.get("address"): parts.append(f"Address: {payload['address']}")
+        if payload.get("phone"): parts.append(f"Phone: {payload['phone']}")
+        if payload.get("hours"): parts.append(f"Hours: {payload['hours']}")
+        if payload.get("website"): parts.append(f"Website: {payload['website']}")
+        if payload.get("description"): parts.append(f"\nABOUT:\n{payload['description']}")
+        if payload.get("products"): parts.append(f"\nPRODUCTS / SERVICES / MENU:\n{payload['products']}")
+        if payload.get("faqs"):
+            parts.append("\nFREQUENTLY ASKED QUESTIONS:")
+            for i, f in enumerate(payload["faqs"], 1):
+                parts.append(f"\nQ{i}: {f.get('q','')}\nA{i}: {f.get('a','')}")
+        if payload.get("refund_policy"): parts.append(f"\nREFUND / CANCELLATION POLICY:\n{payload['refund_policy']}")
+        if payload.get("delivery_info"): parts.append(f"\nDELIVERY / BOOKING INFO:\n{payload['delivery_info']}")
+        if payload.get("languages"): parts.append(f"\nLANGUAGES BOT SHOULD REPLY IN: {', '.join(payload['languages'])}")
+        if payload.get("extra_notes"): parts.append(f"\nADDITIONAL NOTES:\n{payload['extra_notes']}")
+        text_content = "\n".join(parts)
+
+        # Save as one document tagged onboard_ so we can detect completion later
+        add_document(client_id, "onboard_business_info.txt", text_content, "text")
+
+        # Save any uploaded files as additional documents
+        for key in request.files:
+            f = request.files[key]
+            if not f or not f.filename:
+                continue
+            try:
+                content = f.read()
+                # For text-like files store as text; PDF/DOC left to admin extraction later
+                if f.filename.lower().endswith((".txt",)):
+                    add_document(client_id, f"onboard_{f.filename}", content.decode("utf-8", errors="ignore"), "text")
+                else:
+                    # Save the file blob to disk for admin to process
+                    upload_dir = os.path.join(os.path.dirname(__file__), "uploads")
+                    os.makedirs(upload_dir, exist_ok=True)
+                    safe_name = f"onboard_{client_id}_{f.filename}".replace("..", "_")
+                    path = os.path.join(upload_dir, safe_name)
+                    with open(path, "wb") as out:
+                        out.write(content)
+                    add_document(client_id, f"onboard_{f.filename}", f"[Uploaded file — admin will extract] path={safe_name}", "file")
+            except Exception as inner:
+                logger.error(f"onboard file save failed: {inner}")
+
+        # Notify owner that onboarding is complete
+        try:
+            notify_onboard_complete(client, payload)
+        except Exception as ne:
+            logger.error(f"onboard notify failed: {ne}")
+
+        return jsonify({"success": True, "message": "Bot training data saved"})
+    except Exception as e:
+        logger.error(f"onboard/submit error: {e}")
+        return jsonify({"success": False, "message": "Server error, please WhatsApp us."}), 500
+
+
+def notify_onboard_complete(client, payload):
+    """Send a WhatsApp + email nudge to the owner that a client finished onboarding."""
+    name = client.get("name") or payload.get("name", "")
+    plan = client.get("plan", "")
+    biz_type = payload.get("business_type", "")
+    city = payload.get("city", "")
+    owner_phone = os.environ.get("OWNER_WHATSAPP", "")
+    twilio_sid = os.environ.get("TWILIO_ACCOUNT_SID", "")
+    twilio_tok = os.environ.get("TWILIO_AUTH_TOKEN", "")
+    twilio_wa = os.environ.get("TWILIO_WHATSAPP_NUMBER", "whatsapp:+14155238886")
+    if owner_phone and twilio_sid and twilio_tok:
+        try:
+            from twilio.rest import Client as TwilioClient
+            tc = TwilioClient(twilio_sid, twilio_tok)
+            tc.messages.create(
+                body=(
+                    f"✅ ONBOARDING COMPLETE\n\n"
+                    f"👤 {name}\n"
+                    f"🏢 {biz_type} · {city}\n"
+                    f"📦 {plan.title()}\n"
+                    f"🔑 {client.get('access_code','')}\n\n"
+                    f"Review docs: /admin"
+                ),
+                from_=twilio_wa,
+                to=f"whatsapp:{owner_phone}",
+            )
+        except Exception as e:
+            logger.error(f"onboard notify whatsapp failed: {e}")
+
 
 
 def check_admin_password(data_or_args):
@@ -607,6 +738,16 @@ def admin_create_client():
     if not name:
         return jsonify({"error": "Name is required"}), 400
     client_id, access_code = create_client(name, email, website, plan, days, region)
+    # Send welcome email to the new client and notify the owner — same flow as automated payment
+    try:
+        if email:
+            send_welcome_email(email, name, access_code, plan)
+    except Exception as e:
+        logger.error(f"admin_create_client: welcome email failed: {e}")
+    try:
+        notify_owner(name, email, website, plan, access_code)
+    except Exception as e:
+        logger.error(f"admin_create_client: notify_owner failed: {e}")
     return jsonify({"success": True, "client_id": client_id, "access_code": access_code})
 
 @app.route("/admin/clients/<int:client_id>", methods=["DELETE"])
@@ -831,12 +972,12 @@ def send_welcome_email(to_email, name, access_code, plan):
         logger.warning('GMAIL_USER or GMAIL_APP_PASSWORD not set — skipping welcome email')
         return
 
-    plan_prices = {'starter': 'AED 499', 'professional': 'AED 1,499', 'enterprise': 'AED 3,499'}
-    plan_label  = plan.title()
-    price       = plan_prices.get(plan, '')
-    embed_code  = f'<script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-agent="AI Assistant" data-welcome="Hello! How can I help you?" data-access="{access_code}"></script>'
-    dashboard_url = f'https://ai-chatbot-production-2f3a.up.railway.app/dashboard?access={access_code}&plan={plan}'
-    guide_url = f'https://ai-chatbot-production-2f3a.up.railway.app/deploy-guide?access={access_code}'
+    plan_label  = plan.title() if plan else 'Paid'
+    price       = ''  # currency depends on region — bot mentions it after onboarding instead
+    site_origin = os.environ.get('PUBLIC_BASE_URL', 'https://botifyai.xyz')
+    embed_code  = f'<script src="{site_origin}/widget.js" data-agent="AI Assistant" data-welcome="Hello! How can I help you?" data-access="{access_code}"></script>'
+    dashboard_url = f'{site_origin}/onboard?code={access_code}'
+    guide_url = f'{site_origin}/deploy-guide?access={access_code}'
 
     html = f"""
     <!DOCTYPE html>
@@ -864,7 +1005,13 @@ def send_welcome_email(to_email, name, access_code, plan):
 
         <div style="background:rgba(255,255,255,.05);border:1px solid rgba(167,139,250,.3);border-radius:16px;padding:24px;margin-bottom:20px;">
           <p style="color:#94a3b8;margin:0 0 8px;font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;">Plan</p>
-          <p style="color:#34d399;font-size:1.1rem;font-weight:700;margin:0;">{plan_label} — {price}/month</p>
+          <p style="color:#34d399;font-size:1.1rem;font-weight:700;margin:0;">{plan_label} Plan · Activated</p>
+        </div>
+
+        <div style="background:linear-gradient(135deg,rgba(167,139,250,.15),rgba(96,165,250,.1));border:1px solid rgba(167,139,250,.35);border-radius:16px;padding:24px;margin-bottom:20px;text-align:center;">
+          <p style="color:#e2e8f0;margin:0 0 12px;font-size:.95rem;font-weight:600;">🚀 Finish setup in 5 minutes</p>
+          <p style="color:#94a3b8;margin:0 0 14px;font-size:.85rem;line-height:1.6;">Answer a few quick questions about your business — your bot learns and goes live automatically.</p>
+          <a href="{dashboard_url}" style="display:inline-block;background:linear-gradient(135deg,#a78bfa,#60a5fa);color:#fff;text-decoration:none;padding:12px 28px;border-radius:9px;font-weight:700;font-size:.95rem;">Complete Setup →</a>
         </div>
 
         <div style="background:rgba(255,255,255,.05);border:1px solid rgba(167,139,250,.3);border-radius:16px;padding:24px;margin-bottom:20px;">
@@ -889,11 +1036,13 @@ def send_welcome_email(to_email, name, access_code, plan):
     </html>
     """
 
+    reply_to = os.environ.get('SUPPORT_EMAIL', 'support@botifyai.xyz')
     try:
         msg = MIMEMultipart('alternative')
-        msg['Subject'] = f'🤖 Your AI Bot is Ready — {plan_label} Plan Activated!'
-        msg['From']    = f'AI Chatbot <{gmail_user}>'
-        msg['To']      = to_email
+        msg['Subject']  = f'🤖 Your BotifyAI Bot is Ready — {plan_label} Plan Activated!'
+        msg['From']     = f'BotifyAI Support <{gmail_user}>'
+        msg['Reply-To'] = f'BotifyAI Support <{reply_to}>'
+        msg['To']       = to_email
         msg.attach(MIMEText(html, 'html'))
 
         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
@@ -905,8 +1054,8 @@ def send_welcome_email(to_email, name, access_code, plan):
 
 def notify_owner(name, email, website, plan, access_code):
     """Notify owner via WhatsApp + email when a new client pays"""
-    plan_prices = {'starter':'AED 499','professional':'AED 1,499','enterprise':'AED 3,499'}
-    price = plan_prices.get(plan, '')
+    plan_label = (plan or '').title() or 'Paid'
+    price = ''  # currency inferred from region — kept blank here so old AED figures don't leak
     owner_phone = os.environ.get('OWNER_WHATSAPP', '')
     twilio_sid  = os.environ.get('TWILIO_ACCOUNT_SID', '')
     twilio_tok  = os.environ.get('TWILIO_AUTH_TOKEN', '')
@@ -923,9 +1072,9 @@ def notify_owner(name, email, website, plan, access_code):
                     f"👤 Name: {name}\n"
                     f"📧 Email: {email}\n"
                     f"🌐 Website: {website or 'Not provided'}\n"
-                    f"📦 Plan: {plan.title()} — {price}/month\n"
+                    f"📦 Plan: {plan_label}\n"
                     f"🔑 Code: {access_code}\n\n"
-                    f"👉 Admin: https://ai-chatbot-production-2f3a.up.railway.app/admin"
+                    f"👉 Admin: {os.environ.get('PUBLIC_BASE_URL','https://botifyai.xyz')}/admin"
                 ),
                 from_=twilio_wa,
                 to=f'whatsapp:{owner_phone}'
@@ -941,21 +1090,21 @@ def notify_owner(name, email, website, plan, access_code):
     if gmail_user and gmail_pass and owner_email:
         try:
             msg = MIMEMultipart('alternative')
-            msg['Subject'] = f'🎉 New Client Paid — {plan.title()} Plan — {name}'
-            msg['From']    = f'AI Chatbot <{gmail_user}>'
+            msg['Subject'] = f'🎉 New Client — {plan_label} — {name}'
+            msg['From']    = f'BotifyAI Admin <{gmail_user}>'
             msg['To']      = owner_email
             body = f"""
             <div style="font-family:Arial;padding:20px;background:#0a0a1a;color:#e2e8f0;">
-            <h2 style="color:#34d399;">🎉 New Client Paid!</h2>
+            <h2 style="color:#34d399;">🎉 New Client Registered!</h2>
             <table style="border-collapse:collapse;width:100%;">
               <tr><td style="padding:8px;color:#94a3b8;">Name</td><td style="padding:8px;color:#fff;font-weight:600;">{name}</td></tr>
               <tr><td style="padding:8px;color:#94a3b8;">Email</td><td style="padding:8px;color:#60a5fa;">{email}</td></tr>
               <tr><td style="padding:8px;color:#94a3b8;">Website</td><td style="padding:8px;color:#60a5fa;">{website or '—'}</td></tr>
-              <tr><td style="padding:8px;color:#94a3b8;">Plan</td><td style="padding:8px;color:#a78bfa;font-weight:700;">{plan.title()} — {price}/month</td></tr>
+              <tr><td style="padding:8px;color:#94a3b8;">Plan</td><td style="padding:8px;color:#a78bfa;font-weight:700;">{plan_label}</td></tr>
               <tr><td style="padding:8px;color:#94a3b8;">Access Code</td><td style="padding:8px;font-family:monospace;color:#a78bfa;">{access_code}</td></tr>
             </table>
             <br>
-            <a href="https://ai-chatbot-production-2f3a.up.railway.app/admin" style="background:linear-gradient(135deg,#a78bfa,#60a5fa);color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;">Open Admin Panel →</a>
+            <a href="{os.environ.get('PUBLIC_BASE_URL','https://botifyai.xyz')}/admin" style="background:linear-gradient(135deg,#a78bfa,#60a5fa);color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;">Open Admin Panel →</a>
             </div>
             """
             msg.attach(MIMEText(body, 'html'))
