@@ -598,7 +598,7 @@ function toggleFaq(el){
 
 /* ACCESS CODE */
 const params=new URLSearchParams(window.location.search);
-const ac=params.get('access');
+const ac=params.get('access')||localStorage.getItem('accessCode');
 if(ac){
   document.getElementById('heroCode').style.filter='none';
   document.getElementById('heroCode').style.pointerEvents='auto';
