@@ -34,6 +34,7 @@ nav{padding:0 5%;position:fixed;top:0;width:100%;z-index:1000;background:rgba(2,
 .nav-back:hover{color:#e2e8f0;border-color:rgba(255,255,255,.15)}
 .nav-cta{font-size:.83rem;font-weight:700;color:#fff;padding:9px 20px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#8b5cf6);cursor:pointer;border:none;transition:.2s}
 .nav-cta:hover{opacity:.88;transform:translateY(-1px)}
+.hidden{display:none!important}
 
 /* ANNOUNCEMENT */
 .announce{background:linear-gradient(90deg,#6366f1,#8b5cf6,#6366f1);background-size:200%;animation:slide 4s linear infinite;text-align:center;padding:10px;font-size:.78rem;font-weight:600;color:#fff;letter-spacing:.03em}
@@ -211,7 +212,7 @@ footer p{font-size:.75rem;color:#1e293b}
     </div>
     <div class="nav-right">
       <a href="/uae" class="nav-back">← Back to Home</a>
-      <button class="nav-cta" onclick="window.location.href='/payment'">Get Started →</button>
+      <button class="nav-cta" id="navCtaBtn" onclick="window.location.href='/#pricing'">Get Started →</button>
     </div>
   </div>
 </nav>
@@ -556,12 +557,16 @@ footer p{font-size:.75rem;color:#1e293b}
 </div>
 
 <!-- CTA BANNER -->
-<div class="cta-banner">
-  <h2>Ready to Add AI to Your Website?</h2>
-  <p>Join 500+ UAE businesses already using BotifyAI. Setup takes 5 minutes — free installation included.</p>
-  <div class="cta-btns">
-    <a href="/payment" class="cta-primary">🚀 Get Started — From AED 499/mo</a>
+<div class="cta-banner" id="ctaBanner">
+  <h2 id="ctaTitle">Ready to Add AI to Your Website?</h2>
+  <p id="ctaSub">Join businesses already using BotifyAI. Setup takes 5 minutes — free installation included.</p>
+  <div class="cta-btns" id="ctaBtns">
+    <a href="/#pricing" class="cta-primary">🚀 See Plans</a>
     <a href="https://wa.me/917992111021?text=Hi!%20I%20want%20to%20learn%20more%20about%20BotifyAI." target="_blank" class="cta-secondary">💬 Talk to Us First</a>
+  </div>
+  <div class="cta-btns hidden" id="ctaBtnsUnlocked">
+    <a href="https://wa.me/917992111021?text=Hi!%20Please%20install%20BotifyAI%20on%20my%20website." target="_blank" class="cta-primary">💬 Get Free Installation Help</a>
+    <a href="/onboard" class="cta-secondary">📋 Update Bot Training</a>
   </div>
 </div>
 
@@ -570,7 +575,7 @@ footer p{font-size:.75rem;color:#1e293b}
     <img src="https://i.imgur.com/FfNwGyA.png" alt="BotifyAI"/>
     <span style="font-size:.95rem;font-weight:800;background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">BotifyAI</span>
   </div>
-  <p>© 2026 BotifyAI — AI Chatbots for UAE Businesses · <a href="/uae" style="color:#334155">Home</a> · <a href="/payment" style="color:#334155">Pricing</a> · <a href="https://wa.me/917992111021" target="_blank" style="color:#334155">Contact</a></p>
+  <p>© 2026 BotifyAI — AI Chatbots for Businesses Worldwide · <a href="/" style="color:#334155">Home</a> · <a href="/#pricing" style="color:#334155">Pricing</a> · <a href="https://wa.me/917992111021" target="_blank" style="color:#334155">Contact</a></p>
 </footer>
 
 <script>
@@ -605,13 +610,24 @@ if(ac){
   document.getElementById('heroCode').style.userSelect='text';
   document.getElementById('lockOverlay').style.display='none';
   document.getElementById('codeBoxLabel').textContent='✅ Your Embed Code — Unlocked';
-  document.getElementById('heroCode').innerHTML=`&lt;<span style="color:#f472b6">script</span><br>&nbsp;&nbsp;<span style="color:#a78bfa">src</span>=<span style="color:#34d399">"https://ai-chatbot-production-2f3a.up.railway.app/widget.js"</span><br>&nbsp;&nbsp;<span style="color:#a78bfa">data-agent</span>=<span style="color:#34d399">"BotifyAI Assistant"</span><br>&nbsp;&nbsp;<span style="color:#a78bfa">data-access</span>=<span style="color:#34d399">"${ac}"</span>&gt;&lt;/<span style="color:#f472b6">script</span>&gt;`;
+  document.getElementById('heroCode').innerHTML=`&lt;<span style="color:#f472b6">script</span><br>&nbsp;&nbsp;<span style="color:#a78bfa">src</span>=<span style="color:#34d399">"https://ai-chatbot-production-2f3a.up.railway.app/widget.js"</span><br>&nbsp;&nbsp;<span style="color:#a78bfa">data-agent</span>=<span style="color:#34d399">"BotifyAI Assistant"</span><br>&nbsp;&nbsp;<span style="color:#a78bfa">data-access</span>=<span style="color:#34d399">"${ac}"</span>&gt;&lt;/<span style="color:#f172b6">script</span>&gt;`;
   document.getElementById('copyBtnMain').classList.add('show');
+  // Client is already paid — swap the pushy CTAs for helpful ones
+  const nav = document.getElementById('navCtaBtn');
+  if(nav){nav.textContent = 'My Bot Setup →'; nav.onclick = ()=>window.location.href = '/onboard?code='+ac;}
+  const title = document.getElementById('ctaTitle');
+  const sub = document.getElementById('ctaSub');
+  if(title) title.textContent = "You're all set — one line to go";
+  if(sub) sub.textContent = "Copy the embed code above and paste it in your website. Or let us install it for you free via WhatsApp.";
+  const oldBtns = document.getElementById('ctaBtns');
+  const newBtns = document.getElementById('ctaBtnsUnlocked');
+  if(oldBtns) oldBtns.classList.add('hidden');
+  if(newBtns) newBtns.classList.remove('hidden');
 }
 
 /* COPY */
 function copyCode(){
-  if(!ac){window.location.href='/payment';return;}
+  if(!ac){window.location.href='/#pricing';return;}
   const raw=`<script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-agent="BotifyAI Assistant" data-access="${ac}"><\/script>`;
   navigator.clipboard.writeText(raw).then(()=>{
     const m=document.getElementById('copyMsg');m.style.display='inline';
