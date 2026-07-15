@@ -497,8 +497,11 @@ def home():
         return app.send_static_file("india-landing.html")
     country = _detect_country_code()
     country_routes = {
-        "SA": "/saudi",
-        "AE": "/uae", "QA": "/uae", "KW": "/uae", "BH": "/uae", "OM": "/uae",
+        "AE": "/uae",
+        "QA": "/qatar",
+        "KW": "/kuwait",
+        "BH": "/bahrain",
+        "OM": "/oman",
     }
     if country in country_routes:
         return redirect(country_routes[country], code=302)
@@ -520,17 +523,21 @@ def india_landing():
 def uae_landing():
     return app.send_static_file("uae-landing.html")
 
-@app.route("/saudi")
-def saudi_landing():
-    return app.send_static_file("saudi-landing.html")
+@app.route("/qatar")
+def qatar_landing():
+    return app.send_static_file("qatar-landing.html")
 
-@app.route("/saudi-arabia")
-def saudi_arabia_landing():
-    return app.send_static_file("saudi-landing.html")
+@app.route("/kuwait")
+def kuwait_landing():
+    return app.send_static_file("kuwait-landing.html")
 
-@app.route("/ksa")
-def ksa_landing():
-    return app.send_static_file("saudi-landing.html")
+@app.route("/bahrain")
+def bahrain_landing():
+    return app.send_static_file("bahrain-landing.html")
+
+@app.route("/oman")
+def oman_landing():
+    return app.send_static_file("oman-landing.html")
 
 @app.route("/payment")
 def payment():
