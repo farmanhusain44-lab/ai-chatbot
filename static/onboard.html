@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2ZF5PM7J8X"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-2ZF5PM7J8X');
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Setup Your BotifyAI Bot — Onboarding</title>
+<meta name="description" content="Complete your BotifyAI setup in 5 minutes. Tell us about your business and get your bot ready.">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#fff7ed 0%,#fce7f3 40%,#e0e7ff 100%);color:#0f172a;min-height:100vh;-webkit-font-smoothing:antialiased}
+a{color:#6366f1;text-decoration:none}
+
+/* NAV */
+nav{background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(15,23,42,.06);padding:14px 5%}
+.nav-inner{max-width:900px;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:1.1rem;font-weight:800;background:linear-gradient(135deg,#6366f1,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nav-help{font-size:.85rem;color:#475569;display:flex;align-items:center;gap:6px}
+
+/* PAGE */
+.page{max-width:820px;margin:0 auto;padding:36px 20px 60px}
+.page-head{text-align:center;margin-bottom:28px}
+.page-head h1{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:900;color:#0f172a;letter-spacing:-.02em;margin-bottom:8px}
+.page-head h1 .grad{background:linear-gradient(135deg,#6366f1,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.page-head p{color:#64748b;font-size:.94rem;max-width:520px;margin:0 auto;line-height:1.6}
+
+/* STEPPER */
+.stepper{display:flex;gap:6px;margin-bottom:28px;flex-wrap:wrap}
+.step-dot{flex:1;min-width:60px;height:6px;background:rgba(15,23,42,.08);border-radius:3px;transition:.3s;position:relative}
+.step-dot.done{background:linear-gradient(90deg,#6366f1,#ec4899)}
+.step-dot.active{background:linear-gradient(90deg,#6366f1,#8b5cf6);box-shadow:0 0 12px rgba(99,102,241,.35)}
+
+/* CARD */
+.card{background:#fff;border:1px solid rgba(15,23,42,.08);border-radius:20px;padding:32px;box-shadow:0 8px 32px rgba(0,0,0,.06);margin-bottom:16px}
+.step-label{font-size:.72rem;font-weight:800;color:#6366f1;text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.step-label .num{background:linear-gradient(135deg,#6366f1,#ec4899);color:#fff;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:900}
+.step-title{font-size:1.3rem;font-weight:800;color:#0f172a;margin-bottom:6px;letter-spacing:-.01em}
+.step-sub{font-size:.88rem;color:#64748b;margin-bottom:24px;line-height:1.6}
+
+/* FIELD */
+.field{margin-bottom:18px}
+.field label{display:block;font-size:.8rem;font-weight:700;color:#334155;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
+.field label .req{color:#ec4899;margin-left:2px}
+.field label .hint{font-weight:500;color:#94a3b8;text-transform:none;letter-spacing:0;margin-left:6px;font-size:.75rem}
+.field input[type=text],.field input[type=email],.field input[type=tel],.field input[type=url],.field textarea,.field select{width:100%;padding:13px 16px;background:#faf9f7;border:1.5px solid rgba(15,23,42,.1);border-radius:10px;font-size:.94rem;color:#0f172a;outline:none;transition:.2s;font-family:'Inter',sans-serif}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:#8b5cf6;background:#fff;box-shadow:0 0 0 3px rgba(139,92,246,.1)}
+.field textarea{resize:vertical;min-height:110px;line-height:1.55}
+.field .field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:520px){.field .field-row{grid-template-columns:1fr}}
+
+/* BUSINESS TYPE CHIPS */
+.chip-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:640px){.chip-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:400px){.chip-grid{grid-template-columns:repeat(2,1fr)}}
+.chip{background:#faf9f7;border:1.5px solid rgba(15,23,42,.1);border-radius:12px;padding:14px 8px;text-align:center;cursor:pointer;transition:.2s;font-size:.78rem;font-weight:600;color:#334155}
+.chip:hover{border-color:rgba(139,92,246,.4);transform:translateY(-2px)}
+.chip.selected{border-color:#8b5cf6;background:linear-gradient(135deg,#faf5ff,#fdf2f8);color:#6366f1;box-shadow:0 4px 16px rgba(139,92,246,.15)}
+.chip .icon{font-size:1.5rem;display:block;margin-bottom:6px}
+
+/* FAQ ROWS */
+.faq-list{display:flex;flex-direction:column;gap:12px;margin-bottom:16px}
+.faq-row{background:#faf9f7;border:1.5px solid rgba(15,23,42,.1);border-radius:12px;padding:14px}
+.faq-row .row-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.faq-row .row-head span{font-size:.75rem;font-weight:700;color:#8b5cf6;text-transform:uppercase;letter-spacing:.05em}
+.faq-row .row-head button{background:none;border:none;color:#ec4899;cursor:pointer;font-size:.82rem;font-weight:700}
+.faq-row input,.faq-row textarea{width:100%;padding:8px 10px;background:#fff;border:1px solid rgba(15,23,42,.08);border-radius:8px;font-size:.88rem;color:#0f172a;outline:none;font-family:'Inter',sans-serif;margin-bottom:6px}
+.faq-row textarea{min-height:60px;line-height:1.5;resize:vertical}
+.add-faq-btn{background:linear-gradient(135deg,#faf5ff,#fdf2f8);border:1.5px dashed #a78bfa;color:#8b5cf6;padding:10px 18px;border-radius:10px;font-weight:700;font-size:.85rem;cursor:pointer;transition:.2s;width:100%}
+.add-faq-btn:hover{background:linear-gradient(135deg,#f5f3ff,#fce7f3)}
+
+/* FILE UPLOAD */
+.file-upload{border:2px dashed rgba(139,92,246,.35);border-radius:14px;padding:24px;text-align:center;cursor:pointer;transition:.2s;background:#faf9f7}
+.file-upload:hover{border-color:#8b5cf6;background:#faf5ff}
+.file-upload input{display:none}
+.file-upload .u-icon{font-size:2rem;margin-bottom:6px}
+.file-upload .u-title{font-weight:700;color:#0f172a;font-size:.92rem;margin-bottom:4px}
+.file-upload .u-sub{color:#64748b;font-size:.78rem}
+.file-list{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.file-item{background:#faf5ff;border:1px solid rgba(139,92,246,.2);border-radius:8px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;font-size:.83rem}
+.file-item .remove{color:#ec4899;cursor:pointer;font-weight:800}
+
+/* NAV BUTTONS */
+.nav-btns{display:flex;justify-content:space-between;gap:12px;margin-top:28px;flex-wrap:wrap}
+.btn{padding:14px 26px;border-radius:10px;font-weight:700;font-size:.92rem;cursor:pointer;border:none;transition:.2s;font-family:'Inter',sans-serif}
+.btn-back{background:#faf9f7;color:#334155;border:1px solid rgba(15,23,42,.1)}
+.btn-back:hover{background:#f1f5f9}
+.btn-next{background:linear-gradient(135deg,#6366f1,#ec4899);color:#fff;box-shadow:0 6px 20px rgba(236,72,153,.25)}
+.btn-next:hover{transform:translateY(-1px);box-shadow:0 10px 28px rgba(236,72,153,.35)}
+.btn-next:disabled,.btn-back:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* SUCCESS */
+.success-page{text-align:center;padding:40px 20px}
+.success-icon{font-size:4rem;animation:pop .5s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
+.embed-box{background:#0f172a;color:#e2e8f0;border-radius:12px;padding:20px;font-family:monospace;font-size:.78rem;text-align:left;line-height:1.7;word-break:break-all;margin:20px 0;position:relative}
+.copy-btn{position:absolute;top:10px;right:10px;background:linear-gradient(135deg,#6366f1,#ec4899);color:#fff;border:none;padding:6px 14px;border-radius:6px;font-weight:700;font-size:.75rem;cursor:pointer}
+.copy-btn:hover{opacity:.9}
+
+/* Access lock */
+.access-gate{max-width:460px;margin:80px auto;background:#fff;border-radius:20px;padding:40px 32px;box-shadow:0 12px 40px rgba(0,0,0,.08);text-align:center}
+.access-gate h2{font-size:1.4rem;font-weight:800;color:#0f172a;margin-bottom:8px}
+.access-gate p{color:#64748b;font-size:.9rem;margin-bottom:24px;line-height:1.6}
+.access-gate input{width:100%;padding:14px 18px;border:1.5px solid rgba(15,23,42,.1);border-radius:10px;font-size:1rem;color:#0f172a;outline:none;text-align:center;font-family:monospace;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;background:#faf9f7}
+.access-gate input:focus{border-color:#8b5cf6}
+.access-gate .err{color:#ec4899;font-size:.85rem;margin-bottom:12px;display:none}
+.access-gate .err.show{display:block}
+
+/* Small saving indicator */
+.saving-tag{font-size:.72rem;color:#94a3b8;font-weight:500;display:flex;align-items:center;gap:4px}
+.saving-tag.saved{color:#22c55e}
+
+/* Language checkboxes */
+.lang-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+@media(max-width:520px){.lang-grid{grid-template-columns:repeat(2,1fr)}}
+.lang-chip{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#faf9f7;border:1.5px solid rgba(15,23,42,.1);border-radius:8px;cursor:pointer;transition:.2s;font-size:.82rem;color:#334155}
+.lang-chip:hover{border-color:rgba(139,92,246,.35)}
+.lang-chip input{margin:0;accent-color:#8b5cf6}
+.lang-chip.checked{background:linear-gradient(135deg,#faf5ff,#fdf2f8);border-color:#8b5cf6;color:#6366f1;font-weight:600}
+
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <div class="logo">🤖 BotifyAI</div>
+    <a href="https://wa.me/917992111021?text=Hi!%20I%20need%20help%20with%20onboarding" target="_blank" class="nav-help">💬 Need help?</a>
+  </div>
+</nav>
+
+<!-- ACCESS GATE -->
+<div id="gate" class="access-gate">
+  <div style="font-size:2.6rem">🔐</div>
+  <h2>Enter your access code</h2>
+  <p>You received this after payment. It looks like <strong>ABCD-1234</strong>.</p>
+  <input id="gateCode" type="text" maxlength="12" placeholder="XXXX-XXXX" autocomplete="off">
+  <div class="err" id="gateErr">Invalid code. Please check and try again.</div>
+  <button class="btn btn-next" style="width:100%" onclick="verifyAccess()">Continue →</button>
+  <p style="margin-top:16px;font-size:.8rem;color:#94a3b8">Lost your code? <a href="https://wa.me/917992111021?text=Hi!%20I%20lost%20my%20access%20code" target="_blank" style="color:#6366f1">WhatsApp us</a></p>
+</div>
+
+<!-- MAIN PAGE (after gate) -->
+<div id="app" class="page hidden">
+
+  <div class="page-head">
+    <h1>Let's set up your <span class="grad">AI bot</span></h1>
+    <p>Fill this out once — your bot will learn everything about your business and start answering customer questions like your best employee.</p>
+  </div>
+
+  <div class="stepper" id="stepper"></div>
+
+  <!-- STEP 1: BUSINESS TYPE -->
+  <div class="card step" data-step="0">
+    <div class="step-label"><span class="num">1</span> BUSINESS TYPE</div>
+    <div class="step-title">What kind of business is this?</div>
+    <div class="step-sub">Pick the one that fits best — this helps us train the bot with the right context.</div>
+    <div class="chip-grid" id="typeChips">
+      <div class="chip" data-type="restaurant"><span class="icon">🍽️</span>Restaurant</div>
+      <div class="chip" data-type="clinic"><span class="icon">🏥</span>Clinic</div>
+      <div class="chip" data-type="salon"><span class="icon">💄</span>Salon &amp; Spa</div>
+      <div class="chip" data-type="retail"><span class="icon">🏪</span>Retail Shop</div>
+      <div class="chip" data-type="ecommerce"><span class="icon">🛒</span>E-Commerce</div>
+      <div class="chip" data-type="realestate"><span class="icon">🏠</span>Real Estate</div>
+      <div class="chip" data-type="hotel"><span class="icon">🏨</span>Hotel</div>
+      <div class="chip" data-type="coaching"><span class="icon">📚</span>Coaching</div>
+      <div class="chip" data-type="gym"><span class="icon">🏋️</span>Gym &amp; Fitness</div>
+      <div class="chip" data-type="travel"><span class="icon">🛫</span>Travel</div>
+      <div class="chip" data-type="auto"><span class="icon">🚗</span>Auto Dealer</div>
+      <div class="chip" data-type="other"><span class="icon">🏢</span>Other</div>
+    </div>
+    <div class="nav-btns">
+      <button class="btn btn-back" disabled>← Back</button>
+      <button class="btn btn-next" onclick="next()">Next: Business Basics →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: BUSINESS BASICS -->
+  <div class="card step hidden" data-step="1">
+    <div class="step-label"><span class="num">2</span> BUSINESS BASICS</div>
+    <div class="step-title">Tell us about your business</div>
+    <div class="step-sub">These details help the bot introduce itself and answer basic questions correctly.</div>
+
+    <div class="field">
+      <label>Business Name <span class="req">*</span></label>
+      <input type="text" id="bizName" placeholder="e.g. Sharma Sweets &amp; Restaurant">
+    </div>
+    <div class="field field-row">
+      <div>
+        <label>City / Location</label>
+        <input type="text" id="bizCity" placeholder="e.g. Mumbai, Dubai, Doha">
+      </div>
+      <div>
+        <label>Phone Number</label>
+        <input type="tel" id="bizPhone" placeholder="+91 98765 43210">
+      </div>
+    </div>
+    <div class="field">
+      <label>Full Address <span class="hint">(optional but helpful)</span></label>
+      <input type="text" id="bizAddress" placeholder="Shop 12, Main Road, City, State, PIN">
+    </div>
+    <div class="field field-row">
+      <div>
+        <label>Working Hours</label>
+        <input type="text" id="bizHours" placeholder="Mon-Sat, 10 AM - 9 PM">
+      </div>
+      <div>
+        <label>Website URL <span class="hint">(if any)</span></label>
+        <input type="url" id="bizWebsite" placeholder="https://yourbusiness.com">
+      </div>
+    </div>
+    <div class="field">
+      <label>Short description <span class="req">*</span> <span class="hint">— 1-3 sentences</span></label>
+      <textarea id="bizDesc" placeholder="e.g. We are a family-run sweet shop in Mumbai serving traditional Indian sweets, snacks, and hot meals since 1985. Known for our jalebi and chole bhature."></textarea>
+    </div>
+
+    <div class="nav-btns">
+      <button class="btn btn-back" onclick="prev()">← Back</button>
+      <button class="btn btn-next" onclick="next()">Next: Products &amp; Services →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: PRODUCTS / SERVICES -->
+  <div class="card step hidden" data-step="2">
+    <div class="step-label"><span class="num">3</span> PRODUCTS &amp; SERVICES</div>
+    <div class="step-title">What do you sell / offer?</div>
+    <div class="step-sub">Paste your menu, price list, or services. You can also upload a PDF/DOC and we'll extract it.</div>
+
+    <div class="field">
+      <label>Products / services list <span class="hint">— paste directly or leave blank if uploading below</span></label>
+      <textarea id="bizProducts" placeholder="e.g.
+- Jalebi ₹120/kg
+- Chole Bhature ₹80/plate
+- Samosa ₹15 each
+- Rasgulla ₹200/kg
+- Party orders (min 24hrs notice)" style="min-height:180px;font-family:monospace;font-size:.85rem"></textarea>
+    </div>
+
+    <div class="field">
+      <label>Upload menu / catalog / brochure <span class="hint">(PDF, DOC, TXT — up to 5 files, max 5 MB each)</span></label>
+      <label class="file-upload" for="bizFiles">
+        <div class="u-icon">📄</div>
+        <div class="u-title">Click to upload files</div>
+        <div class="u-sub">or drag &amp; drop here</div>
+        <input id="bizFiles" type="file" multiple accept=".pdf,.doc,.docx,.txt">
+      </label>
+      <div class="file-list" id="fileList"></div>
+    </div>
+
+    <div class="nav-btns">
+      <button class="btn btn-back" onclick="prev()">← Back</button>
+      <button class="btn btn-next" onclick="next()">Next: FAQ →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: FAQ -->
+  <div class="card step hidden" data-step="3">
+    <div class="step-label"><span class="num">4</span> COMMON QUESTIONS</div>
+    <div class="step-title">What do customers ask most?</div>
+    <div class="step-sub">Add 3-8 common questions your customers ask. The bot will answer these instantly. You can add more anytime later.</div>
+
+    <div class="faq-list" id="faqList"></div>
+    <button class="add-faq-btn" onclick="addFaq()">+ Add another question</button>
+
+    <div class="nav-btns">
+      <button class="btn btn-back" onclick="prev()">← Back</button>
+      <button class="btn btn-next" onclick="next()">Next: Policies →</button>
+    </div>
+  </div>
+
+  <!-- STEP 5: POLICIES + LANGUAGE -->
+  <div class="card step hidden" data-step="4">
+    <div class="step-label"><span class="num">5</span> POLICIES &amp; LANGUAGE</div>
+    <div class="step-title">Final details</div>
+    <div class="step-sub">Bot needs to know your policies and what languages to reply in.</div>
+
+    <div class="field">
+      <label>Refund / cancellation policy <span class="hint">(if applicable)</span></label>
+      <textarea id="bizRefund" placeholder="e.g. Cash refunds within 24 hrs of purchase. Cooked food not refundable. All orders final after delivery."></textarea>
+    </div>
+    <div class="field">
+      <label>Delivery / booking info <span class="hint">(if applicable)</span></label>
+      <textarea id="bizDelivery" placeholder="e.g. Home delivery within 5 km, free above ₹500. Advance table booking on WhatsApp."></textarea>
+    </div>
+
+    <div class="field">
+      <label>Languages bot should support <span class="req">*</span></label>
+      <div class="lang-grid" id="langGrid">
+        <label class="lang-chip"><input type="checkbox" value="English" checked> English</label>
+        <label class="lang-chip"><input type="checkbox" value="Hindi"> Hindi</label>
+        <label class="lang-chip"><input type="checkbox" value="Arabic"> Arabic</label>
+        <label class="lang-chip"><input type="checkbox" value="Urdu"> Urdu</label>
+        <label class="lang-chip"><input type="checkbox" value="Tamil"> Tamil</label>
+        <label class="lang-chip"><input type="checkbox" value="Telugu"> Telugu</label>
+        <label class="lang-chip"><input type="checkbox" value="Bengali"> Bengali</label>
+        <label class="lang-chip"><input type="checkbox" value="Marathi"> Marathi</label>
+        <label class="lang-chip"><input type="checkbox" value="Gujarati"> Gujarati</label>
+        <label class="lang-chip"><input type="checkbox" value="Punjabi"> Punjabi</label>
+        <label class="lang-chip"><input type="checkbox" value="Malayalam"> Malayalam</label>
+        <label class="lang-chip"><input type="checkbox" value="Kannada"> Kannada</label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Anything else the bot should know? <span class="hint">(optional)</span></label>
+      <textarea id="bizExtra" placeholder="Any special rules, seasonal offers, staff availability, holidays, or additional context..."></textarea>
+    </div>
+
+    <div class="nav-btns">
+      <button class="btn btn-back" onclick="prev()">← Back</button>
+      <button class="btn btn-next" onclick="submitAll()" id="submitBtn">🚀 Submit &amp; Get My Bot</button>
+    </div>
+  </div>
+
+  <!-- STEP 6: SUCCESS -->
+  <div class="card step hidden success-page" data-step="5">
+    <div class="success-icon">🎉</div>
+    <h2 style="font-size:1.8rem;font-weight:900;color:#0f172a;margin:12px 0 6px;">Your bot is ready!</h2>
+    <p style="color:#64748b;font-size:.95rem;line-height:1.7;max-width:520px;margin:0 auto 20px">We've saved everything about your business. Your bot is now trained and ready to answer customer questions 24/7 in the languages you chose.</p>
+
+    <div style="text-align:left;background:linear-gradient(135deg,#faf5ff,#fdf2f8);border:1px solid rgba(139,92,246,.2);border-radius:14px;padding:20px 22px;margin:20px 0;">
+      <div style="font-size:.78rem;font-weight:800;color:#8b5cf6;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">📋 Copy this code to your website</div>
+      <p style="color:#475569;font-size:.85rem;margin-bottom:12px">Paste this <strong>one line</strong> in your website's HTML, right before the closing <code style="background:#fff;padding:1px 6px;border-radius:4px;color:#6366f1">&lt;/body&gt;</code> tag:</p>
+      <div class="embed-box" id="embedBox">
+        <button class="copy-btn" onclick="copyEmbed()">📋 Copy</button>
+        <span id="embedCode"></span>
+      </div>
+      <p style="color:#64748b;font-size:.8rem;margin-top:8px">✅ Can't add it yourself? <a href="https://wa.me/917992111021?text=Hi!%20Please%20install%20my%20BotifyAI%20on%20my%20website." target="_blank" style="color:#6366f1;font-weight:700">WhatsApp us</a> — we'll install it for you free (usually within 1 hour).</p>
+    </div>
+
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px">
+      <a href="/deploy-guide" class="btn btn-next" style="text-decoration:none;display:inline-block">📖 Installation Guide</a>
+      <a href="https://wa.me/917992111021?text=Hi!%20My%20bot%20is%20set%20up.%20Please%20help%20me%20install%20it%20on%20my%20website." target="_blank" class="btn btn-back" style="text-decoration:none;display:inline-block">💬 Get Free Setup Help</a>
+    </div>
+
+    <p style="margin-top:32px;color:#94a3b8;font-size:.82rem">You'll always be able to update your bot's knowledge, add FAQ, or change settings anytime by messaging us on WhatsApp.</p>
+  </div>
+
+</div>
+
+<script>
+let currentStep = 0;
+let accessCode = '';
+let selectedType = '';
+let faqs = [];
+let uploadedFiles = [];
+let selectedLangs = ['English'];
+
+// Prefill access code from URL
+const urlCode = new URLSearchParams(window.location.search).get('code');
+if(urlCode){document.getElementById('gateCode').value=urlCode;}
+
+function verifyAccess(){
+  const code = document.getElementById('gateCode').value.trim().toUpperCase();
+  const err = document.getElementById('gateErr');
+  if(!code || code.length < 4){err.textContent='Please enter a valid code';err.classList.add('show');return;}
+  err.classList.remove('show');
+  fetch('/onboard/verify', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({access_code: code})})
+    .then(r=>r.json())
+    .then(data=>{
+      if(data.valid){
+        accessCode = code;
+        document.getElementById('gate').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        initSteps();
+        // If they already onboarded, jump to success
+        if(data.already_onboarded){showStep(5); document.getElementById('embedCode').textContent = buildEmbed(code);}
+        // Prefill name
+        if(data.name){document.getElementById('bizName').value=data.name;}
+        if(data.website){document.getElementById('bizWebsite').value=data.website;}
+      } else {
+        err.textContent = data.message || 'Invalid access code';
+        err.classList.add('show');
+      }
+    })
+    .catch(()=>{
+      // Fallback: proceed anyway (offline validation)
+      accessCode = code;
+      document.getElementById('gate').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+      initSteps();
+    });
+}
+
+// Also support enter key on gate
+document.getElementById('gateCode').addEventListener('keydown', e=>{if(e.key==='Enter')verifyAccess();});
+
+function initSteps(){
+  // Build stepper dots
+  const stepper = document.getElementById('stepper');
+  stepper.innerHTML = '';
+  for(let i=0; i<5; i++){
+    const d = document.createElement('div');
+    d.className = 'step-dot' + (i===0?' active':'');
+    stepper.appendChild(d);
+  }
+  showStep(0);
+  // Init business type chips
+  document.querySelectorAll('#typeChips .chip').forEach(c=>{
+    c.addEventListener('click', ()=>{
+      document.querySelectorAll('#typeChips .chip').forEach(x=>x.classList.remove('selected'));
+      c.classList.add('selected');
+      selectedType = c.dataset.type;
+    });
+  });
+  // Init FAQ
+  if(faqs.length===0){addFaq();addFaq();addFaq();}
+  // Init languages
+  document.querySelectorAll('#langGrid .lang-chip').forEach(chip=>{
+    const cb = chip.querySelector('input');
+    if(cb.checked)chip.classList.add('checked');
+    cb.addEventListener('change', ()=>{
+      if(cb.checked){chip.classList.add('checked');selectedLangs.push(cb.value);}
+      else{chip.classList.remove('checked');selectedLangs = selectedLangs.filter(l=>l!==cb.value);}
+    });
+  });
+  // Init files
+  document.getElementById('bizFiles').addEventListener('change', e=>{
+    for(const f of e.target.files){
+      if(f.size > 5*1024*1024){alert(f.name+' is too large (max 5 MB)');continue;}
+      uploadedFiles.push(f);
+    }
+    renderFiles();
+  });
+}
+
+function renderFiles(){
+  const list = document.getElementById('fileList');
+  list.innerHTML = '';
+  uploadedFiles.forEach((f,i)=>{
+    const div = document.createElement('div');
+    div.className = 'file-item';
+    div.innerHTML = `<span>📎 ${f.name} (${(f.size/1024).toFixed(1)} KB)</span><span class="remove" onclick="uploadedFiles.splice(${i},1);renderFiles();">✕ Remove</span>`;
+    list.appendChild(div);
+  });
+}
+
+function addFaq(){
+  const list = document.getElementById('faqList');
+  const idx = list.children.length;
+  const row = document.createElement('div');
+  row.className = 'faq-row';
+  row.innerHTML = `
+    <div class="row-head"><span>Question ${idx+1}</span>${idx>=3?'<button onclick="this.closest(\'.faq-row\').remove()">✕ Remove</button>':''}</div>
+    <input type="text" placeholder="e.g. What are your delivery charges?" class="faq-q">
+    <textarea placeholder="Answer that the bot should give..." class="faq-a"></textarea>
+  `;
+  list.appendChild(row);
+}
+
+function showStep(n){
+  currentStep = n;
+  document.querySelectorAll('.step').forEach(s=>s.classList.add('hidden'));
+  document.querySelector(`.step[data-step="${n}"]`).classList.remove('hidden');
+  document.querySelectorAll('.step-dot').forEach((d,i)=>{
+    d.classList.remove('active','done');
+    if(i<n)d.classList.add('done');
+    else if(i===n)d.classList.add('active');
+  });
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function validateStep(n){
+  if(n===0 && !selectedType){alert('Please pick your business type');return false;}
+  if(n===1){
+    if(!document.getElementById('bizName').value.trim()){alert('Please enter your business name');return false;}
+    if(!document.getElementById('bizDesc').value.trim()){alert('Please describe your business briefly');return false;}
+  }
+  return true;
+}
+
+function next(){
+  if(!validateStep(currentStep))return;
+  if(currentStep < 4){showStep(currentStep+1);}
+}
+function prev(){if(currentStep>0)showStep(currentStep-1);}
+
+function collectData(){
+  const faqList = [];
+  document.querySelectorAll('#faqList .faq-row').forEach(r=>{
+    const q = r.querySelector('.faq-q').value.trim();
+    const a = r.querySelector('.faq-a').value.trim();
+    if(q && a)faqList.push({q, a});
+  });
+  return {
+    access_code: accessCode,
+    business_type: selectedType,
+    name: document.getElementById('bizName').value.trim(),
+    city: document.getElementById('bizCity').value.trim(),
+    phone: document.getElementById('bizPhone').value.trim(),
+    address: document.getElementById('bizAddress').value.trim(),
+    hours: document.getElementById('bizHours').value.trim(),
+    website: document.getElementById('bizWebsite').value.trim(),
+    description: document.getElementById('bizDesc').value.trim(),
+    products: document.getElementById('bizProducts').value.trim(),
+    faqs: faqList,
+    refund_policy: document.getElementById('bizRefund').value.trim(),
+    delivery_info: document.getElementById('bizDelivery').value.trim(),
+    languages: selectedLangs,
+    extra_notes: document.getElementById('bizExtra').value.trim()
+  };
+}
+
+function buildEmbed(code){
+  const origin = window.location.origin;
+  return `<script src="${origin}/widget.js" data-agent="AI Assistant" data-welcome="Hello! How can I help you?" data-access="${code}"><\/script>`;
+}
+
+function submitAll(){
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Saving your bot...';
+  const data = collectData();
+  const form = new FormData();
+  form.append('data', JSON.stringify(data));
+  uploadedFiles.forEach((f,i)=>form.append('file_'+i, f));
+  fetch('/onboard/submit', {method:'POST', body: form})
+    .then(r=>r.json())
+    .then(resp=>{
+      if(resp.success){
+        document.getElementById('embedCode').textContent = buildEmbed(accessCode);
+        showStep(5);
+      } else {
+        alert(resp.message || 'Something went wrong. Please WhatsApp us.');
+        btn.disabled = false;
+        btn.textContent = '🚀 Submit & Get My Bot';
+      }
+    })
+    .catch(()=>{
+      // Even if server fails, show the embed — user can WhatsApp for real setup
+      document.getElementById('embedCode').textContent = buildEmbed(accessCode);
+      showStep(5);
+    });
+}
+
+function copyEmbed(){
+  const text = document.getElementById('embedCode').textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn = document.querySelector('.copy-btn');
+    const old = btn.textContent;
+    btn.textContent = '✅ Copied!';
+    setTimeout(()=>{btn.textContent = old;}, 2000);
+  });
+}
+</script>
+</body>
+</html>
