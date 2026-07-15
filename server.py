@@ -521,6 +521,10 @@ def india_deploy_guide():
 def my_business():
     return app.send_static_file("my-business.html")
 
+@app.route("/partners")
+def partners():
+    return app.send_static_file("partners.html")
+
 
 
 def check_admin_password(data_or_args):
