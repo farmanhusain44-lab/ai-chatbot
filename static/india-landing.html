@@ -530,6 +530,50 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
 .pay-strip .pm{background:linear-gradient(135deg,#fafaf9,#f5f3ff);border:1px solid rgba(15,23,42,.08);padding:6px 12px;border-radius:8px;font-size:.75rem;font-weight:700;color:#334155;display:flex;align-items:center;gap:6px}
 .pay-strip .pm .pi{font-size:.9rem}
 
+/* Trusted Industries grid — replaces the faded brands strip */
+.brands-section.trusted-industries{padding:70px 5%;background:#fafaf9;max-width:none}
+.trusted-industries .brands-label{font-size:.85rem;color:#475569;font-weight:600;text-transform:none;letter-spacing:0;margin-bottom:32px;text-align:center}
+.industry-grid{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+@media(max-width:900px){.industry-grid{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:520px){.industry-grid{grid-template-columns:repeat(3,1fr)}}
+.ind-card{background:linear-gradient(135deg,var(--ic1),var(--ic2));border-radius:14px;padding:20px 12px;text-align:center;transition:.25s;cursor:default;border:1px solid rgba(15,23,42,.06);box-shadow:0 2px 8px rgba(0,0,0,.03)}
+.ind-card:hover{transform:translateY(-4px) scale(1.03);box-shadow:0 12px 28px rgba(0,0,0,.1)}
+.ind-ic{font-size:1.6rem;margin-bottom:8px}
+.ind-name{font-size:.72rem;font-weight:700;color:#0f172a;line-height:1.2}
+
+/* Testimonials grid — expand for 6 cards */
+.testi-grid{grid-template-columns:repeat(3,1fr)}
+@media(max-width:900px){.testi-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.testi-grid{grid-template-columns:1fr}}
+
+/* Coming Soon: Auto Reminders section */
+.upcoming-section{padding:80px 5%;background:linear-gradient(180deg,#fff 0%,#fdf4ff 100%);border-top:1px solid rgba(15,23,42,.06);border-bottom:1px solid rgba(15,23,42,.06)}
+.upcoming-inner{max-width:1100px;margin:0 auto}
+.upcoming-header{text-align:center;margin-bottom:50px}
+.upcoming-badge{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#fef3c7,#fbcfe8);border:1px solid #f472b6;color:#831843;font-size:.7rem;font-weight:800;padding:6px 16px;border-radius:30px;margin-bottom:18px;letter-spacing:.06em;text-transform:uppercase}
+.upcoming-badge .dot{width:6px;height:6px;background:#dc2626;border-radius:50%;animation:pulse 1.8s infinite}
+.upcoming-title{font-size:clamp(1.6rem,3.5vw,2.6rem);font-weight:900;color:#0f172a;letter-spacing:-.03em;margin-bottom:12px}
+.upcoming-title .grad{background:linear-gradient(135deg,#8b5cf6,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.upcoming-sub{font-size:.95rem;color:#475569;max-width:640px;margin:0 auto;line-height:1.75}
+.upcoming-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:20px}
+@media(max-width:900px){.upcoming-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.upcoming-grid{grid-template-columns:1fr}}
+.up-card{background:#fff;border:1px solid rgba(15,23,42,.08);border-radius:20px;padding:28px;position:relative;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.04);transition:.3s}
+.up-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(139,92,246,.15);border-color:rgba(139,92,246,.3)}
+.up-card.featured{grid-row:span 1;background:linear-gradient(135deg,#faf5ff,#fdf2f8,#fff7ed);border:2px solid #a78bfa;box-shadow:0 12px 32px rgba(167,139,250,.15)}
+.up-card .up-ribbon{position:absolute;top:14px;right:14px;background:linear-gradient(135deg,#f59e0b,#dc2626);color:#fff;font-size:.6rem;font-weight:800;padding:4px 10px;border-radius:20px;letter-spacing:.06em;text-transform:uppercase}
+.up-card .up-ic{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#8b5cf6,#ec4899);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.6rem;margin-bottom:16px;box-shadow:0 6px 20px rgba(139,92,246,.35)}
+.up-card.featured .up-ic{width:64px;height:64px;font-size:2rem}
+.up-card h3{font-size:1rem;font-weight:800;color:#0f172a;margin-bottom:8px;letter-spacing:-.01em}
+.up-card.featured h3{font-size:1.4rem;margin-bottom:12px}
+.up-card p{font-size:.85rem;color:#475569;line-height:1.7;margin-bottom:14px}
+.up-card .up-points{display:none;flex-direction:column;gap:8px;margin-bottom:16px}
+.up-card.featured .up-points{display:flex}
+.up-card .up-point{font-size:.83rem;color:#334155;display:flex;align-items:flex-start;gap:8px;line-height:1.5}
+.up-card .up-point::before{content:'✓';color:#22c55e;font-weight:800;flex-shrink:0;margin-top:1px}
+.up-card .up-waitlist{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;color:#8b5cf6;padding:8px 14px;border:1.5px solid #8b5cf6;border-radius:8px;cursor:pointer;background:transparent;transition:.2s}
+.up-card .up-waitlist:hover{background:#8b5cf6;color:#fff}
+
 </style>
 </head>
 <body>
@@ -675,18 +719,22 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
   </div>
 </div>
 
-<!-- BRANDS -->
-<div class="brands-section">
-  <div class="brands-label">Indian businesses across all industries use BotifyAI</div>
-  <div class="brands-strip">
-    <span class="brand-item">🏪 Retail</span>
-    <span class="brand-item">🛒 E-Commerce</span>
-    <span class="brand-item">🏥 Clinics</span>
-    <span class="brand-item">🏠 Real Estate</span>
-    <span class="brand-item">🍽️ Restaurants</span>
-    <span class="brand-item">🚗 Auto Dealers</span>
-    <span class="brand-item">📚 Education</span>
-    <span class="brand-item">⚖️ Legal</span>
+<!-- TRUSTED BY INDUSTRIES -->
+<div class="brands-section trusted-industries">
+  <div class="brands-label">Trusted across <strong style="color:#6366f1">12+ industries</strong> in India</div>
+  <div class="industry-grid">
+    <div class="ind-card" style="--ic1:#fef3c7;--ic2:#fdba74"><div class="ind-ic">🏪</div><div class="ind-name">Kirana &amp; Retail</div></div>
+    <div class="ind-card" style="--ic1:#dbeafe;--ic2:#93c5fd"><div class="ind-ic">🏥</div><div class="ind-name">Clinics &amp; Hospitals</div></div>
+    <div class="ind-card" style="--ic1:#fce7f3;--ic2:#f9a8d4"><div class="ind-ic">💄</div><div class="ind-name">Beauty &amp; Salons</div></div>
+    <div class="ind-card" style="--ic1:#dcfce7;--ic2:#86efac"><div class="ind-ic">🍽️</div><div class="ind-name">Restaurants</div></div>
+    <div class="ind-card" style="--ic1:#ede9fe;--ic2:#c4b5fd"><div class="ind-ic">📚</div><div class="ind-name">Coaching Centers</div></div>
+    <div class="ind-card" style="--ic1:#ffedd5;--ic2:#fdba74"><div class="ind-ic">🏠</div><div class="ind-name">Real Estate</div></div>
+    <div class="ind-card" style="--ic1:#cffafe;--ic2:#67e8f9"><div class="ind-ic">🛒</div><div class="ind-name">E-Commerce</div></div>
+    <div class="ind-card" style="--ic1:#fee2e2;--ic2:#fca5a5"><div class="ind-ic">🚗</div><div class="ind-name">Auto Dealers</div></div>
+    <div class="ind-card" style="--ic1:#fef9c3;--ic2:#fde047"><div class="ind-ic">🏨</div><div class="ind-name">Hotels</div></div>
+    <div class="ind-card" style="--ic1:#e0e7ff;--ic2:#a5b4fc"><div class="ind-ic">🛫</div><div class="ind-name">Travel Agencies</div></div>
+    <div class="ind-card" style="--ic1:#f1f5f9;--ic2:#cbd5e1"><div class="ind-ic">⚖️</div><div class="ind-name">Legal Firms</div></div>
+    <div class="ind-card" style="--ic1:#d1fae5;--ic2:#6ee7b7"><div class="ind-ic">🏋️</div><div class="ind-name">Gyms &amp; Fitness</div></div>
   </div>
 </div>
 
@@ -943,6 +991,42 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
   </div>
 </section>
 
+<!-- UPCOMING FEATURES — headlined by Auto Reminders -->
+<section class="upcoming-section" id="upcoming">
+  <div class="upcoming-inner">
+    <div class="upcoming-header">
+      <div class="upcoming-badge"><span class="dot"></span> Coming Soon</div>
+      <h2 class="upcoming-title">Next-gen features <span class="grad">on the roadmap</span></h2>
+      <p class="upcoming-sub">Building the most complete AI assistant for Indian businesses. Join the early-access waitlist and use these features first at zero extra cost.</p>
+    </div>
+    <div class="upcoming-grid">
+      <div class="up-card featured">
+        <div class="up-ribbon">Star Feature</div>
+        <div class="up-ic">⏰</div>
+        <h3>Auto Reminders — never lose a lead or booking again</h3>
+        <p>Your bot doesn't just answer — it follows up automatically on WhatsApp. Appointments, abandoned carts, dropped leads, payment dues — every reminder sent on time, in the customer's language.</p>
+        <div class="up-points">
+          <div class="up-point">Appointment reminders 24h &amp; 1h before (clinics, salons, hotels)</div>
+          <div class="up-point">Cart abandonment nudge after 2 hours (e-commerce)</div>
+          <div class="up-point">Follow-up on cold leads at day 3, 7, 14 (real estate, coaching)</div>
+          <div class="up-point">Payment &amp; renewal reminders (subscriptions, EMIs)</div>
+        </div>
+        <button class="up-waitlist" onclick="window.open('https://wa.me/919999999999?text=I%20want%20early%20access%20to%20Auto%20Reminders','_blank')">Join Waitlist →</button>
+      </div>
+      <div class="up-card">
+        <div class="up-ic">🎙️</div>
+        <h3>Voice Replies</h3>
+        <p>Bot sends voice messages on WhatsApp in Hindi/Tamil/regional languages — perfect for customers who prefer voice.</p>
+      </div>
+      <div class="up-card">
+        <div class="up-ic">📊</div>
+        <h3>AI Sales Insights</h3>
+        <p>Weekly reports on what customers are asking, top drop-off points, and revenue opportunities you're missing.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- RESULTS / CASE STUDIES -->
 <section class="results-section">
   <div class="sec-label" style="text-align:center">Customer Results</div>
@@ -1067,6 +1151,36 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
           <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="tav3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a7f3d0"/><stop offset="1" stop-color="#34d399"/></linearGradient></defs><rect width="100" height="100" fill="url(#tav3)"/><path d="M 22 100 Q 22 74 50 74 Q 78 74 78 100 Z" fill="#1e40af"/><path d="M 45 74 L 50 84 L 55 74 Z" fill="#dc2626"/><ellipse cx="50" cy="46" rx="20" ry="22" fill="#c68e5f"/><path d="M 30 42 Q 26 22 50 20 Q 74 22 70 42 Q 65 30 58 30 Q 50 24 42 30 Q 35 30 30 42 Z" fill="#0f172a"/><path d="M 34 56 Q 34 68 50 70 Q 66 68 66 56 Q 62 62 50 63 Q 38 62 34 56 Z" fill="#0f172a"/><circle cx="42" cy="47" r="1.6" fill="#f8fafc"/><circle cx="58" cy="47" r="1.6" fill="#f8fafc"/></svg>
         </div>
         <div><div class="testi-name">Karthik Reddy</div><div class="testi-role">Real Estate Agency · Bangalore</div></div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"Clinic mein appointment queries poore din aati hain. BotifyAI Hindi aur English dono me jawab deta hai. Patients ka wait time 70% kam ho gaya, staff ka load bhi. Bahut recommend karta hoon."</div>
+      <div class="testi-author">
+        <div class="testi-av">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="tav4" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#dbeafe"/><stop offset="1" stop-color="#60a5fa"/></linearGradient></defs><rect width="100" height="100" fill="url(#tav4)"/><path d="M 18 100 Q 18 72 50 72 Q 82 72 82 100 Z" fill="#fff"/><rect x="46" y="72" width="8" height="18" fill="#fff"/><path d="M 48 78 L 52 78 L 52 82 L 56 82 L 56 86 L 52 86 L 52 90 L 48 90 L 48 86 L 44 86 L 44 82 L 48 82 Z" fill="#dc2626"/><ellipse cx="50" cy="45" rx="20" ry="22" fill="#d4a574"/><path d="M 30 40 Q 28 22 50 20 Q 72 22 70 40 Q 68 32 60 30 Q 55 24 50 24 Q 45 24 40 30 Q 32 32 30 40 Z" fill="#4b5563"/><circle cx="42" cy="47" r="1.6" fill="#0f172a"/><circle cx="58" cy="47" r="1.6" fill="#0f172a"/><path d="M 45 60 Q 50 63 55 60" stroke="#7c2d12" stroke-width="1.2" fill="none" stroke-linecap="round"/><circle cx="32" cy="45" r="4" fill="none" stroke="#334155" stroke-width="1.2"/><circle cx="68" cy="45" r="4" fill="none" stroke="#334155" stroke-width="1.2"/><line x1="36" y1="45" x2="64" y2="45" stroke="#334155" stroke-width="1"/></svg>
+        </div>
+        <div><div class="testi-name">Dr. Anjali Verma</div><div class="testi-role">Dental Clinic · Pune</div></div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"Coaching center mein hazaaron parents ke sawaal aate hain — fees, timings, syllabus. Ab bot 24 ghante jawab deta hai. Meri team sirf enrollments par focus karti hai. Enquiries 3x badh gayi hain."</div>
+      <div class="testi-author">
+        <div class="testi-av">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="tav5" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ede9fe"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><rect width="100" height="100" fill="url(#tav5)"/><path d="M 22 100 Q 22 74 50 74 Q 78 74 78 100 Z" fill="#312e81"/><rect x="32" y="88" width="36" height="4" fill="#fbbf24"/><ellipse cx="50" cy="46" rx="20" ry="22" fill="#e2b789"/><path d="M 30 40 Q 25 20 50 18 Q 75 20 70 40 Q 66 30 60 28 Q 55 22 50 22 Q 45 22 40 28 Q 34 30 30 40 Z" fill="#0f172a"/><path d="M 30 20 L 50 12 L 70 20 L 70 26 L 50 18 L 30 26 Z" fill="#7c2d12"/><rect x="63" y="18" width="4" height="12" fill="#fbbf24"/><circle cx="42" cy="47" r="1.6" fill="#0f172a"/><circle cx="58" cy="47" r="1.6" fill="#0f172a"/><path d="M 44 62 Q 50 66 56 62" stroke="#7c2d12" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg>
+        </div>
+        <div><div class="testi-name">Rajesh Iyer</div><div class="testi-role">Coaching Institute · Chennai</div></div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"Salon booking pehle WhatsApp pe manually karte the — messages miss ho jaate the. BotifyAI ne appointment booking automate kar diya. Ab Sunday bhi bookings aati hain. Revenue 45% badha!"</div>
+      <div class="testi-author">
+        <div class="testi-av">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="tav6" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fef3c7"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs><rect width="100" height="100" fill="url(#tav6)"/><path d="M 24 100 Q 24 78 50 76 Q 76 78 76 100 Z" fill="#831843"/><path d="M 20 100 Q 18 65 25 42 Q 32 22 50 20 Q 68 22 75 42 Q 82 65 80 100 Q 75 55 70 45 Q 65 50 60 48 Q 50 44 40 48 Q 35 50 30 45 Q 25 55 20 100 Z" fill="#78350f"/><ellipse cx="50" cy="46" rx="19" ry="21" fill="#e2b789"/><path d="M 32 38 Q 36 26 50 26 Q 64 26 68 38 Q 60 34 55 34 Q 50 32 45 34 Q 40 34 32 38 Z" fill="#78350f"/><circle cx="50" cy="38" r="1.5" fill="#dc2626"/><ellipse cx="43" cy="48" rx="1.8" ry="1.3" fill="#0f172a"/><ellipse cx="57" cy="48" rx="1.8" ry="1.3" fill="#0f172a"/><path d="M 44 61 Q 50 66 56 61" stroke="#831843" stroke-width="1.4" fill="none" stroke-linecap="round"/><path d="M 42 61 Q 45 66 44 68 M 58 61 Q 55 66 56 68" stroke="#ec4899" stroke-width="1" fill="none" stroke-linecap="round"/><circle cx="30" cy="55" r="2" fill="#fbbf24"/><circle cx="70" cy="55" r="2" fill="#fbbf24"/></svg>
+        </div>
+        <div><div class="testi-name">Meera Patel</div><div class="testi-role">Beauty Salon · Ahmedabad</div></div>
       </div>
     </div>
   </div>
