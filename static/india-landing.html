@@ -348,6 +348,188 @@ body{top:0 !important}
 @media(max-width:900px){.showcase-mobile-dots{display:flex}}
 .showcase-mobile-dots .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3)}
 .showcase-mobile-dots .dot.active{background:#6366f1}
+
+/* ============================================================
+   LIGHT THEME OVERRIDE — warm, colorful, trust-first
+   Applies to everything EXCEPT the cinematic dark showcase
+   ============================================================ */
+body{background:#fafaf9;color:#0f172a}
+
+/* Nav */
+nav{background:rgba(255,255,255,.92);border-bottom:1px solid rgba(15,23,42,.06)}
+.nav-links a{color:#475569}
+.nav-links a:hover{color:#6366f1}
+.nav-demo{color:#6366f1;border:1px solid rgba(99,102,241,.35)}
+.nav-demo:hover{background:rgba(99,102,241,.06)}
+.made-in-badge{color:#7c2d12;background:rgba(255,153,51,.15);border-color:rgba(255,153,51,.45)}
+
+/* Hero — colorful sunrise gradient */
+.hero{background:linear-gradient(135deg,#fff7ed 0%,#fce7f3 40%,#e0e7ff 100%)}
+.hero-glow-1{background:radial-gradient(circle,rgba(236,72,153,.18),transparent 65%)}
+.hero-glow-2{background:radial-gradient(circle,rgba(99,102,241,.15),transparent 65%)}
+.hero-badge{background:rgba(255,255,255,.85);color:#6366f1;border-color:rgba(99,102,241,.25);box-shadow:0 4px 20px rgba(99,102,241,.1)}
+.hero h1{color:#0f172a}
+.hero h1 .grad{background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 40%,#ec4899 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{color:#475569}
+.hero-sub strong{color:#0f172a;font-weight:700}
+.btn-secondary{background:#fff;color:#0f172a;border:1px solid rgba(15,23,42,.15);box-shadow:0 2px 12px rgba(0,0,0,.04)}
+.btn-secondary:hover{background:#f8fafc;border-color:rgba(99,102,241,.35)}
+.hero-trust{color:#475569}
+.hero-trust span{color:#334155;font-weight:600}
+
+/* Brands */
+.brands-section{background:#fff;border-top:1px solid rgba(15,23,42,.06);border-bottom:1px solid rgba(15,23,42,.06)}
+.brands-label{color:#64748b}
+.brand-item{color:#94a3b8}
+.brands-strip{opacity:.7}
+
+/* Marquee */
+.marquee-section{background:linear-gradient(90deg,#fef3c7,#fce7f3,#e0e7ff);border-top:1px solid rgba(15,23,42,.06);border-bottom:1px solid rgba(15,23,42,.06)}
+.marquee-item{color:#0f172a}
+
+/* Awards */
+.awards-section{background:#fff;padding:70px 5%}
+.award-card{background:linear-gradient(135deg,#fafaf9,#f5f3ff);border:1px solid rgba(15,23,42,.08);box-shadow:0 2px 12px rgba(0,0,0,.03)}
+.award-card:hover{border-color:rgba(251,191,36,.4);box-shadow:0 8px 24px rgba(251,191,36,.12)}
+.award-title{color:#0f172a}
+.award-sub{color:#64748b}
+
+/* Stats */
+.stats-section{background:#fff}
+.stats-label{color:#6366f1;font-weight:800}
+.stats-title{color:#0f172a}
+.stats-sub{color:#64748b}
+.stat-card{background:linear-gradient(135deg,#fff,#faf5ff);border:1px solid rgba(15,23,42,.08);box-shadow:0 4px 16px rgba(99,102,241,.05)}
+.stat-card:hover{border-color:rgba(99,102,241,.3);box-shadow:0 12px 32px rgba(99,102,241,.12)}
+.stat-label{color:#64748b}
+.stat-label strong{color:#0f172a}
+
+/* Features/bento */
+.features-section{background:#fafaf9}
+.sec-label{color:#6366f1;font-weight:800}
+.sec-title{color:#0f172a}
+.sec-sub{color:#64748b}
+.fb-card{background:#fff;border:1px solid rgba(15,23,42,.08);box-shadow:0 4px 16px rgba(0,0,0,.03)}
+.fb-card:hover{border-color:rgba(99,102,241,.25);background:#fff;box-shadow:0 12px 32px rgba(99,102,241,.1)}
+.fb-card h3{color:#0f172a}
+.fb-card p{color:#475569}
+.fb-tag{background:rgba(99,102,241,.1);color:#6366f1;border-color:rgba(99,102,241,.25)}
+
+/* How it works — pastel purple/pink section */
+.hiw-section{background:linear-gradient(180deg,#faf5ff 0%,#fdf2f8 100%);border:none;border-top:1px solid rgba(15,23,42,.06);border-bottom:1px solid rgba(15,23,42,.06)}
+.hiw-step h3{color:#0f172a}
+.hiw-step p{color:#475569}
+.hiw-step::after{color:#a78bfa}
+
+/* Demo section - stays partly dark (chat window keeps dark for contrast) */
+.demo-section{background:#fafaf9}
+.demo-left h2{color:#0f172a}
+.demo-left p{color:#475569}
+.demo-feat{color:#475569}
+
+/* Results — light cards */
+.results-section{background:#fff}
+.result-card{background:linear-gradient(135deg,#fff,#f0f9ff);border:1px solid rgba(15,23,42,.08);box-shadow:0 4px 16px rgba(0,0,0,.03)}
+.result-card:hover{border-color:rgba(99,102,241,.25);box-shadow:0 12px 32px rgba(99,102,241,.12)}
+.result-desc{color:#475569}
+.result-company{border-top:1px solid rgba(15,23,42,.06)}
+.result-name{color:#0f172a}
+.result-type{color:#64748b}
+
+/* Pricing — warm/gradient background, vibrant cards */
+.pricing-section{background:linear-gradient(180deg,#fefce8 0%,#fdf2f8 50%,#eff6ff 100%);border-top:1px solid rgba(15,23,42,.06)}
+.price-card{background:#fff;border:1px solid rgba(15,23,42,.1);box-shadow:0 6px 24px rgba(0,0,0,.05)}
+.price-card:hover{border-color:rgba(99,102,241,.3);box-shadow:0 16px 40px rgba(99,102,241,.15);transform:translateY(-6px)}
+.price-card.featured{border:2px solid #6366f1;background:linear-gradient(180deg,#fff,#faf5ff);box-shadow:0 16px 48px rgba(99,102,241,.22)}
+.price-name{color:#6366f1}
+.price-amount{color:#0f172a}
+.price-period{color:#64748b}
+.price-desc{color:#475569}
+.price-features li{color:#334155}
+.price-btn-outline{background:#fff;border:1.5px solid #6366f1;color:#6366f1}
+.price-btn-outline:hover{background:#6366f1;color:#fff}
+
+/* Testimonials — vibrant cards with real depth */
+.testi-section{background:#fff}
+.testi-card{background:linear-gradient(135deg,#fff,#faf5ff);border:1px solid rgba(15,23,42,.08);box-shadow:0 6px 20px rgba(0,0,0,.04)}
+.testi-card:hover{border-color:rgba(236,72,153,.3);box-shadow:0 16px 40px rgba(236,72,153,.12);transform:translateY(-4px)}
+.testi-stars{color:#f59e0b}
+.testi-quote{color:#334155;font-style:normal;font-weight:500}
+.testi-author{border-top:1px solid rgba(15,23,42,.08)}
+.testi-name{color:#0f172a}
+.testi-role{color:#64748b}
+.testi-av{overflow:hidden}
+.testi-av svg{width:100%;height:100%;display:block}
+
+/* Compare table */
+.compare-section{background:#fafaf9;padding-top:60px;padding-bottom:60px}
+.compare-table{border:1px solid rgba(15,23,42,.08);background:#fff;box-shadow:0 4px 20px rgba(0,0,0,.04)}
+.compare-table th{background:#f8fafc;color:#475569}
+.compare-table th:first-child{color:#0f172a}
+.compare-table th.hl{background:linear-gradient(135deg,rgba(99,102,241,.15),rgba(236,72,153,.1));color:#6366f1}
+.compare-table td{border-top:1px solid rgba(15,23,42,.06);color:#334155}
+.compare-table td:first-child{color:#0f172a;font-weight:600}
+.compare-table td.hl{background:rgba(99,102,241,.05);color:#0f172a;font-weight:700}
+.compare-table tr:hover td{background:#f8fafc}
+.compare-table td.hl:hover,.compare-table tr:hover td.hl{background:rgba(99,102,241,.08)}
+
+/* FAQ */
+.faq-section{background:#fafaf9}
+.faq-item{border:1px solid rgba(15,23,42,.08);background:#fff;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.02)}
+.faq-q{color:#0f172a}
+.faq-q:hover{background:#faf5ff}
+.faq-a{color:#475569}
+.faq-item.open .faq-q{background:linear-gradient(90deg,rgba(99,102,241,.06),rgba(236,72,153,.04));color:#6366f1}
+.faq-arrow{color:#64748b}
+
+/* CTA — bold vibrant */
+.cta-section{background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 50%,#ec4899 100%);border:none;box-shadow:0 24px 60px rgba(99,102,241,.25)}
+.cta-section::before{background:radial-gradient(circle,rgba(255,255,255,.15),transparent 65%)}
+.cta-section h2{color:#fff}
+.cta-section p{color:rgba(255,255,255,.92)}
+.cta-section .btn-secondary{background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.35);backdrop-filter:blur(10px)}
+.cta-section .btn-secondary:hover{background:rgba(255,255,255,.25)}
+
+/* Footer — dark for contrast, like Stripe/Notion */
+footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
+.footer-brand p{color:#94a3b8}
+.footer-col h4{color:#e2e8f0}
+.footer-col a{color:#94a3b8}
+.footer-col a:hover{color:#a78bfa}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.08)}
+.footer-copy{color:#64748b}
+.social-btn{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1);color:#e2e8f0}
+.social-btn:hover{background:rgba(167,139,250,.15);border-color:rgba(167,139,250,.4)}
+
+/* Lang switch */
+.lang-switch{background:rgba(15,23,42,.05);border:1px solid rgba(15,23,42,.1)}
+.lang-switch button{color:#475569}
+.lang-switch button.active{background:#6366f1;color:#fff}
+
+/* Float WA tooltip - keep readable on light bg */
+.float-wa-tip{background:#0f172a;color:#34d399;border-color:rgba(37,211,102,.3)}
+
+/* TRUST BAR (new) — colorful stats + payment badges */
+.trust-bar{background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#4c1d95 100%);padding:40px 5%;position:relative;overflow:hidden}
+.trust-bar::before{content:'';position:absolute;top:-100px;right:-100px;width:400px;height:400px;background:radial-gradient(circle,rgba(236,72,153,.2),transparent 65%);pointer-events:none}
+.trust-bar-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr;gap:32px;align-items:center;position:relative;z-index:1}
+@media(max-width:900px){.trust-bar-inner{grid-template-columns:1fr;gap:24px;text-align:center}}
+.trust-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+@media(max-width:768px){.trust-stats{grid-template-columns:repeat(2,1fr);gap:16px}}
+.trust-stat-item{text-align:center}
+.trust-stat-num{font-size:1.6rem;font-weight:900;background:linear-gradient(135deg,#fbbf24,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:4px}
+.trust-stat-label{font-size:.7rem;color:#cbd5e1;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.trust-badges{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end}
+@media(max-width:900px){.trust-badges{justify-content:center}}
+.trust-badge{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:8px 14px;font-size:.7rem;color:#f1f5f9;font-weight:700;display:flex;align-items:center;gap:6px;backdrop-filter:blur(10px)}
+.trust-badge .tb-ic{font-size:.9rem}
+
+/* Payment methods strip (near CTAs) */
+.pay-strip{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;padding:22px 5%;background:#fff;border-bottom:1px solid rgba(15,23,42,.06)}
+.pay-strip .pl{font-size:.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-right:6px}
+.pay-strip .pm{background:linear-gradient(135deg,#fafaf9,#f5f3ff);border:1px solid rgba(15,23,42,.08);padding:6px 12px;border-radius:8px;font-size:.75rem;font-weight:700;color:#334155;display:flex;align-items:center;gap:6px}
+.pay-strip .pm .pi{font-size:.9rem}
+
 </style>
 </head>
 <body>
@@ -410,6 +592,46 @@ body{top:0 !important}
     </div>
   </div>
 </section>
+
+<!-- TRUST BAR — right below hero for instant credibility -->
+<div class="trust-bar">
+  <div class="trust-bar-inner">
+    <div class="trust-stats">
+      <div class="trust-stat-item">
+        <div class="trust-stat-num">22+</div>
+        <div class="trust-stat-label">Indian Languages</div>
+      </div>
+      <div class="trust-stat-item">
+        <div class="trust-stat-num">5 min</div>
+        <div class="trust-stat-label">Setup Time</div>
+      </div>
+      <div class="trust-stat-item">
+        <div class="trust-stat-num">24/7</div>
+        <div class="trust-stat-label">Always Online</div>
+      </div>
+      <div class="trust-stat-item">
+        <div class="trust-stat-num">99.9%</div>
+        <div class="trust-stat-label">Uptime SLA</div>
+      </div>
+    </div>
+    <div class="trust-badges">
+      <div class="trust-badge"><span class="tb-ic">🔒</span> 256-bit SSL</div>
+      <div class="trust-badge"><span class="tb-ic">🇮🇳</span> Made in India</div>
+      <div class="trust-badge"><span class="tb-ic">✅</span> Cancel Anytime</div>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT METHODS STRIP -->
+<div class="pay-strip">
+  <span class="pl">Accepted Payment Methods:</span>
+  <span class="pm"><span class="pi">💳</span> Razorpay</span>
+  <span class="pm"><span class="pi">📱</span> UPI</span>
+  <span class="pm"><span class="pi">💳</span> Visa</span>
+  <span class="pm"><span class="pi">💳</span> Mastercard</span>
+  <span class="pm"><span class="pi">💳</span> RuPay</span>
+  <span class="pm"><span class="pi">🏦</span> Net Banking</span>
+</div>
 
 <!-- MARQUEE -->
 <div class="marquee-section">
@@ -809,7 +1031,9 @@ body{top:0 !important}
       <div class="testi-stars">★★★★★</div>
       <div class="testi-quote">"BotifyAI ne hamare customer queries ko bilkul badal diya. Bot 90% sawaal apne aap Hindi aur English mein jawab deta hai. Raat ko bhi leads miss nahi hote. Game-changer hai!"</div>
       <div class="testi-author">
-        <div class="testi-av" style="background:rgba(99,102,241,.1)">👨‍💼</div>
+        <div class="testi-av">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="tav1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fed7aa"/><stop offset="1" stop-color="#fb923c"/></linearGradient></defs><rect width="100" height="100" fill="url(#tav1)"/><path d="M 20 100 Q 20 74 50 74 Q 80 74 80 100 Z" fill="#7c2d12"/><ellipse cx="50" cy="46" rx="20" ry="22" fill="#d4a574"/><path d="M 30 42 Q 28 22 50 20 Q 72 22 70 42 Q 66 32 58 30 Q 50 24 42 30 Q 34 32 30 42 Z" fill="#1e293b"/><path d="M 40 56 Q 45 60 50 56 Q 55 60 60 56" stroke="#1e293b" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="42" cy="47" r="1.6" fill="#1e293b"/><circle cx="58" cy="47" r="1.6" fill="#1e293b"/><path d="M 44 64 Q 50 67 56 64" stroke="#7c2d12" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg>
+        </div>
         <div><div class="testi-name">Ramesh Gupta</div><div class="testi-role">Restaurant Owner · Delhi</div></div>
       </div>
     </div>
@@ -817,7 +1041,9 @@ body{top:0 !important}
       <div class="testi-stars">★★★★★</div>
       <div class="testi-quote">"Setup 5 minute mein ho gaya. Team ne mere Shopify store mein code laga diya. Pehle mahine mein 35% zyada enquiries aayi. Hamare Indian customers ke liye perfect hai."</div>
       <div class="testi-author">
-        <div class="testi-av" style="background:rgba(52,211,153,.1)">👩‍💼</div>
+        <div class="testi-av">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="tav2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbcfe8"/><stop offset="1" stop-color="#f472b6"/></linearGradient></defs><rect width="100" height="100" fill="url(#tav2)"/><path d="M 24 100 Q 20 60 30 38 Q 36 22 50 20 Q 64 22 70 38 Q 80 60 76 100 Z" fill="#3730a3"/><path d="M 26 100 Q 26 78 50 76 Q 74 78 74 100 Z" fill="#831843"/><ellipse cx="50" cy="47" rx="19" ry="21" fill="#e2b789"/><path d="M 32 39 Q 35 28 50 28 Q 65 28 68 39 Q 62 36 55 37 Q 50 34 45 37 Q 38 36 32 39 Z" fill="#3730a3"/><circle cx="50" cy="39" r="1.6" fill="#dc2626"/><ellipse cx="43" cy="48" rx="1.8" ry="1.3" fill="#1e293b"/><ellipse cx="57" cy="48" rx="1.8" ry="1.3" fill="#1e293b"/><path d="M 44 61 Q 50 65 56 61" stroke="#831843" stroke-width="1.2" fill="none" stroke-linecap="round"/><circle cx="31" cy="54" r="1.8" fill="#fbbf24"/><circle cx="69" cy="54" r="1.8" fill="#fbbf24"/></svg>
+        </div>
         <div><div class="testi-name">Priya Sharma</div><div class="testi-role">Fashion E-Commerce · Mumbai</div></div>
       </div>
     </div>
@@ -825,7 +1051,9 @@ body{top:0 !important}
       <div class="testi-stars">★★★★★</div>
       <div class="testi-quote">"Real estate mein jab available nahi hota tha toh leads haath se nikal jaate the. Ab BotifyAI 24/7 contact details capture karta hai. Pehle hafte mein hi ROI aa gaya."</div>
       <div class="testi-author">
-        <div class="testi-av" style="background:rgba(251,191,36,.1)">🧑‍💼</div>
+        <div class="testi-av">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="tav3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a7f3d0"/><stop offset="1" stop-color="#34d399"/></linearGradient></defs><rect width="100" height="100" fill="url(#tav3)"/><path d="M 22 100 Q 22 74 50 74 Q 78 74 78 100 Z" fill="#1e40af"/><path d="M 45 74 L 50 84 L 55 74 Z" fill="#dc2626"/><ellipse cx="50" cy="46" rx="20" ry="22" fill="#c68e5f"/><path d="M 30 42 Q 26 22 50 20 Q 74 22 70 42 Q 65 30 58 30 Q 50 24 42 30 Q 35 30 30 42 Z" fill="#0f172a"/><path d="M 34 56 Q 34 68 50 70 Q 66 68 66 56 Q 62 62 50 63 Q 38 62 34 56 Z" fill="#0f172a"/><circle cx="42" cy="47" r="1.6" fill="#f8fafc"/><circle cx="58" cy="47" r="1.6" fill="#f8fafc"/></svg>
+        </div>
         <div><div class="testi-name">Karthik Reddy</div><div class="testi-role">Real Estate Agency · Bangalore</div></div>
       </div>
     </div>
