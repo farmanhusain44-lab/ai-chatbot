@@ -583,6 +583,41 @@ def partners():
 def onboard():
     return app.send_static_file("onboard.html")
 
+@app.route("/api/quick-access", methods=["POST"])
+def quick_access():
+    """Instant access code — client fills a small form, we create the account and
+    hand back a code + onboarding link. No WhatsApp step, no admin approval."""
+    try:
+        data = request.get_json(silent=True) or {}
+        name = (data.get("name") or "").strip()
+        email = (data.get("email") or "").strip()
+        website = (data.get("website") or "").strip()
+        plan = (data.get("plan") or "starter").strip()
+        region = (data.get("region") or "").strip().lower() or "uae"
+        if not name or not email:
+            return jsonify({"success": False, "message": "Name and email are required."}), 400
+        # Normalise region to what create_client accepts
+        if region not in {"india", "uae", "nri"}:
+            region = "uae"
+        client_id, access_code = create_client(name, email, website, plan, days_valid=30, region=region)
+        # Fire notifications — welcome to the client, alert to the owner
+        try:
+            send_welcome_email(email, name, access_code, plan)
+        except Exception as e:
+            logger.error(f"quick_access welcome email failed: {e}")
+        try:
+            notify_owner(name, email, website, plan, access_code)
+        except Exception as e:
+            logger.error(f"quick_access notify_owner failed: {e}")
+        return jsonify({
+            "success": True,
+            "access_code": access_code,
+            "onboard_url": f"/onboard?code={access_code}",
+        })
+    except Exception as e:
+        logger.error(f"quick_access error: {e}")
+        return jsonify({"success": False, "message": "Server error, please try again."}), 500
+
 @app.route("/onboard/verify", methods=["POST"])
 def onboard_verify():
     """Check whether an access code is valid before showing the onboarding form."""

@@ -304,15 +304,20 @@ body{top:0 !important}
 .showcase-card::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(2,2,10,.85) 0%,rgba(2,2,10,.55) 45%,rgba(2,2,10,.05) 100%);pointer-events:none;z-index:1;transition:opacity 1s}
 .showcase-card::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 0%,rgba(2,2,10,.35) 75%,rgba(2,2,10,.75) 100%);pointer-events:none;z-index:1}
 @media(max-width:900px){
-  .showcase-card{align-items:flex-end}
-  .showcase-card::before{background:linear-gradient(180deg,rgba(2,2,10,.05) 0%,rgba(2,2,10,.15) 30%,rgba(2,2,10,.7) 50%,rgba(2,2,10,.95) 100%)}
+  .showcase-card{align-items:stretch}
+  .showcase-card::before{background:linear-gradient(180deg,transparent 0%,transparent 45%,rgba(2,2,10,.65) 65%,rgba(2,2,10,.95) 100%)}
   .showcase-card::after{display:none}
-  .showcase-card[data-index="0"].active .showcase-media-inner{filter:blur(0) brightness(1.45)}
+  .showcase-media-inner{filter:blur(0) brightness(1.5)!important;opacity:1!important;transform:scale(1)!important}
+  .showcase-card.active .showcase-media-inner{filter:blur(0) brightness(1.5)!important}
+  .showcase-card[data-index="0"] .showcase-media-inner,
+  .showcase-card[data-index="0"].active .showcase-media-inner{filter:blur(0) brightness(1.7)!important}
+  .showcase-card[data-index="2"] .showcase-media-inner,
   .showcase-card[data-index="2"].active .showcase-media-inner,
-  .showcase-card[data-index="3"].active .showcase-media-inner{filter:blur(0) brightness(1.35)}
-  .showcase-card h2{font-size:1.85rem;margin-bottom:12px}
-  .showcase-desc{font-size:.92rem;margin-bottom:14px}
-  .showcase-story{padding:14px 16px}
+  .showcase-card[data-index="3"] .showcase-media-inner,
+  .showcase-card[data-index="3"].active .showcase-media-inner{filter:blur(0) brightness(1.6)!important}
+  .showcase-card h2{font-size:1.7rem;margin-bottom:10px}
+  .showcase-desc{font-size:.9rem;margin-bottom:12px}
+  .showcase-story{padding:12px 14px}
 }
 .showcase-card-inner{width:100%;max-width:1280px;height:100%;display:flex;align-items:center;justify-content:flex-start;padding:6vh 5%;position:relative;z-index:2;overflow:hidden}
 @media(max-width:900px){.showcase-card-inner{justify-content:flex-end;align-items:flex-end;text-align:center;padding:0 5% 70px}}
