@@ -289,17 +289,24 @@ footer{padding:50px 5% 30px;border-top:1px solid rgba(255,255,255,.05)}
 .showcase-card::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(2,2,10,.96) 0%,rgba(2,2,10,.82) 40%,rgba(2,2,10,.35) 100%);pointer-events:none;z-index:1;transition:opacity 1s}
 .showcase-card::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 0%,rgba(2,2,10,.55) 70%,rgba(2,2,10,.9) 100%);pointer-events:none;z-index:1}
 @media(max-width:900px){
-  .showcase-card{align-items:stretch}
-  .showcase-card::before{background:linear-gradient(180deg,transparent 0%,transparent 45%,rgba(2,2,10,.65) 65%,rgba(2,2,10,.95) 100%)}
-  .showcase-card::after{display:none}
-  .showcase-media-inner{filter:blur(0) brightness(1.5)!important;opacity:1!important;transform:scale(1)!important}
-  .showcase-card.active .showcase-media-inner{filter:blur(0) brightness(1.5)!important}
+  .showcase-section{height:auto!important;background:linear-gradient(180deg,#02020a 0%,#0a0a1a 50%,#02020a 100%)}
+  .showcase-sticky{position:static!important;height:auto!important;overflow:visible;display:block}
+  .showcase-track{flex-direction:column;width:100%!important;transform:none!important;transition:none!important}
+  .showcase-card{width:100%!important;height:auto!important;min-height:auto;padding:70px 0 40px;background:transparent;display:block;flex-shrink:1;align-items:stretch}
+  .showcase-card::before,.showcase-card::after{display:none!important}
+  .showcase-card-inner{flex-direction:column;height:auto;padding:0 22px;align-items:stretch;justify-content:flex-start;max-width:100%;text-align:left;overflow:visible}
+  .showcase-content{max-width:100%;padding:0 0 24px;opacity:1!important;transform:none!important;overflow:visible}
+  .showcase-label{text-align:left;margin-bottom:14px}
+  .showcase-card h2{font-size:1.9rem;margin-bottom:14px;text-align:left;line-height:1.1}
+  .showcase-desc{font-size:.95rem;margin-bottom:18px;color:#cbd5e1;text-align:left;max-width:100%}
+  .showcase-chips{justify-content:flex-start;margin-bottom:20px}
+  .showcase-points{margin-bottom:22px}
+  .showcase-story{margin-top:6px;padding:16px 18px}
+  .showcase-media{position:relative!important;inset:auto!important;height:62vh;max-height:520px;min-height:340px;width:100%;border-radius:22px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.06);perspective:none;background-color:#0f172a}
+  .showcase-media-inner{transform:scale(var(--photo-scale,.42)) translate(var(--photo-tx,-18%),var(--photo-ty,-14%))!important;transform-origin:0% 0%!important;filter:brightness(var(--photo-bright,1.5))!important;opacity:var(--photo-opacity,.55)!important;transition:none!important;will-change:transform,opacity,filter}
   .showcase-card[data-index="2"] .showcase-media-inner,
-  .showcase-card[data-index="2"].active .showcase-media-inner,
-  .showcase-card[data-index="3"] .showcase-media-inner,
-  .showcase-card[data-index="3"].active .showcase-media-inner{filter:blur(0) brightness(1.6)!important}
-  .showcase-card h2{font-size:1.7rem;margin-bottom:10px}
-  .showcase-desc{font-size:.9rem;margin-bottom:12px}
+  .showcase-card[data-index="3"] .showcase-media-inner{--photo-bright:1.6}
+  .showcase-nav,.showcase-progress,.showcase-hint,.showcase-mobile-dots{display:none!important}
 }
 .showcase-card-inner{width:100%;max-width:1280px;height:100%;display:flex;align-items:center;justify-content:flex-start;padding:6vh 5%;position:relative;z-index:2;overflow:hidden}
 @media(max-width:900px){.showcase-card-inner{justify-content:flex-end;align-items:flex-end;text-align:center;padding:0 5% 70px}}
@@ -1398,10 +1405,12 @@ for(let i=0;i<total;i++){
   }
 }
 
+const isMobileShowcase = () => window.innerWidth <= 900;
+
 function goTo(i){
   if(i<0||i>=total)return;
   currentIndex=i;
-  track.style.transform=`translateX(-${i*100}vw)`;
+  if(!isMobileShowcase()){track.style.transform=`translateX(-${i*100}vw)`;}
   cards.forEach((c,idx)=>c.classList.toggle('active',idx===i));
   document.querySelectorAll('.showcase-dot').forEach((d,idx)=>d.classList.toggle('active',idx===i));
   cards.forEach((card,ci)=>{
@@ -1412,8 +1421,35 @@ function goTo(i){
   if(barFill)barFill.style.width=(((i+1)/total)*100)+'%';
 }
 
+let mobileScaleRaf = 0;
+function updateMobileScales(){
+  const vh = window.innerHeight;
+  cards.forEach(card => {
+    const media = card.querySelector('.showcase-media');
+    const inner = card.querySelector('.showcase-media-inner');
+    if(!media || !inner) return;
+    const rect = media.getBoundingClientRect();
+    const enterPoint = vh * 0.9, growEndPoint = vh * 0.25;
+    let progress = 0;
+    if(rect.top <= enterPoint && rect.bottom > 0){
+      progress = (enterPoint - rect.top) / (enterPoint - growEndPoint);
+      progress = Math.max(0, Math.min(1, progress));
+    } else if(rect.top < growEndPoint){progress = 1;}
+    const eased = 1 - Math.pow(1 - progress, 3);
+    inner.style.setProperty('--photo-scale', (0.42 + eased * 0.58).toFixed(3));
+    inner.style.setProperty('--photo-tx', (-18 + eased * 18).toFixed(1) + '%');
+    inner.style.setProperty('--photo-ty', (-14 + eased * 14).toFixed(1) + '%');
+    inner.style.setProperty('--photo-opacity', (0.55 + eased * 0.45).toFixed(3));
+  });
+}
+
 function updateShowcaseFromScroll(){
   if(!showcase)return;
+  if(isMobileShowcase()){
+    if(mobileScaleRaf) return;
+    mobileScaleRaf = requestAnimationFrame(()=>{updateMobileScales(); mobileScaleRaf = 0;});
+    return;
+  }
   const rect=showcase.getBoundingClientRect();
   const vh=window.innerHeight;
   const sectionHeight=showcase.offsetHeight;
@@ -1428,8 +1464,20 @@ function updateShowcaseFromScroll(){
 }
 
 window.addEventListener('scroll',updateShowcaseFromScroll,{passive:true});
+window.addEventListener('resize', ()=>{
+  if(isMobileShowcase()){track.style.transform=''; updateMobileScales();}
+  else{
+    cards.forEach(card=>{
+      const inner = card.querySelector('.showcase-media-inner');
+      if(!inner) return;
+      ['--photo-scale','--photo-tx','--photo-ty','--photo-opacity'].forEach(p=>inner.style.removeProperty(p));
+    });
+    goTo(currentIndex);
+  }
+}, {passive: true});
 
 window.addEventListener('keydown',e=>{
+  if(isMobileShowcase()) return;
   if(e.key==='ArrowRight'||e.key==='ArrowDown')goTo(currentIndex+1);
   if(e.key==='ArrowLeft'||e.key==='ArrowUp')goTo(currentIndex-1);
 });
@@ -1437,6 +1485,7 @@ window.addEventListener('keydown',e=>{
 let startX=0;
 showcase.addEventListener('touchstart',e=>{startX=e.touches[0].clientX;},{passive:true});
 showcase.addEventListener('touchend',e=>{
+  if(isMobileShowcase()) return;
   const endX=e.changedTouches[0].clientX;
   const diff=endX-startX;
   if(Math.abs(diff)>50){
@@ -1448,6 +1497,7 @@ cards.forEach(card=>{
   const media=card.querySelector('.showcase-media-inner');
   if(!media)return;
   card.addEventListener('mousemove',e=>{
+    if(isMobileShowcase()) return;
     const r=card.getBoundingClientRect();
     const x=(e.clientX-r.left)/r.width-0.5;
     const y=(e.clientY-r.top)/r.height-0.5;
@@ -1461,6 +1511,7 @@ cards.forEach(card=>{
 });
 
 updateShowcaseFromScroll();
+if(isMobileShowcase()) updateMobileScales();
 
 </script>
 
