@@ -302,8 +302,11 @@ footer{padding:50px 5% 30px;border-top:1px solid rgba(255,255,255,.05)}
   .showcase-chips{justify-content:flex-start;margin-bottom:16px}
   .showcase-points{margin-bottom:18px}
   .showcase-story{margin-top:4px;padding:14px 16px}
-  .showcase-media{position:relative!important;inset:auto!important;width:100%;height:60vh;max-height:500px;min-height:320px;margin-top:20px;border-radius:22px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.06);perspective:none;background-color:#0f172a;transform-origin:center center!important;transform:none!important;will-change:auto}
-  .showcase-media-inner{background-position:center center!important;background-size:contain!important;background-repeat:no-repeat!important;filter:brightness(1.5)!important;opacity:1!important;transform:none!important;transition:none!important}
+  .showcase-media{position:relative!important;inset:auto!important;width:100%;height:100vh;max-height:none;min-height:100vh;margin:0;border-radius:0;overflow:hidden;box-shadow:none;perspective:none;background-color:#0f172a;transform-origin:center center!important;transform:scale(.96);opacity:0;transition:opacity .8s ease-out,transform .8s cubic-bezier(.16,1,.3,1);will-change:transform,opacity}
+  .showcase-media.in-view{opacity:1;transform:scale(1)}
+  .showcase-media-inner{background-position:50% 25%!important;background-size:cover!important;background-repeat:no-repeat!important;filter:brightness(1.5)!important;opacity:1!important;transform:none!important;transition:none!important}
+  .showcase-card{padding:0 0 60px!important}
+  .showcase-card-inner{padding:40px 22px 0!important;margin-top:0!important}
   .showcase-card[data-index="2"] .showcase-media-inner,
   .showcase-card[data-index="3"] .showcase-media-inner{filter:brightness(1.6)!important}
   .showcase-nav,.showcase-progress,.showcase-hint,.showcase-mobile-dots{display:none!important}
@@ -1422,7 +1425,15 @@ function goTo(i){
 }
 
 let mobileScaleRaf = 0;
-function updateMobileScales(){ /* no-op: simple vertical layout on mobile */ }
+function updateMobileScales(){ /* no-op: entry animation is class-based */ }
+if(window.innerWidth <= 900 && 'IntersectionObserver' in window){
+  const photoObserver = new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){entry.target.classList.add('in-view');}
+    });
+  }, {threshold: 0.15, rootMargin: '0px 0px -10% 0px'});
+  document.querySelectorAll('.showcase-media').forEach(m => photoObserver.observe(m));
+}
 
 function updateShowcaseFromScroll(){
   if(!showcase)return;
