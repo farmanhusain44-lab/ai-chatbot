@@ -304,27 +304,29 @@ body{top:0 !important}
 .showcase-card::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(2,2,10,.85) 0%,rgba(2,2,10,.55) 45%,rgba(2,2,10,.05) 100%);pointer-events:none;z-index:1;transition:opacity 1s}
 .showcase-card::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 0%,rgba(2,2,10,.35) 75%,rgba(2,2,10,.75) 100%);pointer-events:none;z-index:1}
 @media(max-width:900px){
-  /* MOBILE APPLE-STYLE — cancel horizontal scroll, cards stack vertically, photo grows on scroll */
+  /* MOBILE APPLE-STYLE — details visible first, tiny photo in bottom-left corner, grows to fill viewport on scroll */
   .showcase-section{height:auto!important;background:linear-gradient(180deg,#02020a 0%,#0a0a1a 50%,#02020a 100%)}
   .showcase-sticky{position:static!important;height:auto!important;overflow:visible;display:block}
   .showcase-track{flex-direction:column;width:100%!important;transform:none!important;transition:none!important}
-  .showcase-card{width:100%!important;height:auto!important;min-height:auto;padding:70px 0 40px;background:transparent;display:block;flex-shrink:1;align-items:stretch}
+  /* Card is 200vh so sticky inner has 100vh of scroll to animate photo */
+  .showcase-card{width:100%!important;height:auto!important;min-height:200vh;background:transparent;display:block;flex-shrink:1;position:relative;padding:0;align-items:stretch}
   .showcase-card::before,.showcase-card::after{display:none!important}
-  .showcase-card-inner{flex-direction:column;height:auto;padding:0 22px;align-items:stretch;justify-content:flex-start;max-width:100%;text-align:left;overflow:visible}
-  .showcase-content{max-width:100%;padding:0 0 24px;opacity:1!important;transform:none!important;overflow:visible}
-  .showcase-label{text-align:left;margin-bottom:14px}
-  .showcase-card h2{font-size:1.9rem;margin-bottom:14px;text-align:left;line-height:1.1}
-  .showcase-desc{font-size:.95rem;margin-bottom:18px;color:#cbd5e1;text-align:left;max-width:100%}
-  .showcase-chips{justify-content:flex-start;margin-bottom:20px}
-  .showcase-points{margin-bottom:22px}
-  .showcase-story{margin-top:6px;padding:16px 18px}
-  /* THE MEDIA — photo grows from top-left corner as user scrolls */
-  .showcase-media{position:relative!important;inset:auto!important;height:62vh;max-height:520px;min-height:340px;width:100%;border-radius:22px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.06);perspective:none;background-color:#0f172a}
-  .showcase-media-inner{background-position:50% 40%!important;background-size:cover!important;transform:scale(var(--photo-scale,.4))!important;transform-origin:0% 0%!important;filter:brightness(var(--photo-bright,1.5))!important;opacity:var(--photo-opacity,.6)!important;transition:none!important;will-change:transform,opacity,filter}
-  .showcase-card[data-index="0"] .showcase-media-inner{--photo-bright:1.7}
+  /* Sticky container keeps details + photo on screen during the animation */
+  .showcase-card-inner{flex-direction:column;height:100vh;padding:70px 22px 30px;align-items:stretch;justify-content:flex-start;max-width:100%;text-align:left;overflow:hidden;position:sticky;top:0}
+  /* Details on top — fade + lift as photo grows */
+  .showcase-content{max-width:100%;padding:0 0 24px;opacity:var(--details-opacity,1)!important;transform:translateY(var(--details-ty,0))!important;overflow:visible;transition:none!important;will-change:transform,opacity;position:relative;z-index:5}
+  .showcase-label{text-align:left;margin-bottom:12px}
+  .showcase-card h2{font-size:1.85rem;margin-bottom:12px;text-align:left;line-height:1.1}
+  .showcase-desc{font-size:.92rem;margin-bottom:14px;color:#cbd5e1;text-align:left;max-width:100%}
+  .showcase-chips{justify-content:flex-start;margin-bottom:16px}
+  .showcase-points{margin-bottom:18px}
+  .showcase-story{margin-top:4px;padding:14px 16px}
+  /* THE MEDIA — starts as tiny 130x130 thumbnail in bottom-left, transforms/scales up on scroll to fill viewport */
+  .showcase-media{position:absolute!important;inset:auto!important;bottom:22px;left:22px;top:auto!important;right:auto!important;width:130px;height:130px;border-radius:20px;overflow:hidden;box-shadow:0 20px 40px rgba(0,0,0,.55),0 0 0 2px rgba(255,255,255,.1);perspective:none;background-color:#0f172a;transform-origin:0% 100%!important;transform:scale(var(--photo-scale,1))!important;will-change:transform;z-index:10;transition:none!important}
+  .showcase-media-inner{background-position:50% 40%!important;background-size:cover!important;filter:brightness(var(--photo-bright,1.4))!important;opacity:1!important;transform:none!important;transition:none!important}
+  .showcase-card[data-index="0"] .showcase-media-inner{--photo-bright:1.5}
   .showcase-card[data-index="2"] .showcase-media-inner,
-  .showcase-card[data-index="3"] .showcase-media-inner{--photo-bright:1.6}
-  /* Hide desktop-only nav elements */
+  .showcase-card[data-index="3"] .showcase-media-inner{--photo-bright:1.45}
   .showcase-nav,.showcase-progress,.showcase-hint,.showcase-mobile-dots{display:none!important}
 }
 .showcase-card-inner{width:100%;max-width:1280px;height:100%;display:flex;align-items:center;justify-content:flex-start;padding:6vh 5%;position:relative;z-index:2;overflow:hidden}
@@ -1504,37 +1506,42 @@ function goTo(i){
   if(barFill)barFill.style.width=(((i+1)/total)*100)+'%';
 }
 
-// MOBILE — scroll-scrubbed photo scale animation
-// Each card's photo starts small in top-left corner and grows to fill its container
-// as the card scrolls into view. Apple-style.
+// MOBILE — Apple MacBook style scroll animation
+// Each card is 200vh tall with a sticky 100vh inner. Details are visible at first with
+// a tiny photo in the bottom-left corner. As user scrolls through the card, the photo
+// scales up from that corner and takes over the entire viewport while details fade out.
 let mobileScaleRaf = 0;
 function updateMobileScales(){
   const vh = window.innerHeight;
+  const vw = window.innerWidth;
+  // How big the photo (starts at 130px) needs to be to cover the full viewport.
+  // Origin is bottom-left with 22px inset, so we scale until the top-right corner
+  // has swept past the top-right of the viewport. Add ~15% buffer.
+  const targetScale = (Math.max(vw, vh) - 22) / 130 * 1.15;
   cards.forEach(card => {
     const media = card.querySelector('.showcase-media');
-    const inner = card.querySelector('.showcase-media-inner');
-    if(!media || !inner) return;
-    const rect = media.getBoundingClientRect();
-    // progress: 0 when media top is at viewport bottom, 1 when at ~30% of viewport (or above)
-    const enterPoint = vh * 0.9;   // start animating when media top hits 90% viewport height
-    const growEndPoint = vh * 0.25; // fully grown when media top hits 25% viewport height
+    const content = card.querySelector('.showcase-content');
+    if(!media || !content) return;
+    const rect = card.getBoundingClientRect();
+    const cardHeight = card.offsetHeight;
+    // progress = how far into the sticky window we've scrolled (0 -> 1)
+    const scrollRange = cardHeight - vh;
     let progress = 0;
-    if(rect.top <= enterPoint && rect.bottom > 0){
-      progress = (enterPoint - rect.top) / (enterPoint - growEndPoint);
-      progress = Math.max(0, Math.min(1, progress));
-    } else if(rect.top < growEndPoint){
-      progress = 1;
+    if(scrollRange > 0){
+      progress = Math.max(0, Math.min(1, (-rect.top) / scrollRange));
     }
-    // Ease-out cubic for smoother growth
-    const eased = 1 - Math.pow(1 - progress, 3);
-    const scale = 0.42 + eased * 0.58;   // 0.42 -> 1.0
-    const tx = -18 + eased * 18;         // -18% -> 0
-    const ty = -14 + eased * 14;         // -14% -> 0
-    const opacity = 0.55 + eased * 0.45; // 0.55 -> 1.0
-    inner.style.setProperty('--photo-scale', scale.toFixed(3));
-    inner.style.setProperty('--photo-tx', tx.toFixed(1) + '%');
-    inner.style.setProperty('--photo-ty', ty.toFixed(1) + '%');
-    inner.style.setProperty('--photo-opacity', opacity.toFixed(3));
+    // Two phases:
+    //  0.00 – 0.18 : details fully visible, photo tiny in corner
+    //  0.18 – 0.90 : photo scales up while details fade + lift
+    //  0.90 – 1.00 : photo fills viewport, ready for the next card
+    const growPhase = Math.max(0, Math.min(1, (progress - 0.18) / 0.72));
+    const eased = 1 - Math.pow(1 - growPhase, 3);
+    const scale = 1 + eased * (targetScale - 1);
+    const detailsOpacity = Math.max(0, 1 - eased * 1.1);
+    const detailsTy = -eased * 40;
+    media.style.setProperty('--photo-scale', scale.toFixed(3));
+    content.style.setProperty('--details-opacity', detailsOpacity.toFixed(3));
+    content.style.setProperty('--details-ty', detailsTy.toFixed(1) + 'px');
   });
 }
 
