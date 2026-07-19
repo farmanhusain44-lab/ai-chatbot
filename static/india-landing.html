@@ -4,7 +4,7 @@
 <head>
 <script>
 function googleTranslateElementInit(){new google.translate.TranslateElement({pageLanguage:'en',includedLanguages:'en,hi,bn,ne,si,ta,zh-CN,my,id,dz,ar,ur,mr,gu,pa,kn,ml,te,or,as',autoDisplay:false},'google_translate_element');}
-function switchLang(lang){var sel=document.querySelector('.goog-te-combo');if(!sel){setTimeout(function(){switchLang(lang);},250);return;}sel.value=lang;sel.dispatchEvent(new Event('change'));document.querySelectorAll('.nav-lang-btn').forEach(function(b){b.classList.toggle('active',b.dataset.lang===lang);});try{localStorage.setItem('botifyai_lang',lang);}catch(e){}}
+function switchLang(lang){var attempts=0;function doSwitch(){var sel=document.querySelector('.goog-te-combo');if(!sel){if(attempts++>20)return;setTimeout(doSwitch,150);return;}if(sel.value===lang)return;var y=window.scrollY;document.documentElement.style.scrollBehavior='auto';sel.value=lang;sel.dispatchEvent(new Event('change'));setTimeout(function(){window.scrollTo(0,y);document.documentElement.style.scrollBehavior='';},60);document.querySelectorAll('.nav-lang-btn').forEach(function(b){b.classList.toggle('active',b.dataset.lang===lang);});try{localStorage.setItem('botifyai_lang',lang);}catch(e){}}doSwitch();}
 window.addEventListener('load',function(){
   var saved=null;try{saved=localStorage.getItem('botifyai_lang');}catch(e){}
   if(saved){setTimeout(function(){switchLang(saved);},600);return;}
@@ -25,7 +25,8 @@ window.addEventListener('load',function(){
 <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
 <style>
 .goog-te-banner-frame{display:none!important}
-body{top:0!important}
+body{top:0!important;overflow-anchor:none}
+html{overflow-anchor:none}
 .nav-lang{display:inline-flex;gap:2px;align-items:center;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);padding:3px 4px;border-radius:16px;margin:0 6px}
 .nav-lang-btn{background:transparent;border:none;color:#475569;padding:4px 10px;border-radius:12px;font-size:.72rem;font-weight:700;cursor:pointer;transition:.2s;font-family:inherit}
 .nav-lang-btn:hover{background:rgba(99,102,241,.12);color:#6366f1}
