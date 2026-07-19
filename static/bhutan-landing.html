@@ -4,18 +4,7 @@
 <script>
 function googleTranslateElementInit(){new google.translate.TranslateElement({pageLanguage:'en',includedLanguages:'en,hi,bn,ne,si,ta,zh-CN,my,id,dz,ar,ur,mr,gu,pa,kn,ml,te,or,as',autoDisplay:false},'google_translate_element');}
 function switchLang(lang){var attempts=0;function doSwitch(){var sel=document.querySelector('.goog-te-combo');if(!sel){if(attempts++>20)return;setTimeout(doSwitch,150);return;}if(sel.value===lang)return;var y=window.scrollY;document.documentElement.style.scrollBehavior='auto';sel.value=lang;sel.dispatchEvent(new Event('change'));setTimeout(function(){window.scrollTo(0,y);document.documentElement.style.scrollBehavior='';},60);document.querySelectorAll('.nav-lang-btn').forEach(function(b){b.classList.toggle('active',b.dataset.lang===lang);});try{localStorage.setItem('botifyai_lang',lang);}catch(e){}}doSwitch();}
-window.addEventListener('load',function(){
-  var saved=null;try{saved=localStorage.getItem('botifyai_lang');}catch(e){}
-  if(saved){setTimeout(function(){switchLang(saved);},600);return;}
-  var primary="dz";
-  if(primary==='auto-india'){
-    // Detect Indian state via ipapi
-    fetch('https://ipapi.co/json/').then(function(r){return r.json();}).then(function(d){
-      var stateLang={'MH':'mr','TN':'ta','KA':'kn','WB':'bn','GJ':'gu','PB':'pa','KL':'ml','AP':'te','TG':'te','OR':'or','AS':'as','BR':'hi','JH':'hi','RJ':'hi','HR':'hi','HP':'hi','UK':'hi','MP':'hi','CG':'hi','UP':'en','DL':'en','SK':'ne','TR':'bn','MN':'en','ML':'en','AR':'en','NL':'en','MZ':'en','GA':'en','JK':'en','LA':'en'};
-      var code=(d.region_code||'').toUpperCase();
-      var target=stateLang[code]||'en';
-      if(target!=='en'){setTimeout(function(){switchLang(target);},400);}
-    }).catch(function(){});
+window.addEventListener('load',function(){var saved=null;try{saved=localStorage.getItem('botifyai_lang');}catch(e){}if(saved&&saved!=='en'){setTimeout(function(){switchLang(saved);},800);}});
   }else if(primary!=='en'){
     setTimeout(function(){switchLang(primary);},400);
   }
@@ -31,6 +20,8 @@ html{overflow-anchor:none}
 .nav-lang-btn:hover{background:rgba(99,102,241,.12);color:#6366f1}
 .nav-lang-btn.active{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}
 @media(max-width:768px){.nav-lang{margin:0 4px}.nav-lang-btn{padding:3px 8px;font-size:.65rem}}
+.mob-lang{display:none}
+@media(max-width:768px){.mob-lang{display:flex;position:fixed;top:12px;right:12px;z-index:9998;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border:1px solid rgba(99,102,241,.25);padding:3px 4px;border-radius:16px;box-shadow:0 4px 14px rgba(99,102,241,.15);gap:2px}.mob-lang button{background:transparent;border:none;padding:5px 12px;border-radius:12px;font-size:.72rem;font-weight:800;color:#475569;cursor:pointer;font-family:inherit}.mob-lang button.active{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}}
 </style>
 
 <!-- Google tag (gtag.js) -->
@@ -591,6 +582,7 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
 </style>
 </head>
 <body>
+<div class="mob-lang"><button class="active" data-lang="en" onclick="switchLang('en')">EN</button><button class="" data-lang="dz" onclick="switchLang('dz')">རྫོང་ཁ</button></div>
 <div id="google_translate_element" style="display:none"></div>
 <canvas id="pc"></canvas>
 
