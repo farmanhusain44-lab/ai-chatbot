@@ -2,26 +2,34 @@
 <html lang="en">
 <head>
 <script>
-function googleTranslateElementInit(){new google.translate.TranslateElement({pageLanguage:'en',includedLanguages:'en,hi,bn,ne,si,ta,zh-CN,my,id,dz,ar,ur,mr,gu,pa,kn,ml,te,or,as',autoDisplay:false},'google_translate_element');}
-function switchLang(lang){var attempts=0;function doSwitch(){var sel=document.querySelector('.goog-te-combo');if(!sel){if(attempts++>20)return;setTimeout(doSwitch,150);return;}if(sel.value===lang)return;var y=window.scrollY;document.documentElement.style.scrollBehavior='auto';sel.value=lang;sel.dispatchEvent(new Event('change'));setTimeout(function(){window.scrollTo(0,y);document.documentElement.style.scrollBehavior='';},60);document.querySelectorAll('.nav-lang-btn').forEach(function(b){b.classList.toggle('active',b.dataset.lang===lang);});try{localStorage.setItem('botifyai_lang',lang);}catch(e){}}doSwitch();}
-window.addEventListener('load',function(){var saved=null;try{saved=localStorage.getItem('botifyai_lang');}catch(e){}if(saved&&saved!=='en'){setTimeout(function(){switchLang(saved);},800);}});
-  }else if(primary!=='en'){
-    setTimeout(function(){switchLang(primary);},400);
-  }
+const TRANS = {"ar": {"nav_features": "المميزات", "nav_how": "كيف يعمل", "nav_results": "النتائج", "nav_pricing": "التسعير", "nav_faq": "الأسئلة الشائعة", "nav_livedemo": "عرض حي", "nav_getstarted": "ابدأ →", "hero_cta1": "🎉 احصل على وصول مجاني الآن", "hero_cta2": "▶ شاهد العرض", "hero_trust_free": "🎉 وصول مجاني بينما نكمل نظام الدفع", "hero_trust_lang": "✓ العربية والإنجليزية", "hero_trust_any": "✓ يعمل على أي موقع", "hero_trust_5min": "✓ يعمل في 5 دقائق", "hero_trust_free_install": "✓ تثبيت مجاني", "hero_trust_moneyback": "✓ استرداد خلال 7 أيام"}};
+const ENGLISH_CACHE = {};
+function switchLang(lang){
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    const key=el.getAttribute('data-i18n');
+    if(!ENGLISH_CACHE[key])ENGLISH_CACHE[key]=el.textContent;
+    if(lang==='en'){el.textContent=ENGLISH_CACHE[key];}
+    else if(TRANS[lang]&&TRANS[lang][key]){el.textContent=TRANS[lang][key];}
+    else{el.textContent=ENGLISH_CACHE[key];}
+  });
+  document.querySelectorAll('.nav-lang-btn,.mob-lang button').forEach(function(b){b.classList.toggle('active',b.dataset&&b.dataset.lang===lang);});
+  document.documentElement.setAttribute('dir',(lang==='ar'||lang==='ur')?'rtl':'ltr');
+  document.documentElement.setAttribute('lang',lang);
+  try{localStorage.setItem('botifyai_lang',lang);}catch(e){}
+}
+window.addEventListener('DOMContentLoaded',function(){
+  var saved=null;try{saved=localStorage.getItem('botifyai_lang');}catch(e){}
+  if(saved&&saved!=='en'){switchLang(saved);}
 });
 </script>
-<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
 <style>
-.goog-te-banner-frame{display:none!important}
-body{top:0!important;overflow-anchor:none}
-html{overflow-anchor:none}
 .nav-lang{display:inline-flex;gap:2px;align-items:center;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);padding:3px 4px;border-radius:16px;margin:0 6px}
 .nav-lang-btn{background:transparent;border:none;color:#475569;padding:4px 10px;border-radius:12px;font-size:.72rem;font-weight:700;cursor:pointer;transition:.2s;font-family:inherit}
 .nav-lang-btn:hover{background:rgba(99,102,241,.12);color:#6366f1}
 .nav-lang-btn.active{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}
-@media(max-width:768px){.nav-lang{margin:0 4px}.nav-lang-btn{padding:3px 8px;font-size:.65rem}}
+@media(max-width:768px){.nav-lang{display:none}}
 .mob-lang{display:none}
-@media(max-width:768px){.mob-lang{display:flex;position:fixed;top:12px;right:12px;z-index:9998;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border:1px solid rgba(99,102,241,.25);padding:3px 4px;border-radius:16px;box-shadow:0 4px 14px rgba(99,102,241,.15);gap:2px}.mob-lang button{background:transparent;border:none;padding:5px 12px;border-radius:12px;font-size:.72rem;font-weight:800;color:#475569;cursor:pointer;font-family:inherit}.mob-lang button.active{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}}
+@media(max-width:768px){.mob-lang{display:flex;position:fixed;top:76px;right:12px;z-index:9998;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border:1px solid rgba(99,102,241,.25);padding:3px 4px;border-radius:16px;box-shadow:0 4px 14px rgba(99,102,241,.15);gap:2px}.mob-lang button{background:transparent;border:none;padding:5px 12px;border-radius:12px;font-size:.72rem;font-weight:800;color:#475569;cursor:pointer;font-family:inherit}.mob-lang button.active{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}}
 </style>
 
 <!-- Google tag (gtag.js) -->
@@ -583,7 +591,6 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
 </head>
 <body>
 <div class="mob-lang"><button class="active" data-lang="en" onclick="switchLang('en')">EN</button><button class="" data-lang="ar" onclick="switchLang('ar')">العربية</button></div>
-<div id="google_translate_element" style="display:none"></div>
 <canvas id="pc"></canvas>
 
 <div id="progress-bar"></div>
@@ -597,16 +604,16 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
  <span class="logo-text">BotifyAI</span>
  </div>
  <div class="nav-links">
- <a href="#features">Features</a>
- <a href="#how">How It Works</a>
- <a href="#results">Results</a>
- <a href="#pricing">Pricing</a>
- <a href="#faq">FAQ</a>
+ <a href="#features" data-i18n="nav_features">Features</a>
+ <a href="#how" data-i18n="nav_how">How It Works</a>
+ <a href="#results" data-i18n="nav_results">Results</a>
+ <a href="#pricing" data-i18n="nav_pricing">Pricing</a>
+ <a href="#faq" data-i18n="nav_faq">FAQ</a>
  <div class="nav-lang" id="navLangSwitcher"><button class="nav-lang-btn" data-lang="en" onclick="switchLang('en')">EN</button><button class="nav-lang-btn active" data-lang="ar" onclick="switchLang('ar')">العربية</button></div>
  </div>
  <div class="nav-right">
- <button class="nav-demo" onclick="document.getElementById('demo-section').scrollIntoView({behavior:'smooth'})">Live Demo</button>
- <button class="nav-cta" onclick="window.location.href='/payment'">Get Started →</button>
+ <button class="nav-demo" onclick="document.getElementById('demo-section').scrollIntoView({behavior:'smooth'})"><span data-i18n="nav_livedemo">Live Demo</span></button>
+ <button class="nav-cta" onclick="window.location.href='/payment'"><span data-i18n="nav_getstarted">Get Started →</span></button>
  </div>
  </div>
 </nav>
@@ -619,8 +626,8 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
  <h1>Your Website Needs an AI<br><span class="grad" id="typedText"></span></h1>
  <p class="hero-sub">BotifyAI answers customer questions 24/7 in <strong>Arabic & English</strong> — on your website, automatically. No staff needed. No missed leads. Just growth.</p>
  <div class="hero-btns">
- <button class="btn-primary" onclick="window.location.href='/payment'">🎉 Get Free Access Now</button>
- <button class="btn-secondary" onclick="document.getElementById('demo-section').scrollIntoView({behavior:'smooth'})">▶ See Live Demo</button>
+ <button class="btn-primary" onclick="window.location.href='/payment'"><span data-i18n="hero_cta1">🎉 Get Free Access Now</span></button>
+ <button class="btn-secondary" onclick="document.getElementById('demo-section').scrollIntoView({behavior:'smooth'})"><span data-i18n="hero_cta2">▶ See Live Demo</span></button>
  </div>
  <div class="hero-trust">
  <span>🎉 Free access while we finish payment setup</span>
@@ -1264,7 +1271,7 @@ function switchPayMode(mode){
  <h2>Ready to Grow Your Business with AI?</h2>
  <p>Join 500+ Oman businesses using BotifyAI to automate customer support, capture more leads, and increase revenue — 24/7. 🎉 Free access while we finish setting up online payments.</p>
  <div class="cta-btns">
- <button class="btn-primary" onclick="window.location.href='/payment'">🎉 Get Free Access Now</button>
+ <button class="btn-primary" onclick="window.location.href='/payment'"><span data-i18n="hero_cta1">🎉 Get Free Access Now</span></button>
  <a href="https://wa.me/917992111021?text=Hi!%20I%20want%20to%20learn%20more%20about%20BotifyAI%20for%20my%20Oman%20business." target="_blank" class="btn-secondary" style="display:inline-block">💬 Talk to Us on WhatsApp</a>
  </div>
 </section>
@@ -1279,15 +1286,15 @@ function switchPayMode(mode){
  </div>
  <div class="footer-col">
  <h4>Product</h4>
- <a href="#features">Features</a>
- <a href="#pricing">Pricing</a>
+ <a href="#features" data-i18n="nav_features">Features</a>
+ <a href="#pricing" data-i18n="nav_pricing">Pricing</a>
  <a href="/deploy-guide">Setup Guide</a>
  <a href="#demo-section">Live Demo</a>
  </div>
  <div class="footer-col">
  <h4>Company</h4>
  <a href="#results">Case Studies</a>
- <a href="#faq">FAQ</a>
+ <a href="#faq" data-i18n="nav_faq">FAQ</a>
  <a href="/partners">💰 Partner Program</a>
  <a href="https://wa.me/917992111021" target="_blank">Contact Us</a>
  </div>
