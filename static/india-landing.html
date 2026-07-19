@@ -3,26 +3,34 @@
 <!-- BUILD:2026-07-19-main-live -->
 <head>
 <script>
-function googleTranslateElementInit(){new google.translate.TranslateElement({pageLanguage:'en',includedLanguages:'en,hi,bn,ne,si,ta,zh-CN,my,id,dz,ar,ur,mr,gu,pa,kn,ml,te,or,as',autoDisplay:false},'google_translate_element');}
-function switchLang(lang){var attempts=0;function doSwitch(){var sel=document.querySelector('.goog-te-combo');if(!sel){if(attempts++>20)return;setTimeout(doSwitch,150);return;}if(sel.value===lang)return;var y=window.scrollY;document.documentElement.style.scrollBehavior='auto';sel.value=lang;sel.dispatchEvent(new Event('change'));setTimeout(function(){window.scrollTo(0,y);document.documentElement.style.scrollBehavior='';},60);document.querySelectorAll('.nav-lang-btn').forEach(function(b){b.classList.toggle('active',b.dataset.lang===lang);});try{localStorage.setItem('botifyai_lang',lang);}catch(e){}}doSwitch();}
-window.addEventListener('load',function(){var saved=null;try{saved=localStorage.getItem('botifyai_lang');}catch(e){}if(saved&&saved!=='en'){setTimeout(function(){switchLang(saved);},800);}});
-  }else if(primary!=='en'){
-    setTimeout(function(){switchLang(primary);},400);
-  }
+const TRANS = {"hi": {"nav_features": "विशेषताएँ", "nav_how": "कैसे काम करता है", "nav_results": "परिणाम", "nav_pricing": "मूल्य", "nav_faq": "सवाल-जवाब", "nav_livedemo": "लाइव डेमो", "nav_getstarted": "शुरू करें →", "hero_cta1": "🎉 अभी मुफ्त एक्सेस पाएं", "hero_cta2": "▶ लाइव डेमो देखें", "hero_trust_free": "🎉 मुफ्त एक्सेस - पेमेंट सिस्टम आ रहा है", "hero_trust_lang": "✓ हिंदी और अंग्रेज़ी", "hero_trust_any": "✓ किसी भी वेबसाइट पर", "hero_trust_5min": "✓ 5 मिनट में लाइव", "hero_trust_free_install": "✓ मुफ्त इंस्टॉलेशन", "hero_trust_moneyback": "✓ 7 दिन मनी बैक"}, "ta": {"nav_features": "அம்சங்கள்", "nav_how": "எப்படி வேலை செய்கிறது", "nav_results": "முடிவுகள்", "nav_pricing": "விலை", "nav_faq": "கேள்விகள்", "nav_livedemo": "நேரடி டெமோ", "nav_getstarted": "தொடங்கு →", "hero_cta1": "🎉 இப்போது இலவசமாக பெறவும்", "hero_cta2": "▶ நேரடி டெமோ"}, "bn": {"nav_features": "বৈশিষ্ট্য", "nav_how": "কিভাবে কাজ করে", "nav_results": "ফলাফল", "nav_pricing": "মূল্য", "nav_faq": "প্রশ্ন", "nav_livedemo": "লাইভ ডেমো", "nav_getstarted": "শুরু করুন →", "hero_cta1": "🎉 এখনই বিনামূল্যে পান", "hero_cta2": "▶ লাইভ ডেমো"}, "mr": {"nav_features": "वैशिष्ट्ये", "nav_how": "हे कसे कार्य करते", "nav_results": "निकाल", "nav_pricing": "किंमत", "nav_faq": "प्रश्न", "nav_livedemo": "लाईव्ह डेमो", "nav_getstarted": "सुरू करा →", "hero_cta1": "🎉 आत्ता विनामूल्य मिळवा", "hero_cta2": "▶ लाईव्ह डेमो"}, "te": {"nav_features": "ఫీచర్లు", "nav_how": "ఇది ఎలా పని చేస్తుంది", "nav_results": "ఫలితాలు", "nav_pricing": "ధర", "nav_faq": "ప్రశ్నలు", "nav_livedemo": "లైవ్ డెమో", "nav_getstarted": "ప్రారంభించండి →", "hero_cta1": "🎉 ఇప్పుడు ఉచితంగా పొందండి", "hero_cta2": "▶ లైవ్ డెమో"}, "gu": {"nav_features": "લક્ષણો", "nav_how": "આ કેવી રીતે કાર્ય કરે છે", "nav_results": "પરિણામો", "nav_pricing": "ભાવ", "nav_faq": "પ્રશ્નો", "nav_livedemo": "લાઈવ ડેમો", "nav_getstarted": "શરૂ કરો →", "hero_cta1": "🎉 હમણાં મફત મેળવો", "hero_cta2": "▶ લાઈવ ડેમો"}, "pa": {"nav_features": "ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ", "nav_how": "ਇਹ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ", "nav_results": "ਨਤੀਜੇ", "nav_pricing": "ਕੀਮਤ", "nav_faq": "ਸਵਾਲ", "nav_livedemo": "ਲਾਈਵ ਡੈਮੋ", "nav_getstarted": "ਸ਼ੁਰੂ ਕਰੋ →", "hero_cta1": "🎉 ਹੁਣੇ ਮੁਫ਼ਤ ਪ੍ਰਾਪਤ ਕਰੋ", "hero_cta2": "▶ ਲਾਈਵ ਡੈਮੋ"}, "kn": {"nav_features": "ವೈಶಿಷ್ಟ್ಯಗಳು", "nav_how": "ಇದು ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ", "nav_results": "ಫಲಿತಾಂಶಗಳು", "nav_pricing": "ಬೆಲೆ", "nav_faq": "ಪ್ರಶ್ನೆಗಳು", "nav_livedemo": "ಲೈವ್ ಡೆಮೊ", "nav_getstarted": "ಪ್ರಾರಂಭಿಸಿ →", "hero_cta1": "🎉 ಈಗ ಉಚಿತವಾಗಿ ಪಡೆಯಿರಿ", "hero_cta2": "▶ ಲೈವ್ ಡೆಮೊ"}, "ml": {"nav_features": "സവിശേഷതകൾ", "nav_how": "ഇത് എങ്ങനെ പ്രവർത്തിക്കുന്നു", "nav_results": "ഫലങ്ങൾ", "nav_pricing": "വില", "nav_faq": "ചോദ്യങ്ങൾ", "nav_livedemo": "ലൈവ് ഡെമോ", "nav_getstarted": "ആരംഭിക്കുക →", "hero_cta1": "🎉 ഇപ്പോൾ സൗജന്യമായി നേടുക", "hero_cta2": "▶ ലൈവ് ഡെമോ"}};
+const ENGLISH_CACHE = {};
+function switchLang(lang){
+  document.querySelectorAll('[data-i18n]').forEach(function(el){
+    const key=el.getAttribute('data-i18n');
+    if(!ENGLISH_CACHE[key])ENGLISH_CACHE[key]=el.textContent;
+    if(lang==='en'){el.textContent=ENGLISH_CACHE[key];}
+    else if(TRANS[lang]&&TRANS[lang][key]){el.textContent=TRANS[lang][key];}
+    else{el.textContent=ENGLISH_CACHE[key];}
+  });
+  document.querySelectorAll('.nav-lang-btn,.mob-lang button').forEach(function(b){b.classList.toggle('active',b.dataset&&b.dataset.lang===lang);});
+  document.documentElement.setAttribute('dir',(lang==='ar'||lang==='ur')?'rtl':'ltr');
+  document.documentElement.setAttribute('lang',lang);
+  try{localStorage.setItem('botifyai_lang',lang);}catch(e){}
+}
+window.addEventListener('DOMContentLoaded',function(){
+  var saved=null;try{saved=localStorage.getItem('botifyai_lang');}catch(e){}
+  if(saved&&saved!=='en'){switchLang(saved);}
 });
 </script>
-<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
 <style>
-.goog-te-banner-frame{display:none!important}
-body{top:0!important;overflow-anchor:none}
-html{overflow-anchor:none}
 .nav-lang{display:inline-flex;gap:2px;align-items:center;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);padding:3px 4px;border-radius:16px;margin:0 6px}
 .nav-lang-btn{background:transparent;border:none;color:#475569;padding:4px 10px;border-radius:12px;font-size:.72rem;font-weight:700;cursor:pointer;transition:.2s;font-family:inherit}
 .nav-lang-btn:hover{background:rgba(99,102,241,.12);color:#6366f1}
 .nav-lang-btn.active{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}
-@media(max-width:768px){.nav-lang{margin:0 4px}.nav-lang-btn{padding:3px 8px;font-size:.65rem}}
+@media(max-width:768px){.nav-lang{display:none}}
 .mob-lang{display:none}
-@media(max-width:768px){.mob-lang{display:flex;position:fixed;top:12px;right:12px;z-index:9998;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border:1px solid rgba(99,102,241,.25);padding:3px 4px;border-radius:16px;box-shadow:0 4px 14px rgba(99,102,241,.15);gap:2px}.mob-lang button{background:transparent;border:none;padding:5px 12px;border-radius:12px;font-size:.72rem;font-weight:800;color:#475569;cursor:pointer;font-family:inherit}.mob-lang button.active{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}}
+@media(max-width:768px){.mob-lang{display:flex;position:fixed;top:76px;right:12px;z-index:9998;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border:1px solid rgba(99,102,241,.25);padding:3px 4px;border-radius:16px;box-shadow:0 4px 14px rgba(99,102,241,.15);gap:2px}.mob-lang button{background:transparent;border:none;padding:5px 12px;border-radius:12px;font-size:.72rem;font-weight:800;color:#475569;cursor:pointer;font-family:inherit}.mob-lang button.active{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}}
 </style>
 
 <!-- Google tag (gtag.js) -->
@@ -643,7 +651,6 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
  }).catch(()=>{});
 })();
 </script>
-<div id="google_translate_element" style="display:none"></div>
 <div class="lang-banner" id="langBanner">
  <div class="inner">
  <span id="langBannerText">We detected your state. View in your language?</span>
@@ -663,11 +670,11 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
  <span class="made-in-badge"> Made in India</span>
  </div>
  <div class="nav-links" id="navLinks">
- <a href="#features">Features</a>
- <a href="#how">How It Works</a>
- <a href="#results">Results</a>
- <a href="#pricing">Pricing</a>
- <a href="#faq">FAQ</a>
+ <a href="#features" data-i18n="nav_features">Features</a>
+ <a href="#how" data-i18n="nav_how">How It Works</a>
+ <a href="#results" data-i18n="nav_results">Results</a>
+ <a href="#pricing" data-i18n="nav_pricing">Pricing</a>
+ <a href="#faq" data-i18n="nav_faq">FAQ</a>
  <div class="lang-switch" id="langSwitch">
  <button class="active" onclick="setLanguage('en')" data-lang="en">English</button>
  <button onclick="setLanguage('hi')" data-lang="hi" id="navDetectedLang">Hindi</button>
@@ -678,7 +685,7 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
  <button class="active" onclick="setLanguage('en')" data-lang="en">English</button>
  <button onclick="setLanguage('hi')" data-lang="hi" id="desktopDetectedLang">Hindi</button>
  </div>
- <button class="nav-cta" onclick="window.location.href='/payment?plan=professional&currency=inr'">Get Started →</button>
+ <button class="nav-cta" onclick="window.location.href='/payment?plan=professional&currency=inr'"><span data-i18n="nav_getstarted">Get Started →</span></button>
  </div>
  </div>
 </nav>
@@ -691,7 +698,7 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
  <p class="hero-sub">BotifyAI answers customer questions <strong>24/7 in Hindi, Tamil, Telugu, Bengali, Marathi, Gujarati & more</strong> — on your website, WhatsApp, and Instagram. No staff needed. No missed leads.</p>
  <div class="hero-btns">
  <button class="btn-primary" onclick="window.location.href='/payment?plan=professional&currency=inr'">🚀 Start at ₹100/mo</button>
- <button class="btn-secondary" onclick="document.getElementById('demo-section').scrollIntoView({behavior:'smooth'})">▶ See Live Demo</button>
+ <button class="btn-secondary" onclick="document.getElementById('demo-section').scrollIntoView({behavior:'smooth'})"><span data-i18n="hero_cta2">▶ See Live Demo</span></button>
  </div>
  <div class="hero-trust">
  <span>✓ 22+ Indian Languages</span>
@@ -1317,15 +1324,15 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
  </div>
  <div class="footer-col">
  <h4>Product</h4>
- <a href="#features">Features</a>
- <a href="#pricing">Pricing</a>
+ <a href="#features" data-i18n="nav_features">Features</a>
+ <a href="#pricing" data-i18n="nav_pricing">Pricing</a>
  <a href="/deploy-guide">Setup Guide</a>
  <a href="#demo-section">Live Demo</a>
  </div>
  <div class="footer-col">
  <h4>Company</h4>
  <a href="#results">Case Studies</a>
- <a href="#faq">FAQ</a>
+ <a href="#faq" data-i18n="nav_faq">FAQ</a>
  <a href="/partners">💰 Partner Program</a>
  <a href="https://wa.me/917992111021" target="_blank">Contact Us</a>
  </div>
@@ -1660,8 +1667,6 @@ function googleTranslateElementInit(){
  },'google_translate_element');
 }
 </script>
-<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
 <script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-lang="hi" data-agent="BotifyAI Assistant"></script>
 </body>
 </html>
