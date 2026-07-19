@@ -11,6 +11,7 @@
     const accessCode = currentScript.getAttribute('data-access') || '';
     const position = currentScript.getAttribute('data-position') || 'bottom-right';
     const color = currentScript.getAttribute('data-color') || '#25D366';
+    const lang = currentScript.getAttribute('data-lang') || (navigator.language || 'en').split('-')[0].toLowerCase();
 
     const widgetId = 'ai-chatbot-widget-' + Date.now();
 
@@ -132,7 +133,7 @@
     // Chat panel iframe
     const panel = document.createElement('iframe');
     panel.id = widgetId + '-panel';
-    panel.src = `${baseUrl}/widget.html?name=${encodeURIComponent(agentName)}&welcome=${encodeURIComponent(welcomeText)}&access=${encodeURIComponent(accessCode)}`;
+    panel.src = `${baseUrl}/widget.html?name=${encodeURIComponent(agentName)}&welcome=${encodeURIComponent(welcomeText)}&access=${encodeURIComponent(accessCode)}&lang=${encodeURIComponent(lang)}`;
     panel.title = agentName;
     panel.setAttribute('allow', 'microphone');
 

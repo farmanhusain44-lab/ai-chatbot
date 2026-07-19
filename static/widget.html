@@ -65,9 +65,27 @@ body{font-family:'Segoe UI',sans-serif;background:#fff;display:flex;flex-directi
 const params = new URLSearchParams(window.location.search);
 const agentName = params.get('name') || 'AI Assistant';
 const color = params.get('color') || '#6366f1';
+const lang = (params.get('lang') || 'en').toLowerCase();
 
 document.getElementById('agent-name').textContent = agentName;
 document.documentElement.style.setProperty('--color', color);
+
+const WELCOME_BY_LANG = {
+    en: 'Hello! 👋 Welcome to ' + agentName + '. How can I help you today?',
+    hi: 'नमस्ते! 👋 ' + agentName + ' में आपका स्वागत है। मैं आपकी कैसे मदद कर सकता हूँ?',
+    bn: 'হ্যালো! 👋 ' + agentName + ' এ স্বাগতম। আমি আপনাকে কীভাবে সাহায্য করতে পারি?',
+    ne: 'नमस्कार! 👋 ' + agentName + ' मा स्वागत छ। म तपाईंलाई कसरी सहयोग गर्न सक्छु?',
+    si: 'ආයුබෝවන්! 👋 ' + agentName + ' වෙත සාදරයෙන් පිළිගනිමු. මට ඔබට කෙසේ උදව් කළ හැකිද?',
+    ta: 'வணக்கம்! 👋 ' + agentName + ' க்கு வரவேற்கிறோம். நான் எப்படி உதவ முடியும்?',
+    ar: 'مرحباً! 👋 أهلاً بك في ' + agentName + '. كيف يمكنني مساعدتك اليوم؟',
+    ur: 'ہیلو! 👋 ' + agentName + ' میں خوش آمدید۔ آج میں آپ کی کیا مدد کر سکتا ہوں؟',
+    'zh-cn': '你好！👋 欢迎来到 ' + agentName + '。我今天能怎么帮您？',
+    zh: '你好！👋 欢迎来到 ' + agentName + '。我今天能怎么帮您？',
+    my: 'မင်္ဂလာပါ! 👋 ' + agentName + ' မှ ကြိုဆိုပါတယ်။ ဒီနေ့ ဘယ်လိုကူညီပေးရမလဲ?',
+    id: 'Halo! 👋 Selamat datang di ' + agentName + '. Ada yang bisa saya bantu hari ini?',
+    dz: 'བཀྲ་ཤིས་བདེ་ལེགས། 👋 ' + agentName + ' ལ་བྱོན་པར་དགའ་བསུ་ཞུ། ག་རེ་བྱས་ནས་རོགས་པ་ཞུ་དགོས་སམ?'
+};
+const welcomeText = WELCOME_BY_LANG[lang] || WELCOME_BY_LANG.en;
 
 const REPLIES = {
     'hello':     'Hello! 👋 I am BotifyAI Assistant. I help businesses automate customer support, answer FAQs, and capture leads 24/7. How can I help?',
@@ -176,7 +194,7 @@ function closeWidget() {
 
 // Welcome message
 setTimeout(() => {
-    addMsg('Hello! 👋 Welcome to ' + agentName + '. How can I help you today?', 'bot');
+    addMsg(welcomeText, 'bot');
 }, 400);
 </script>
 </body>

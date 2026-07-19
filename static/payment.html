@@ -11,456 +11,86 @@
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Checkout — BotifyAI</title>
-<meta name="description" content="Choose your BotifyAI plan and complete checkout securely. Plans for India start at ₹100/mo and UAE from AED 499/mo.">
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<title>Free Access — BotifyAI</title>
+<meta name="description" content="Get instant free access to BotifyAI while our payment system launches. Setup your AI chatbot in 5 minutes.">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;background:#070714;color:#e2e8f0;min-height:100vh;display:flex;flex-direction:column}
+body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#fef3c7 0%,#fbcfe8 50%,#e0e7ff 100%);color:#0f172a;min-height:100vh;display:flex;flex-direction:column}
 a{text-decoration:none;color:inherit}
-
-nav{padding:16px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.06)}
-.nav-logo{font-size:1rem;font-weight:800;background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.nav-back{color:#475569;font-size:.85rem;display:flex;align-items:center;gap:6px;transition:.2s}
-.nav-back:hover{color:#94a3b8}
-
-.page{flex:1;display:grid;grid-template-columns:1fr 1fr;max-width:1000px;margin:0 auto;width:100%;padding:40px 20px;gap:50px;align-items:start}
-
-/* LEFT — summary */
-.summary h2{font-size:1.4rem;font-weight:800;margin-bottom:6px}
-.summary .sub{color:#475569;font-size:.85rem;margin-bottom:30px}
-.plan-select{display:flex;flex-direction:column;gap:10px;margin-bottom:30px}
-.ps-item{border:2px solid rgba(255,255,255,.07);border-radius:14px;padding:16px 18px;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:space-between}
-.ps-item:hover{border-color:rgba(167,139,250,.3)}
-.ps-item.active{border-color:#a78bfa;background:rgba(167,139,250,.07)}
-.ps-item .ps-left h4{font-size:.9rem;font-weight:700;color:#e2e8f0;margin-bottom:3px}
-.ps-item .ps-left p{font-size:.75rem;color:#475569}
-.ps-item .ps-price{font-size:1rem;font-weight:800;color:#a78bfa}
-.ps-radio{width:18px;height:18px;border-radius:50%;border:2px solid #334155;display:flex;align-items:center;justify-content:center;margin-right:14px;flex-shrink:0;transition:.2s}
-.ps-item.active .ps-radio{border-color:#a78bfa;background:#a78bfa}
-.ps-item.active .ps-radio::after{content:'';width:7px;height:7px;border-radius:50%;background:#fff}
-.ps-row{display:flex;align-items:center}
-
-.divider{border:none;border-top:1px solid rgba(255,255,255,.06);margin:24px 0}
-
-.what-you-get h3{font-size:.82rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px}
-.wyg-item{display:flex;align-items:center;gap:10px;font-size:.85rem;color:#94a3b8;margin-bottom:10px}
-.wyg-item .ck{color:#34d399;font-weight:700}
-
-.trust-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
-.trust-item{display:flex;align-items:center;gap:6px;font-size:.75rem;color:#334155;padding:5px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:8px}
-.trust-item span{font-size:.9rem}
-
-/* RIGHT — form */
-.form-box{background:#0f0f23;border:1px solid rgba(255,255,255,.07);border-radius:20px;padding:32px}
-.form-box h3{font-size:1.1rem;font-weight:700;margin-bottom:24px}
-.field{margin-bottom:16px}
-.field label{display:block;font-size:.78rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
-.field input,.field select{width:100%;padding:13px 16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#e2e8f0;font-size:.92rem;outline:none;transition:.2s;font-family:'Inter',sans-serif}
-.field input:focus,.field select:focus{border-color:#a78bfa;background:rgba(167,139,250,.05)}
-.field input.err{border-color:#f87171}
-.field select option{background:#0f0f23}
-.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-
-.pay-btn{width:100%;padding:15px;border-radius:12px;border:none;background:linear-gradient(135deg,#a78bfa,#60a5fa);color:#fff;font-weight:800;font-size:1rem;cursor:pointer;transition:.2s;margin-top:8px;position:relative}
-.pay-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 12px 32px rgba(167,139,250,.3)}
-.pay-btn:disabled{opacity:.6;cursor:not-allowed}
-.pay-btn.loading::after{content:'';position:absolute;right:18px;top:50%;transform:translateY(-50%);width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:translateY(-50%) rotate(360deg)}}
-
-.secure-note{text-align:center;color:#334155;font-size:.75rem;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:6px}
-.trust-pill{padding:5px 12px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);font-size:.72rem;color:#94a3b8;font-weight:500}
-
-/* SUCCESS */
-#successScreen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;text-align:center;padding:40px 20px}
-.success-icon{font-size:4rem;margin-bottom:20px;animation:pop .4s cubic-bezier(.175,.885,.32,1.275)}
-@keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
-#successScreen h2{font-size:1.8rem;font-weight:800;margin-bottom:10px;background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-#successScreen p{color:#475569;margin-bottom:28px;line-height:1.6}
-.access-box{background:#0f0f23;border:1px solid rgba(167,139,250,.3);border-radius:14px;padding:20px 28px;margin-bottom:24px;text-align:center}
-.access-box .label{font-size:.75rem;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
-.access-box .code{font-family:monospace;font-size:1.6rem;color:#a78bfa;letter-spacing:3px;font-weight:700}
-.success-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
-.s-btn{padding:13px 28px;border-radius:10px;font-weight:700;font-size:.92rem;border:none;cursor:pointer}
-.s-btn.primary{background:linear-gradient(135deg,#a78bfa,#60a5fa);color:#fff}
-.s-btn.secondary{background:rgba(255,255,255,.06);color:#94a3b8;border:1px solid rgba(255,255,255,.1)}
-
-@media(max-width:700px){
-    .page{grid-template-columns:1fr;gap:28px}
-    .field-row{grid-template-columns:1fr}
-}
+nav{padding:16px 28px;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid rgba(15,23,42,.06)}
+.nav-logo{display:flex;align-items:center;gap:10px;font-weight:800}
+.nav-logo img{width:32px;height:32px;border-radius:50%}
+.nav-logo .name{font-size:1.05rem;background:linear-gradient(135deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.nav-back{color:#475569;font-size:.85rem}
+.main{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 20px}
+.card{max-width:640px;width:100%;background:#fff;border-radius:24px;padding:48px 40px;box-shadow:0 24px 60px rgba(99,102,241,.15);text-align:center;position:relative;overflow:hidden}
+.badge{display:inline-block;padding:8px 20px;background:linear-gradient(135deg,#a7f3d0,#fef3c7);color:#065f46;font-size:.75rem;font-weight:800;border-radius:30px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:20px}
+h1{font-size:clamp(1.7rem,4vw,2.4rem);font-weight:900;line-height:1.15;letter-spacing:-.02em;margin-bottom:16px;background:linear-gradient(135deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+p.lead{font-size:1.05rem;color:#475569;line-height:1.7;margin-bottom:32px}
+.pill-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:32px}
+.pill{padding:8px 16px;background:rgba(99,102,241,.08);color:#4338ca;font-size:.8rem;font-weight:700;border-radius:24px;border:1px solid rgba(99,102,241,.15)}
+.cta{display:inline-block;padding:18px 36px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-weight:800;font-size:1.05rem;border-radius:14px;box-shadow:0 12px 32px rgba(99,102,241,.35);transition:.25s;border:none;cursor:pointer;text-decoration:none}
+.cta:hover{transform:translateY(-2px);box-shadow:0 18px 42px rgba(99,102,241,.45)}
+.cta-sub{margin-top:14px;color:#64748b;font-size:.8rem}
+.what-you-get{text-align:left;background:#f8fafc;padding:22px 24px;border-radius:16px;margin-top:24px}
+.what-you-get h3{font-size:.85rem;font-weight:800;color:#0f172a;margin-bottom:14px;text-transform:uppercase;letter-spacing:.06em}
+.what-you-get ul{list-style:none}
+.what-you-get li{padding:8px 0;color:#334155;font-size:.9rem;display:flex;align-items:center;gap:10px}
+.what-you-get li::before{content:"✓";color:#059669;font-weight:800;font-size:1.05rem}
+footer{text-align:center;padding:24px;color:#64748b;font-size:.78rem}
+.launch-note{margin-top:20px;padding:14px 18px;background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:12px;color:#78350f;font-size:.85rem;font-weight:600;line-height:1.55}
+@media(max-width:640px){.card{padding:36px 24px}h1{font-size:1.6rem}}
 </style>
 </head>
 <body>
 
 <nav>
-    <div class="nav-logo">🤖 BotifyAI</div>
-    <a class="nav-back" href="/uae-landing">← Back</a>
+  <a href="/" class="nav-logo">
+    <img src="https://i.imgur.com/FfNwGyA.png" alt="BotifyAI"/>
+    <span class="name">BotifyAI</span>
+  </a>
+  <a href="/" class="nav-back">← Back to home</a>
 </nav>
 
-<!-- Checkout -->
-<div class="page" id="checkoutPage">
+<main class="main">
+  <div class="card">
+    <div class="badge">🎁 Launch Special · Free Access</div>
+    <h1>Get BotifyAI Free — Payment System Coming Soon</h1>
+    <p class="lead">Our automated billing is still being finalized. Enjoy full access to BotifyAI on us while we finish setting it up. When billing goes live, you'll get 30 days to decide.</p>
 
-    <!-- LEFT -->
-    <div class="summary">
-        <h2>Choose Your Plan</h2>
-        <div class="sub">All plans include setup support. Cancel anytime.</div>
-
-        <div class="plan-select">
-            <div class="ps-item active" onclick="selectPlan(this,'starter','pri_01kwyphc6q21dyfrefrbwx84d4','AED 499')">
-                <div class="ps-row">
-                    <div class="ps-radio"></div>
-                    <div class="ps-left">
-                        <h4>Starter</h4>
-                        <p>500 conversations/mo · Basic dashboard</p>
-                    </div>
-                </div>
-                <div class="ps-price">AED 499<span style="font-size:.7rem;font-weight:400;color:#475569">/mo</span></div>
-            </div>
-            <div class="ps-item" onclick="selectPlan(this,'professional','pri_01kwypkc37z1nab8qx1xswacdy','AED 1,499')">
-                <div class="ps-row">
-                    <div class="ps-radio"></div>
-                    <div class="ps-left">
-                        <h4>Professional ⭐</h4>
-                        <p>2,000 conversations/mo · WhatsApp + Custom bot</p>
-                    </div>
-                </div>
-                <div class="ps-price">AED 1,499<span style="font-size:.7rem;font-weight:400;color:#475569">/mo</span></div>
-            </div>
-            <div class="ps-item" onclick="selectPlan(this,'enterprise','pri_01kwypmjtydfmgrvqpjp2jyk7m','AED 3,499')">
-                <div class="ps-row">
-                    <div class="ps-radio"></div>
-                    <div class="ps-left">
-                        <h4>Enterprise</h4>
-                        <p>Unlimited · Custom AI training · Account manager</p>
-                    </div>
-                </div>
-                <div class="ps-price">AED 3,499<span style="font-size:.7rem;font-weight:400;color:#475569">/mo</span></div>
-            </div>
-        </div>
-
-        <hr class="divider">
-
-        <div class="what-you-get">
-            <h3>What you get immediately</h3>
-            <div class="wyg-item"><span class="ck">✓</span> AI chatbot live on your website</div>
-            <div class="wyg-item"><span class="ck">✓</span> Arabic & English replies</div>
-            <div class="wyg-item"><span class="ck">✓</span> Access code + dashboard</div>
-            <div class="wyg-item"><span class="ck">✓</span> Step-by-step setup guide</div>
-            <div class="wyg-item"><span class="ck">✓</span> Free installation support</div>
-            <div class="wyg-item"><span class="ck">✓</span> 7-day money-back guarantee</div>
-        </div>
-
-        <div class="trust-row">
-            <div class="trust-item"><span>🔒</span> SSL Secured</div>
-            <div class="trust-item">
-              <svg height="14" viewBox="0 0 42 14" xmlns="http://www.w3.org/2000/svg"><text x="0" y="11" font-family="Arial" font-weight="900" font-size="13" fill="#1a1f71">VISA</text></svg>
-            </div>
-            <div class="trust-item">
-              <svg height="16" viewBox="0 0 28 16" xmlns="http://www.w3.org/2000/svg"><circle cx="9" cy="8" r="8" fill="#EB001B"/><circle cx="19" cy="8" r="8" fill="#F79E1B"/><path d="M14 2.5a8 8 0 0 1 0 11A8 8 0 0 1 14 2.5z" fill="#FF5F00"/></svg>
-            </div>
-            <div class="trust-item" style="background:#000;border-color:#000;padding:5px 10px">
-              <svg height="13" viewBox="0 0 11 14" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M9 3.5c.6-.8 1-1.8.9-2.8-.9.1-2 .6-2.6 1.4-.6.7-1.1 1.7-.9 2.7 1 .1 2-.5 2.6-1.3z"/><path d="M9.9 5C8.4 4.9 7.2 5.8 6.5 5.8c-.7 0-1.8-.8-3-.8-1.5 0-2.9.9-3.7 2.3C-1.8 9.9-.6 13.9.8 16c.7 1.1 1.6 2.3 2.7 2.2 1.1 0 1.5-.7 2.8-.7 1.3 0 1.7.7 2.8.7 1.2 0 2-1.1 2.7-2.1.5-.8.7-1.2 1.1-2-2.9-1.1-3.4-5.2-.4-6.9z"/></svg>
-              <span style="color:#fff;font-family:-apple-system,sans-serif;font-size:.7rem;font-weight:600">Pay</span>
-            </div>
-            <div class="trust-item"><span>↩️</span> 7-Day Refund</div>
-        </div>
+    <div class="pill-row">
+      <span class="pill">✨ Full features</span>
+      <span class="pill">🌍 22+ languages</span>
+      <span class="pill">⚡ 5-min setup</span>
+      <span class="pill">💬 24/7 bot</span>
+      <span class="pill">🎯 No credit card</span>
     </div>
 
-    <!-- RIGHT -->
-    <div class="form-box">
-        <h3>Your Details</h3>
+    <a href="/onboard" class="cta">🎉 Get Free Access Now →</a>
+    <div class="cta-sub">Takes 2 minutes · No payment required</div>
 
-        <div class="field-row">
-            <div class="field">
-                <label>Full Name</label>
-                <input type="text" id="fName" placeholder="Your full name">
-            </div>
-            <div class="field">
-                <label>Email</label>
-                <input type="email" id="fEmail" placeholder="Your email address">
-            </div>
-        </div>
-        <div class="field">
-            <label>Website URL</label>
-            <input type="url" id="fWebsite" placeholder="https://yourwebsite.com">
-        </div>
-        <div class="field">
-            <label>Website Platform</label>
-            <select id="fPlatform">
-                <option value="" disabled selected>Select your platform</option>
-                <option value="wordpress">WordPress</option>
-                <option value="shopify">Shopify</option>
-                <option value="wix">Wix</option>
-                <option value="squarespace">Squarespace</option>
-                <option value="webflow">Webflow</option>
-                <option value="custom">Custom HTML / Developer built</option>
-                <option value="godaddy">GoDaddy</option>
-                <option value="other">Other / I don't know</option>
-            </select>
-        </div>
-
-        <button id="payBtn" class="pay-btn" onclick="startPayment()">
-          Continue
-        </button>
-        <div class="secure-note">🔒 Secure setup · Cancel anytime</div>
-        <div id="methodPills" style="display:flex;justify-content:center;gap:8px;margin-top:14px;flex-wrap:wrap">
-          <span class="trust-pill">UPI</span>
-          <span class="trust-pill">Cards</span>
-          <span class="trust-pill">Net Banking</span>
-          <span class="trust-pill">Wallets</span>
-        </div>
-        <div id="netbankingNote" style="display:none;margin-top:14px;padding:12px 16px;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.25);border-radius:12px;text-align:center;color:#6ee7b7;font-size:.8rem;font-weight:600">
-          🎉 Net Banking payments are auto-confirmed right now — enjoy it free while we finish setting up our full payment system!
-        </div>
+    <div class="what-you-get">
+      <h3>What you get</h3>
+      <ul>
+        <li>Trained AI chatbot on your business info</li>
+        <li>Works on your website + WhatsApp + Instagram</li>
+        <li>Multilingual replies (auto-detect language)</li>
+        <li>Free installation help from our team</li>
+        <li>Dashboard to see all conversations</li>
+        <li>Cancel anytime — no lock-in</li>
+      </ul>
     </div>
-</div>
 
-<!-- Success Screen -->
-<div id="successScreen">
-    <div class="success-icon">🎉</div>
-    <h2>Payment Successful!</h2>
-    <p>Your AI bot is ready. Check your email for setup instructions.<br>Or go to your dashboard now.</p>
-    <div class="access-box">
-        <div class="label">Your Access Code</div>
-        <div class="code" id="accessCodeDisplay">—</div>
+    <div class="launch-note">
+      💡 <strong>Why free?</strong> While our automated payment system is being finalized, we're onboarding businesses at no cost. You'll be notified 30 days before billing starts — cancel anytime with one click.
     </div>
-    <div class="success-btns">
-        <button class="s-btn primary" onclick="gotoDashboard()">Go to Dashboard →</button>
-        <button id="setupGuideBtn" class="s-btn secondary" onclick="window.location.href='/deploy-guide'">Setup Guide</button>
-    </div>
-</div>
+  </div>
+</main>
 
-<script>
-let selectedPlan  = 'starter';
-let selectedPrice = 'AED 499';
+<footer>
+  © 2026 BotifyAI · <a href="/privacy" style="color:#6366f1">Privacy</a> · <a href="/terms" style="color:#6366f1">Terms</a> · <a href="mailto:hello@botifyai.xyz" style="color:#6366f1">hello@botifyai.xyz</a>
+</footer>
 
-// Read plan + currency from URL
-const urlParams = new URLSearchParams(window.location.search);
-const urlPlan = urlParams.get('plan');
-const isIndia = urlParams.get('currency') === 'inr' || urlParams.get('region') === 'in';
-localStorage.setItem('clientRegion', isIndia ? 'india' : 'uae');
-const setupGuideBtn = document.getElementById('setupGuideBtn');
-if (setupGuideBtn) setupGuideBtn.onclick = () => {
-    const code = localStorage.getItem('accessCode') || '';
-    const base = isIndia ? '/india-deploy-guide' : '/deploy-guide';
-    window.location.href = code ? `${base}?access=${code}` : base;
-};
-
-const freeNote = document.getElementById('netbankingNote');
-if (isIndia) {
-    document.querySelector('.wyg-item:nth-child(2)').innerHTML = '<span class="ck">✓</span> 22+ Indian languages';
-    freeNote.textContent = '🎉 Net Banking payments are auto-confirmed right now — enjoy it free while we finish setting up our full payment system!';
-    freeNote.style.display = 'block';
-} else {
-    document.getElementById('payBtn').textContent = 'Get Free Access →';
-    document.querySelector('.secure-note').textContent = '🎉 Free access — no payment required right now';
-    document.querySelector('.trust-row').style.display = 'none';
-    document.getElementById('methodPills').innerHTML = '<span class="trust-pill">Instant access</span><span class="trust-pill">Free installation</span><span class="trust-pill">No hidden fees</span>';
-    freeNote.textContent = '🎉 Full access is free right now while we finish setting up our online payment system!';
-    freeNote.style.display = 'block';
-}
-
-const priceMap = isIndia ? {
-    starter:      {el:0, price:'₹100'},
-    professional: {el:1, price:'₹150'},
-    enterprise:   {el:2, price:'₹200'}
-} : {
-    starter:      {el:0, price:'AED 499'},
-    professional: {el:1, price:'AED 1,499'},
-    enterprise:   {el:2, price:'AED 3,499'}
-};
-
-const inrOnclick = isIndia ? [
-    "selectPlan(this,'starter','inr_starter','₹100')",
-    "selectPlan(this,'professional','inr_professional','₹150')",
-    "selectPlan(this,'enterprise','inr_enterprise','₹200')"
-] : null;
-
-// Update displayed prices for India mode
-if (isIndia) {
-    const items = document.querySelectorAll('.ps-item');
-    items[0].querySelector('.ps-price').innerHTML = "₹100<span style='font-size:.7rem;font-weight:400;color:#475569'>/mo</span>";
-    items[1].querySelector('.ps-price').innerHTML = "₹150<span style='font-size:.7rem;font-weight:400;color:#475569'>/mo</span>";
-    items[2].querySelector('.ps-price').innerHTML = "₹200<span style='font-size:.7rem;font-weight:400;color:#475569'>/mo</span>";
-    items[0].setAttribute('onclick', inrOnclick[0]);
-    items[1].setAttribute('onclick', inrOnclick[1]);
-    items[2].setAttribute('onclick', inrOnclick[2]);
-}
-
-if (urlPlan) {
-    const m = priceMap[urlPlan];
-    if (m) {
-        const items = document.querySelectorAll('.ps-item');
-        items.forEach(i => i.classList.remove('active'));
-        items[m.el].classList.add('active');
-        selectedPlan  = urlPlan;
-        selectedPrice = m.price;
-        updateBtn();
-    }
-}
-
-function selectPlan(el, plan, priceId, price) {
-    document.querySelectorAll('.ps-item').forEach(i => i.classList.remove('active'));
-    el.classList.add('active');
-    selectedPlan  = plan;
-    selectedPrice = price;
-    updateBtn();
-}
-
-function updateBtn() {
-    const pb = document.getElementById('payBtn');
-    if(pb) pb.textContent = isIndia ? `Pay ${selectedPrice} — Secure Checkout` : 'Get Free Access →';
-}
-
-
-function validate() {
-    let ok = true;
-    const name  = document.getElementById('fName');
-    const email = document.getElementById('fEmail');
-    const web   = document.getElementById('fWebsite');
-    [name, email, web].forEach(f => f.classList.remove('err'));
-    if (!name.value.trim())        { name.classList.add('err');  ok = false; }
-    if (!email.value.includes('@')){ email.classList.add('err'); ok = false; }
-    if (!web.value.trim())         { web.classList.add('err');   ok = false; }
-    return ok;
-}
-
-function startPayment() {
-    if (!validate()) return;
-    const name     = document.getElementById('fName').value.trim();
-    const email    = document.getElementById('fEmail').value.trim();
-    const website  = document.getElementById('fWebsite').value.trim();
-    const platform = document.getElementById('fPlatform').value || 'unknown';
-
-    localStorage.setItem('clientName',     name);
-    localStorage.setItem('clientEmail',    email);
-    localStorage.setItem('clientWebsite',  website);
-    localStorage.setItem('clientPlatform', platform);
-    localStorage.setItem('clientPlan',     selectedPlan);
-
-    const btn = document.getElementById('payBtn');
-    btn.disabled = true;
-    btn.classList.add('loading');
-
-    if (!isIndia) {
-        btn.textContent = 'Setting up your free access...';
-        fetch('/payment-success', {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({
-                plan: selectedPlan, name, email, website,
-                payment_id: 'free-access-' + Date.now(),
-                order_id: 'free-access'
-            })
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (!data.success) {
-                btn.disabled = false;
-                btn.classList.remove('loading');
-                updateBtn();
-                alert(data.error || 'Something went wrong. Please try again.');
-                return;
-            }
-            showSuccess(data.access_code, selectedPlan);
-        })
-        .catch(() => {
-            btn.disabled = false;
-            btn.classList.remove('loading');
-            updateBtn();
-            alert('Network error. Please try again.');
-        });
-        return;
-    }
-
-    btn.textContent = 'Opening secure payment...';
-
-    fetch('/razorpay-order', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ plan: selectedPlan, name, email })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (!data.success) {
-            btn.disabled = false;
-            btn.classList.remove('loading');
-            updateBtn();
-            alert(data.error || 'Payment error. Please try again.');
-            return;
-        }
-        const options = {
-            key: data.key_id,
-            amount: data.amount,
-            currency: data.currency,
-            name: 'BotifyAI',
-            description: selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1) + ' Plan',
-            image: 'https://i.imgur.com/FfNwGyA.png',
-            order_id: data.order_id,
-            prefill: { name, email },
-            theme: { color: '#6366f1' },
-            handler: function(response) {
-                fetch('/payment-success', {
-                    method: 'POST',
-                    headers: {'Content-Type':'application/json'},
-                    body: JSON.stringify({
-                        plan: selectedPlan,
-                        email, name, website, platform,
-                        payment_id: response.razorpay_payment_id,
-                        order_id: response.razorpay_order_id,
-                        signature: response.razorpay_signature
-                    })
-                })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success) {
-                        showSuccess(data.access_code, selectedPlan);
-                    } else {
-                        alert('Payment recorded but access creation failed. Please contact support.');
-                    }
-                })
-                .catch(() => {
-                    btn.disabled = false;
-                    btn.classList.remove('loading');
-                    updateBtn();
-                    alert('Payment succeeded but we could not create your account. Please contact support.');
-                });
-            },
-            modal: {
-                ondismiss: function() {
-                    btn.disabled = false;
-                    btn.classList.remove('loading');
-                    updateBtn();
-                }
-            }
-        };
-        const rzp = new Razorpay(options);
-        rzp.open();
-    })
-    .catch(() => {
-        btn.disabled = false;
-        btn.classList.remove('loading');
-        updateBtn();
-        alert('Network error. Please try again.');
-    });
-}
-
-function showSuccess(code, plan) {
-    localStorage.setItem('accessCode', code);
-    localStorage.setItem('clientPlan', plan);
-    document.getElementById('checkoutPage').style.display = 'none';
-    document.getElementById('accessCodeDisplay').textContent = code;
-    document.getElementById('successScreen').style.display  = 'flex';
-}
-
-function gotoDashboard() {
-    const code = localStorage.getItem('accessCode');
-    const plan = localStorage.getItem('clientPlan');
-    const region = localStorage.getItem('clientRegion') || 'uae';
-    window.location.href = `/dashboard?access=${code}&plan=${plan}&region=${region}`;
-}
-</script>
 </body>
 </html>
