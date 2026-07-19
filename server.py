@@ -502,6 +502,13 @@ def home():
         "KW": "/kuwait",
         "BH": "/bahrain",
         "OM": "/oman",
+        "BD": "/bangladesh",
+        "LK": "/srilanka",
+        "NP": "/nepal",
+        "CN": "/china",
+        "BT": "/bhutan",
+        "MM": "/myanmar",
+        "ID": "/indonesia",
     }
     if country in country_routes:
         return redirect(country_routes[country], code=302)
@@ -538,6 +545,34 @@ def bahrain_landing():
 @app.route("/oman")
 def oman_landing():
     return app.send_static_file("oman-landing.html")
+
+@app.route("/bangladesh")
+def bangladesh_landing():
+    return app.send_static_file("bangladesh-landing.html")
+
+@app.route("/srilanka")
+def srilanka_landing():
+    return app.send_static_file("srilanka-landing.html")
+
+@app.route("/nepal")
+def nepal_landing():
+    return app.send_static_file("nepal-landing.html")
+
+@app.route("/china")
+def china_landing():
+    return app.send_static_file("china-landing.html")
+
+@app.route("/bhutan")
+def bhutan_landing():
+    return app.send_static_file("bhutan-landing.html")
+
+@app.route("/myanmar")
+def myanmar_landing():
+    return app.send_static_file("myanmar-landing.html")
+
+@app.route("/indonesia")
+def indonesia_landing():
+    return app.send_static_file("indonesia-landing.html")
 
 @app.route("/payment")
 def payment():
