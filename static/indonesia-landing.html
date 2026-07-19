@@ -2,22 +2,34 @@
 <html lang="en">
 <head>
 <script>
-window.dispatchEvent(new Event('resize'));
-function googleTranslateElementInit(){new google.translate.TranslateElement({pageLanguage:'en',includedLanguages:'en,hi,bn,ne,si,ta,zh-CN,my,id,dz,ar,ur',autoDisplay:false},'google_translate_element');}
-function switchLang(lang){var sel=document.querySelector('.goog-te-combo');if(!sel){setTimeout(function(){switchLang(lang);},200);return;}sel.value=lang;sel.dispatchEvent(new Event('change'));}
+function googleTranslateElementInit(){new google.translate.TranslateElement({pageLanguage:'en',includedLanguages:'en,hi,bn,ne,si,ta,zh-CN,my,id,dz,ar,ur,mr,gu,pa,kn,ml,te,or,as',autoDisplay:false},'google_translate_element');}
+function switchLang(lang){var sel=document.querySelector('.goog-te-combo');if(!sel){setTimeout(function(){switchLang(lang);},250);return;}sel.value=lang;sel.dispatchEvent(new Event('change'));document.querySelectorAll('.nav-lang-btn').forEach(function(b){b.classList.toggle('active',b.dataset.lang===lang);});try{localStorage.setItem('botifyai_lang',lang);}catch(e){}}
+window.addEventListener('load',function(){
+  var saved=null;try{saved=localStorage.getItem('botifyai_lang');}catch(e){}
+  if(saved){setTimeout(function(){switchLang(saved);},600);return;}
+  var primary="id";
+  if(primary==='auto-india'){
+    // Detect Indian state via ipapi
+    fetch('https://ipapi.co/json/').then(function(r){return r.json();}).then(function(d){
+      var stateLang={'MH':'mr','TN':'ta','KA':'kn','WB':'bn','GJ':'gu','PB':'pa','KL':'ml','AP':'te','TG':'te','OR':'or','AS':'as','BR':'hi','JH':'hi','RJ':'hi','HR':'hi','HP':'hi','UK':'hi','MP':'hi','CG':'hi','UP':'en','DL':'en','SK':'ne','TR':'bn','MN':'en','ML':'en','AR':'en','NL':'en','MZ':'en','GA':'en','JK':'en','LA':'en'};
+      var code=(d.region_code||'').toUpperCase();
+      var target=stateLang[code]||'en';
+      if(target!=='en'){setTimeout(function(){switchLang(target);},400);}
+    }).catch(function(){});
+  }else if(primary!=='en'){
+    setTimeout(function(){switchLang(primary);},400);
+  }
+});
 </script>
 <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
 <style>
 .goog-te-banner-frame{display:none!important}
 body{top:0!important}
-.lang-switcher{display:inline-flex;gap:6px;align-items:center;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);padding:4px 6px;border-radius:20px;margin-right:8px}
-.lang-switcher button{background:transparent;border:none;color:inherit;padding:4px 10px;border-radius:14px;font-size:.72rem;font-weight:700;cursor:pointer;transition:.2s}
-.lang-switcher button.active,.lang-switcher button:hover{background:rgba(99,102,241,.4);color:#fff}
-@media(max-width:640px){.lang-switcher{margin-right:4px;padding:3px 4px}.lang-switcher button{padding:3px 8px;font-size:.65rem}}
-.floating-lang{position:fixed;bottom:20px;left:20px;z-index:9999;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-radius:24px;padding:8px 14px;box-shadow:0 8px 24px rgba(99,102,241,.4);display:flex;gap:6px;align-items:center;font-size:.75rem;font-weight:700}
-.floating-lang button{background:transparent;border:1px solid rgba(255,255,255,.35);color:#fff;padding:5px 12px;border-radius:16px;font-size:.72rem;font-weight:700;cursor:pointer;transition:.2s}
-.floating-lang button:hover,.floating-lang button.active{background:rgba(255,255,255,.25)}
-@media(max-width:640px){.floating-lang{bottom:80px;left:14px;padding:6px 10px;font-size:.7rem}}
+.nav-lang{display:inline-flex;gap:2px;align-items:center;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);padding:3px 4px;border-radius:16px;margin:0 6px}
+.nav-lang-btn{background:transparent;border:none;color:#475569;padding:4px 10px;border-radius:12px;font-size:.72rem;font-weight:700;cursor:pointer;transition:.2s;font-family:inherit}
+.nav-lang-btn:hover{background:rgba(99,102,241,.12);color:#6366f1}
+.nav-lang-btn.active{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}
+@media(max-width:768px){.nav-lang{margin:0 4px}.nav-lang-btn{padding:3px 8px;font-size:.65rem}}
 </style>
 
 <!-- Google tag (gtag.js) -->
@@ -579,7 +591,6 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
 </head>
 <body>
 <div id="google_translate_element" style="display:none"></div>
-<div class="floating-lang"><span>🌍</span><button class="active" onclick="switchLang('en')">EN</button><button onclick="switchLang('id')">Bahasa Indonesia</button></div>
 <canvas id="pc"></canvas>
 
 <div id="progress-bar"></div>
@@ -598,6 +609,7 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
  <a href="#results">Results</a>
  <a href="#pricing">Pricing</a>
  <a href="#faq">FAQ</a>
+ <div class="nav-lang" id="navLangSwitcher"><button class="nav-lang-btn" data-lang="en" onclick="switchLang('en')">EN</button><button class="nav-lang-btn active" data-lang="id" onclick="switchLang('id')">Bahasa</button></div>
  </div>
  <div class="nav-right">
  <button class="nav-demo" onclick="document.getElementById('demo-section').scrollIntoView({behavior:'smooth'})">Live Demo</button>
