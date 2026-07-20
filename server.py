@@ -444,6 +444,28 @@ REGION_PRICING = {
     "bhutan":      "Starter Nu. 100/month, Professional Nu. 250/month, Enterprise Nu. 600/month.",
     "myanmar":     "Starter K 3,000/month, Professional K 8,000/month, Enterprise K 20,000/month.",
     "indonesia":   "Starter Rp 20,000/month, Professional Rp 50,000/month, Enterprise Rp 120,000/month.",
+    "pakistan":    "Starter Rs 200/month, Professional Rs 500/month, Enterprise Rs 1200/month.",
+    "jordan":      "Starter JOD 1/month, Professional JOD 3/month, Enterprise JOD 7/month.",
+    "iraq":        "Starter IQD 1500/month, Professional IQD 4000/month, Enterprise IQD 10000/month.",
+    "lebanon":     "Starter $1/month, Professional $3/month, Enterprise $7/month.",
+    "philippines": "Starter ₱60/month, Professional ₱150/month, Enterprise ₱350/month.",
+    "vietnam":     "Starter ₫25,000/month, Professional ₫60,000/month, Enterprise ₫150,000/month.",
+    "malaysia":    "Starter RM 5/month, Professional RM 12/month, Enterprise RM 30/month.",
+    "thailand":    "Starter ฿35/month, Professional ฿90/month, Enterprise ฿220/month.",
+    "nigeria":     "Starter ₦1,500/month, Professional ₦4,000/month, Enterprise ₦10,000/month.",
+    "kenya":       "Starter KSh 130/month, Professional KSh 320/month, Enterprise KSh 800/month.",
+    "southafrica": "Starter R 20/month, Professional R 50/month, Enterprise R 120/month.",
+    "egypt":       "Starter EGP 50/month, Professional EGP 120/month, Enterprise EGP 300/month.",
+    "ghana":       "Starter GH₵ 12/month, Professional GH₵ 30/month, Enterprise GH₵ 75/month.",
+    "uganda":      "Starter USh 4,000/month, Professional USh 10,000/month, Enterprise USh 25,000/month.",
+    "tanzania":    "Starter TSh 2,500/month, Professional TSh 6,000/month, Enterprise TSh 15,000/month.",
+    "rwanda":      "Starter RF 1,500/month, Professional RF 4,000/month, Enterprise RF 10,000/month.",
+    "mexico":      "Starter MXN $20/month, Professional MXN $50/month, Enterprise MXN $120/month.",
+    "brazil":      "Starter R$ 6/month, Professional R$ 15/month, Enterprise R$ 35/month.",
+    "colombia":    "Starter COP $4,000/month, Professional COP $10,000/month, Enterprise COP $25,000/month.",
+    "argentina":   "Starter ARS $1,000/month, Professional ARS $2,500/month, Enterprise ARS $6,000/month.",
+    "peru":        "Starter S/ 4/month, Professional S/ 10/month, Enterprise S/ 25/month.",
+    "chile":       "Starter CLP $1,000/month, Professional CLP $2,500/month, Enterprise CLP $6,000/month.",
 }
 
 def get_system_prompt(language="en", timezone=None, region=None):
@@ -523,18 +545,15 @@ def home():
         return app.send_static_file("india-landing.html")
     country = _detect_country_code()
     country_routes = {
-        "AE": "/uae",
-        "QA": "/qatar",
-        "KW": "/kuwait",
-        "BH": "/bahrain",
-        "OM": "/oman",
-        "BD": "/bangladesh",
-        "LK": "/srilanka",
-        "NP": "/nepal",
-        "CN": "/china",
-        "BT": "/bhutan",
-        "MM": "/myanmar",
-        "ID": "/indonesia",
+        "AE": "/uae", "QA": "/qatar", "KW": "/kuwait", "BH": "/bahrain", "OM": "/oman",
+        "BD": "/bangladesh", "LK": "/srilanka", "NP": "/nepal", "CN": "/china",
+        "BT": "/bhutan", "MM": "/myanmar", "ID": "/indonesia",
+        "PK": "/pakistan", "JO": "/jordan", "IQ": "/iraq", "LB": "/lebanon",
+        "PH": "/philippines", "VN": "/vietnam", "MY": "/malaysia", "TH": "/thailand",
+        "NG": "/nigeria", "KE": "/kenya", "ZA": "/southafrica", "EG": "/egypt",
+        "GH": "/ghana", "UG": "/uganda", "TZ": "/tanzania", "RW": "/rwanda",
+        "MX": "/mexico", "BR": "/brazil", "CO": "/colombia", "AR": "/argentina",
+        "PE": "/peru", "CL": "/chile",
     }
     if country in country_routes:
         return redirect(country_routes[country], code=302)
@@ -599,6 +618,19 @@ def myanmar_landing():
 @app.route("/indonesia")
 def indonesia_landing():
     return app.send_static_file("indonesia-landing.html")
+
+def _make_landing(slug):
+    def _view():
+        return app.send_static_file(f"{slug}-landing.html")
+    _view.__name__ = f"{slug}_landing"
+    return _view
+
+for _slug in [
+    "pakistan","jordan","iraq","lebanon","philippines","vietnam","malaysia","thailand",
+    "nigeria","kenya","southafrica","egypt","ghana","uganda","tanzania","rwanda",
+    "mexico","brazil","colombia","argentina","peru","chile"
+]:
+    app.add_url_rule(f"/{_slug}", endpoint=f"{_slug}_landing", view_func=_make_landing(_slug))
 
 @app.route("/payment")
 def payment():
@@ -1621,6 +1653,12 @@ def chat():
             "IN": "india", "AE": "uae", "QA": "qatar", "KW": "kuwait",
             "BH": "bahrain", "OM": "oman", "BD": "bangladesh", "LK": "srilanka",
             "NP": "nepal", "CN": "china", "BT": "bhutan", "MM": "myanmar", "ID": "indonesia",
+            "PK": "pakistan", "JO": "jordan", "IQ": "iraq", "LB": "lebanon",
+            "PH": "philippines", "VN": "vietnam", "MY": "malaysia", "TH": "thailand",
+            "NG": "nigeria", "KE": "kenya", "ZA": "southafrica", "EG": "egypt",
+            "GH": "ghana", "UG": "uganda", "TZ": "tanzania", "RW": "rwanda",
+            "MX": "mexico", "BR": "brazil", "CO": "colombia", "AR": "argentina",
+            "PE": "peru", "CL": "chile",
         }
         if cc and cc in region_from_cc:
             region = region_from_cc[cc]
