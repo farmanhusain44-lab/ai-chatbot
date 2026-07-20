@@ -613,7 +613,7 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
  </div>
  <div class="nav-right">
  <button class="nav-demo" onclick="document.getElementById('demo-section').scrollIntoView({behavior:'smooth'})"><span data-i18n="nav_livedemo">Live Demo</span></button>
- <button class="nav-cta" onclick="window.location.href='/payment'"><span data-i18n="nav_getstarted">Get Started →</span></button>
+ <button class="nav-cta" onclick="window.location.href='/onboard'"><span data-i18n="nav_getstarted">Get Started →</span></button>
  </div>
  </div>
 </nav>
@@ -626,7 +626,7 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
  <h1>Your Website Needs an AI<br><span class="grad" id="typedText"></span></h1>
  <p class="hero-sub">BotifyAI answers customer questions 24/7 in <strong>Dzongkha & English</strong> — on your website, automatically. No staff needed. No missed leads. Just growth.</p>
  <div class="hero-btns">
- <button class="btn-primary" onclick="window.location.href='/payment'"><span data-i18n="hero_cta1">🎉 Get Free Access Now</span></button>
+ <button class="btn-primary" onclick="window.location.href='/onboard'"><span data-i18n="hero_cta1">🎉 Get Free Access Now</span></button>
  <button class="btn-secondary" onclick="document.getElementById('demo-section').scrollIntoView({behavior:'smooth'})"><span data-i18n="hero_cta2">▶ See Live Demo</span></button>
  </div>
  <div class="hero-trust">
@@ -1014,7 +1014,7 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
  <div class="up-point">Follow-up on cold leads at day 3, 7, 14 (real estate, coaching)</div>
  <div class="up-point">Payment &amp; renewal reminders (subscriptions, memberships)</div>
  </div>
- <button class="up-waitlist" onclick="window.open('https://wa.me/917992111021?text=I%20want%20early%20access%20to%20Auto%20Reminders','_blank')">Join Waitlist →</button>
+ <button class="up-waitlist" onclick="window.location.href='/onboard'">Join Waitlist →</button>
  </div>
  <div class="up-card">
  <div class="up-ic">🎙️</div>
@@ -1070,33 +1070,11 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
  <div class="sec-title" style="text-align:center" data-i18n="sec_pricing_title">Plans for Every Bhutan Business</div>
  <div class="sec-sub" style="margin-bottom:22px">All plans include free installation support. No hidden fees. Cancel anytime.</div>
 
- <!-- INDIAN / PAKISTANI / NEPALI EXPAT PITCH -->
-<a href="/india?ref=bhutan" style="text-decoration:none;display:block">
-<div class="expat-bar">
- <div class="expat-inner">
- <div class="expat-flags"> </div>
- <div class="expat-text">
- <strong>Expat from India, Nepal, Pakistan, Bangladesh or Sri Lanka?</strong>
- Have a business back home — or want the world's cheapest AI chatbot? Pay in <strong>₹100/mo</strong> — just <strong>~$1.20</strong> (less than BTN 0.5).
- </div>
- <div class="expat-cta">Pay in ₹ INR →</div>
- </div>
-</div>
-</a>
-
- <div class="pay-toggle-wrap">
- <div class="pay-toggle">
- <button class="pt-btn active" data-mode="local" onclick="switchPayMode('local')"> Pay in BTN</button>
- <button class="pt-btn" data-mode="nri" onclick="switchPayMode('nri')"> NRI · Pay in ₹ INR</button>
- </div>
- </div>
- <div class="pay-note pay-note-local">✨ Get your access code instantly on WhatsApp — enjoy free access while our automated BTN payment system is being finalized.</div>
- <div class="pay-note pay-note-nri hidden">💳 Razorpay Netbanking · Automatic monthly payments · Cancel anytime</div>
-
+ 
  <div class="pricing-grid">
  <div class="price-card">
  <div class="price-name" data-i18n="plan_starter">Starter</div>
- <div class="price-amount"><span data-pay="local">Nu. 100</span><span data-pay="nri" class="hidden">₹100</span></div>
+ <div class="price-amount">Nu. 100</div>
  <div class="price-period">/month</div>
  <div class="price-desc">Perfect for small shops, cafes, and solo entrepreneurs just getting started with AI.</div>
  <ul class="price-features">
@@ -1107,13 +1085,12 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
  <li>Free installation support</li>
  <li>Email support</li>
  </ul>
- <button class="price-btn price-btn-outline" data-pay="local" onclick="openAccessModal('starter','bhutan','Nu. 100')" data-i18n="get_instant">Get Instant Access →</button>
- <button class="price-btn price-btn-fill hidden" data-pay="nri" onclick="window.location.href='/payment?plan=starter&amp;currency=inr&amp;region=nri'">💳 Pay ₹100 via Razorpay</button>
+ <button class="price-btn price-btn-outline" onclick="openAccessModal('starter','bhutan','Nu. 100')" data-i18n="get_instant">Get Instant Access →</button>
  </div>
  <div class="price-card featured">
  <div class="featured-badge">⭐ Most Popular</div>
  <div class="price-name" data-i18n="plan_pro">Professional</div>
- <div class="price-amount"><span data-pay="local">Nu. 250</span><span data-pay="nri" class="hidden">₹150</span></div>
+ <div class="price-amount">Nu. 250</div>
  <div class="price-period">/month</div>
  <div class="price-desc">For growing businesses — restaurants, clinics, salons — that need WhatsApp integration and custom training.</div>
  <ul class="price-features">
@@ -1124,12 +1101,11 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
  <li>Priority setup (1 hour)</li>
  <li>WhatsApp priority support</li>
  </ul>
- <button class="price-btn price-btn-fill" data-pay="local" onclick="openAccessModal('professional','bhutan','Nu. 250')" data-i18n="get_instant">Get Instant Access →</button>
- <button class="price-btn price-btn-fill hidden" data-pay="nri" onclick="window.location.href='/payment?plan=professional&amp;currency=inr&amp;region=nri'">💳 Pay ₹150 via Razorpay</button>
+ <button class="price-btn price-btn-fill" onclick="openAccessModal('professional','bhutan','Nu. 250')" data-i18n="get_instant">Get Instant Access →</button>
  </div>
  <div class="price-card">
  <div class="price-name" data-i18n="plan_ent">Enterprise</div>
- <div class="price-amount"><span data-pay="local">Nu. 600</span><span data-pay="nri" class="hidden">₹200</span></div>
+ <div class="price-amount">Nu. 600</div>
  <div class="price-period">/month</div>
  <div class="price-desc">For hotels, hospitals, and multi-location businesses that need unlimited scale.</div>
  <ul class="price-features">
@@ -1140,8 +1116,7 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
  <li>Custom integrations (CRM, ERP)</li>
  <li>24/7 phone support</li>
  </ul>
- <button class="price-btn price-btn-outline" data-pay="local" onclick="openAccessModal('enterprise','bhutan','Nu. 600')" data-i18n="get_instant">Get Instant Access →</button>
- <button class="price-btn price-btn-fill hidden" data-pay="nri" onclick="window.location.href='/payment?plan=enterprise&amp;currency=inr&amp;region=nri'">💳 Pay ₹200 via Razorpay</button>
+ <button class="price-btn price-btn-outline" onclick="openAccessModal('enterprise','bhutan','Nu. 600')" data-i18n="get_instant">Get Instant Access →</button>
  </div>
  </div>
  </div>
@@ -1158,16 +1133,7 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
 </style>
 
 <script>
-function switchPayMode(mode){
- document.querySelectorAll('.pt-btn').forEach(b=>b.classList.toggle('active', b.dataset.mode===mode));
- document.querySelectorAll('.pay-note-local,.pay-note-nri').forEach(n=>{
- const isMatch = n.classList.contains('pay-note-'+mode);
- n.classList.toggle('hidden', !isMatch);
- });
- document.querySelectorAll('.price-amount span[data-pay],.price-btn[data-pay]').forEach(el=>{
- el.classList.toggle('hidden', el.dataset.pay!==mode);
- });
-}
+
 </script>
 
 <!-- TESTIMONIALS -->
@@ -1271,8 +1237,8 @@ function switchPayMode(mode){
  <h2>Ready to Grow Your Business with AI?</h2>
  <p>Join 500+ Bhutan businesses using BotifyAI to automate customer support, capture more leads, and increase revenue — 24/7. 🎉 Free access while we finish setting up online payments.</p>
  <div class="cta-btns">
- <button class="btn-primary" onclick="window.location.href='/payment'"><span data-i18n="hero_cta1">🎉 Get Free Access Now</span></button>
- <a href="https://wa.me/917992111021?text=Hi!%20I%20want%20to%20learn%20more%20about%20BotifyAI%20for%20my%20Bhutan%20business." target="_blank" class="btn-secondary" style="display:inline-block">💬 Talk to Us on WhatsApp</a>
+ <button class="btn-primary" onclick="window.location.href='/onboard'"><span data-i18n="hero_cta1">🎉 Get Free Access Now</span></button>
+ <a href="mailto:hello@botifyai.xyz" class="btn-secondary" style="display:inline-block">✉️ Email Us</a>
  </div>
 </section>
 
@@ -1296,12 +1262,12 @@ function switchPayMode(mode){
  <a href="#results">Case Studies</a>
  <a href="#faq" data-i18n="nav_faq">FAQ</a>
  <a href="/partners">💰 Partner Program</a>
- <a href="https://wa.me/917992111021" target="_blank">Contact Us</a>
+ <a href="mailto:hello@botifyai.xyz" class="btn-secondary" style="display:inline-block">✉️ Email Us</a>
  </div>
  <div class="footer-col">
  <h4>Support</h4>
  <a href="mailto:hello@botifyai.xyz">📧 hello@botifyai.xyz</a>
- <a href="https://wa.me/917992111021" target="_blank">WhatsApp</a>
+ <a href="mailto:hello@botifyai.xyz" class="btn-secondary" style="display:inline-block">✉️ Email Us</a>
  <a href="/deploy-guide">Installation Help</a>
  <a href="/partners">Become a Partner</a>
  </div>
@@ -1309,7 +1275,7 @@ function switchPayMode(mode){
  <div class="footer-bottom">
  <div class="footer-copy">© 2026 BotifyAI. All rights reserved. · AI Chatbots for Bhutan Businesses</div>
  <div class="footer-socials">
- <a href="https://wa.me/917992111021" target="_blank" class="social-btn">💬</a>
+ <a href="mailto:hello@botifyai.xyz" class="social-btn">✉️</a>
  </div>
  </div>
  </div>
