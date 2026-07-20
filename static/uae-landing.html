@@ -15,6 +15,9 @@ function switchLang(lang){
   document.querySelectorAll('.nav-lang-btn,.mob-lang button').forEach(function(b){b.classList.toggle('active',b.dataset&&b.dataset.lang===lang);});
   document.documentElement.setAttribute('dir',(lang==='ar'||lang==='ur')?'rtl':'ltr');
   document.documentElement.setAttribute('lang',lang);
+  var isRTL=(lang==='ar'||lang==='ur');
+  document.querySelectorAll('.showcase-media-inner').forEach(function(el){el.style.setProperty('transform', isRTL?'scaleX(-1)':'', 'important');});
+  document.querySelectorAll('.showcase-card-inner').forEach(function(el){el.style.setProperty('text-align', isRTL?'right':'', 'important');el.style.setProperty('direction', isRTL?'rtl':'ltr', 'important');});
   try{localStorage.setItem('botifyai_lang',lang);}catch(e){}
 }
 window.addEventListener('DOMContentLoaded',function(){
