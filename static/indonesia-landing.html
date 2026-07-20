@@ -588,6 +588,13 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
 .up-card.up-waitlist:hover{background:#f59e0b;color:#fff}
 
 </style>
+<style>
+/* RTL: mirror photos so faces face the reading direction */
+html[dir="rtl"] .showcase-media-inner{transform:scaleX(-1) scale(1) !important}
+html[dir="rtl"] .showcase-card.active .showcase-media-inner{transform:scaleX(-1) scale(1) !important}
+html[dir="rtl"] .showcase-card{direction:rtl}
+html[dir="rtl"] .showcase-media{direction:ltr}
+</style>
 </head>
 <body>
 <div class="mob-lang"><button class="active" data-lang="en" onclick="switchLang('en')">EN</button><button class="" data-lang="id" onclick="switchLang('id')">Bahasa</button></div>
@@ -609,7 +616,7 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
  <a href="#results" data-i18n="nav_results">Results</a>
  <a href="#pricing" data-i18n="nav_pricing">Pricing</a>
  <a href="#faq" data-i18n="nav_faq">FAQ</a>
- <div class="nav-lang" id="navLangSwitcher"><button class="nav-lang-btn" data-lang="en" onclick="switchLang('en')">EN</button><button class="nav-lang-btn active" data-lang="id" onclick="switchLang('id')">Bahasa</button></div>
+ <div class="nav-lang" id="navLangSwitcher"><button class="nav-lang-btn active" data-lang="en" onclick="switchLang('en')">EN</button><button class="nav-lang-btn" data-lang="id" onclick="switchLang('id')">Bahasa</button></div>
  </div>
  <div class="nav-right">
  <button class="nav-demo" onclick="document.getElementById('demo-section').scrollIntoView({behavior:'smooth'})"><span data-i18n="nav_livedemo">Live Demo</span></button>
