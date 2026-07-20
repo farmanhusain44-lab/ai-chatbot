@@ -402,7 +402,7 @@ def send_whatsapp_reply(to, reply):
         print(f"WhatsApp send error: {e}")
         return False
 
-def get_ai_reply(message, language, timezone=None, history=None, context=None):
+def get_ai_reply(message, language, timezone=None, history=None, context=None, region=None):
     # If history is provided, it already contains the current user message as the last item.
     messages = history if history else [{"role": "user", "content": message}]
     if context and messages and messages[-1]["role"] == "user":
@@ -421,8 +421,8 @@ def get_ai_reply(message, language, timezone=None, history=None, context=None):
         return "I'm sorry, the AI service is not configured right now."
     response = anthropic_client.messages.create(
         model="claude-haiku-4-5-20251001",
-        max_tokens=2048,
-        system=get_system_prompt(language, timezone),
+        max_tokens=600,
+        system=get_system_prompt(language, timezone, region),
         messages=messages
     )
     if not response.content:
@@ -430,7 +430,23 @@ def get_ai_reply(message, language, timezone=None, history=None, context=None):
         return "I'm sorry, I couldn't generate a reply for that. Could you rephrase your message?"
     return response.content[0].text
 
-def get_system_prompt(language="en", timezone=None):
+REGION_PRICING = {
+    "india":       "Starter ₹100/month (500 chats), Professional ₹150/month (3,000 chats + WhatsApp), Enterprise ₹200/month (unlimited).",
+    "uae":         "Starter AED 10/month, Professional AED 25/month, Enterprise AED 60/month.",
+    "qatar":       "Starter QAR 10/month, Professional QAR 25/month, Enterprise QAR 60/month.",
+    "kuwait":      "Starter KWD 1/month, Professional KWD 2.5/month, Enterprise KWD 6/month.",
+    "bahrain":     "Starter BHD 1/month, Professional BHD 2.5/month, Enterprise BHD 6/month.",
+    "oman":        "Starter OMR 1/month, Professional OMR 2.5/month, Enterprise OMR 6/month.",
+    "bangladesh":  "Starter ৳150/month, Professional ৳400/month, Enterprise ৳1000/month.",
+    "srilanka":    "Starter රු 400/month, Professional රු 1000/month, Enterprise රු 2500/month.",
+    "nepal":       "Starter रु 200/month, Professional रु 500/month, Enterprise रु 1500/month.",
+    "china":       "Starter ¥10/month, Professional ¥25/month, Enterprise ¥60/month.",
+    "bhutan":      "Starter Nu. 100/month, Professional Nu. 250/month, Enterprise Nu. 600/month.",
+    "myanmar":     "Starter K 3,000/month, Professional K 8,000/month, Enterprise K 20,000/month.",
+    "indonesia":   "Starter Rp 20,000/month, Professional Rp 50,000/month, Enterprise Rp 120,000/month.",
+}
+
+def get_system_prompt(language="en", timezone=None, region=None):
     try:
         from zoneinfo import ZoneInfo
         tz = ZoneInfo(timezone) if timezone else None
@@ -438,9 +454,19 @@ def get_system_prompt(language="en", timezone=None):
         tz = None
     now = datetime.now(tz) if tz else datetime.now()
     now_str = now.strftime("%A, %B %d, %Y at %I:%M %p %Z")
+    region_key = (region or "").strip().lower()
+    region_pricing = REGION_PRICING.get(region_key)
+    region_line = ""
+    if region_pricing:
+        region_line = (
+            f"The visitor is on the BotifyAI {region_key.title()} page — only mention pricing for {region_key.title()}: "
+            f"{region_pricing} Do NOT mix in pricing from other regions unless the visitor explicitly asks about another country. "
+        )
     return (
         "You are BotifyAI Assistant — a smart, warm, professional, and highly capable multilingual AI assistant. "
-        "You can help with anything the user asks, not just topics related to BotifyAI: general knowledge, explanations, advice, writing, math, coding, and everyday questions. Answer as fully and thoughtfully as the question deserves. "
+        + region_line +
+        "Keep answers SHORT and to the point — usually 2-4 sentences. Only go longer if the question really needs it. Avoid long paragraphs, bullet lists longer than 4 items, or repeating the question back. "
+        "You can help with anything the user asks, not just topics related to BotifyAI: general knowledge, explanations, advice, writing, math, coding, and everyday questions. Answer as fully and thoughtfully as the question deserves — but keep it concise. "
         "You are also the official assistant for BotifyAI, a business customer-support chatbot service for websites and WhatsApp, and you know the following verified information about it. "
         "You are not the unrelated Botify AI character-roleplay app, and you must not describe its features, subscriptions, characters, or mobile app. "
         "If asked about that unrelated app, clearly say you are the business-support BotifyAI service and answer only about this service. "
@@ -1588,6 +1614,16 @@ def chat():
     language = data.get("language") or detect_language(user_message)
     timezone = data.get("timezone")
     history = data.get("history", [])
+    region = (data.get("region") or "").strip().lower() or None
+    if not region:
+        cc = _detect_country_code()
+        region_from_cc = {
+            "IN": "india", "AE": "uae", "QA": "qatar", "KW": "kuwait",
+            "BH": "bahrain", "OM": "oman", "BD": "bangladesh", "LK": "srilanka",
+            "NP": "nepal", "CN": "china", "BT": "bhutan", "MM": "myanmar", "ID": "indonesia",
+        }
+        if cc and cc in region_from_cc:
+            region = region_from_cc[cc]
     context = ""
     if client:
         context = get_client_context(client['id'], user_message)
@@ -1595,10 +1631,10 @@ def chat():
         logger.info("Client chat: %s (id=%d, lang=%s)", access_code, client['id'], language)
     else:
         context = get_relevant_context(user_message)
-    logger.info("Sending message to Claude (length=%d chars, lang=%s, tz=%s, history=%d, context=%d)", len(user_message), language, timezone, len(history), len(context))
+    logger.info("Sending message to Claude (length=%d chars, lang=%s, tz=%s, history=%d, context=%d, region=%s)", len(user_message), language, timezone, len(history), len(context), region)
 
     try:
-        reply = get_ai_reply(user_message, language, timezone, history, context)
+        reply = get_ai_reply(user_message, language, timezone, history, context, region)
     except anthropic.AuthenticationError as e:
         logger.error("Anthropic authentication failed — check ANTHROPIC_API_KEY: %s", e)
         return jsonify({"error": "API authentication failed. The server API key may be invalid or missing."}), 500

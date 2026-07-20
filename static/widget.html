@@ -66,6 +66,7 @@ const params = new URLSearchParams(window.location.search);
 const agentName = params.get('name') || 'AI Assistant';
 const color = params.get('color') || '#6366f1';
 const lang = (params.get('lang') || 'en').toLowerCase();
+const region = (params.get('region') || '').toLowerCase();
 
 document.getElementById('agent-name').textContent = agentName;
 document.documentElement.style.setProperty('--color', color);
@@ -163,7 +164,8 @@ async function sendMsg() {
             body: JSON.stringify({
                 message: txt,
                 access_code: accessCode,
-                history: chatHistory.slice(-10)
+                history: chatHistory.slice(-10),
+                region: region
             })
         });
         removeTyping();

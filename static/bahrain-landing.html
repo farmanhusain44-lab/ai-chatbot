@@ -1369,7 +1369,7 @@ function demoSend(txt){
  body.innerHTML+=`<div class="typing" id="typing"><span></span><span></span><span></span></div>`;
  body.scrollTop=body.scrollHeight;
  demoHistory.push({role:'user',content:msg});
- fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,history:demoHistory.slice(-10)})})
+ fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg,history:demoHistory.slice(-10),region:'bahrain'})})
 .then(r=>r.json())
 .then(data=>{
  const reply=data.reply||botReplies.default[0];
@@ -1606,6 +1606,6 @@ function submitAccess(e){e.preventDefault();const form=document.getElementById('
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAccessModal();});
 </script>
 
-<script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-lang="ar" data-agent="BotifyAI Assistant"></script>
+<script src="https://ai-chatbot-production-2f3a.up.railway.app/widget.js" data-region="bahrain" data-lang="ar" data-agent="BotifyAI Assistant"></script>
 </body>
 </html>
