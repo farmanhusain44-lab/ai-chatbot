@@ -48,7 +48,7 @@ window.addEventListener('DOMContentLoaded',function(){
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;overflow-anchor:none}
-html{scroll-behavior:smooth}
+html{scroll-behavior:auto}
 body{font-family:'Inter',sans-serif;background:#02020a;color:#e2e8f0;overflow-x:hidden}
 a{text-decoration:none;color:inherit}
 #langBanner{display:none!important}
@@ -636,21 +636,6 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
 </head>
 <body>
 <div class="mob-lang"><select onchange="switchLang(this.value)" style="background:transparent;border:none;font-weight:800;color:#475569;font-family:inherit;font-size:.72rem;padding:4px 8px;outline:none"><option value="en">EN</option><option value="hi">हिंदी</option><option value="ta">தமிழ்</option><option value="bn">বাংলা</option><option value="mr">मराठी</option><option value="te">తెలుగు</option><option value="gu">ગુજરાતી</option><option value="pa">ਪੰਜਾਬੀ</option><option value="kn">ಕನ್ನಡ</option><option value="ml">മലയാളം</option></select></div>
-<script>
-(function(){
- if(sessionStorage.getItem('botifyai_geo_checked'))return;
- sessionStorage.setItem('botifyai_geo_checked','1');
- fetch('https://ipapi.co/json/').then(r=>r.json()).then(data=>{
- // Country-specific landing page routing
- const routes={
- 'SA':'/saudi', // Saudi Arabia — has its own page
- 'AE':'/uae','QA':'/uae','KW':'/uae','BH':'/uae','OM':'/uae' // Other Gulf → UAE page (Arabic + English)
- };
- const dest=routes[data.country_code];
- if(dest){window.location.replace(dest);}
- }).catch(()=>{});
-})();
-</script>
 <div class="lang-banner" id="langBanner">
  <div class="inner">
  <span id="langBannerText">We detected your state. View in your language?</span>
@@ -1432,50 +1417,6 @@ window.addEventListener('scroll',()=>{
  document.getElementById('progress-bar').style.width=(sc/sh*100)+'%';
 });
 
-
-/* LANGUAGE DETECTION */
-const langNames={
- en:'English',hi:'Hindi',mr:'Marathi',gu:'Gujarati',pa:'Punjabi',
- bn:'Bengali',ta:'Tamil',kn:'Kannada',te:'Telugu',ml:'Malayalam',
- or:'Odia',as:'Assamese',ur:'Urdu'
-};
-const stateLangMap={
- 'Maharashtra':'mr','Goa':'mr','Gujarat':'gu','Dadra and Nagar Haveli and Daman and Diu':'gu',
- 'Punjab':'pa','Chandigarh':'pa','West Bengal':'bn','Tamil Nadu':'ta','Puducherry':'ta',
- 'Karnataka':'kn','Andhra Pradesh':'te','Telangana':'te','Kerala':'ml','Lakshadweep':'ml','Odisha':'or',
- 'Assam':'as','Arunachal Pradesh':'as','Manipur':'as','Meghalaya':'as','Mizoram':'as','Nagaland':'as','Tripura':'as','Sikkim':'as',
- 'Jammu and Kashmir':'ur','Ladakh':'ur',
- 'Delhi':'hi','Haryana':'hi','Himachal Pradesh':'hi','Uttarakhand':'hi','Uttar Pradesh':'hi','Bihar':'hi','Jharkhand':'hi','Rajasthan':'hi','Madhya Pradesh':'hi','Chhattisgarh':'hi','Andaman and Nicobar Islands':'hi'
-};
-let detectedLang='hi',detectedState='';
-
-function setLanguage(lang){
- localStorage.setItem('botifyai_lang',lang);
- const select=document.querySelector('.goog-te-combo');
- if(select){select.value=lang;select.dispatchEvent(new Event('change'));}
- updateLangUI(lang);
- document.getElementById('langBanner').style.display='none';
-}
-function applyDetectedLanguage(){if(detectedLang)setLanguage(detectedLang);}
-function updateLangUI(lang){
- document.querySelectorAll('.lang-switch button').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));
-}
-function detectStateAndLanguage(){
- const saved=localStorage.getItem('botifyai_lang');
- if(saved){updateLangUI(saved);if(saved!=='en')setLanguage(saved);return;}
- fetch('https://ipapi.co/json/').then(r=>r.json()).then(data=>{
- detectedState=data.region||'';detectedLang=stateLangMap[detectedState]||'hi';showLangBanner();
- }).catch(()=>{
- const nav=navigator.language||'en';const base=nav.split('-')[0];
- detectedLang=langNames[base]?base:'hi';showLangBanner();
- });
-}
-function showLangBanner(){
- if(detectedLang==='en')return;
- document.querySelectorAll('#navDetectedLang,#desktopDetectedLang').forEach(btn=>{btn.textContent=langNames[detectedLang]||'Hindi';btn.setAttribute('onclick',`setLanguage('${detectedLang}')`);btn.dataset.lang=detectedLang;});
-}
-function toggleMenu(){document.getElementById('navLinks').classList.toggle('open');}
-window.addEventListener('load',()=>{const saved=localStorage.getItem('botifyai_lang');if(saved){const chk=setInterval(()=>{const s=document.querySelector('.goog-te-combo');if(s){s.value=saved;s.dispatchEvent(new Event('change'));updateLangUI(saved);clearInterval(chk);}},500);}else{updateLangUI('en');}});
 
 /* TYPING EFFECT */
 const phrases=['Every Indian Business','In 22+ Languages','That Never Sleeps','That Closes Deals','Available 24/7'];
