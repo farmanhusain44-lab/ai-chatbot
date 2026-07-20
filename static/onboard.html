@@ -134,19 +134,25 @@ nav{background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-bottom:1p
 <nav>
   <div class="nav-inner">
     <div class="logo">🤖 BotifyAI</div>
-    <a href="https://wa.me/917992111021?text=Hi!%20I%20need%20help%20with%20onboarding" target="_blank" class="nav-help">💬 Need help?</a>
+    <a href="mailto:hello@botifyai.xyz" class="nav-help">✉️ Need help?</a>
   </div>
 </nav>
 
-<!-- ACCESS GATE -->
+<!-- QUICK SIGNUP -->
 <div id="gate" class="access-gate">
-  <div style="font-size:2.6rem">🔐</div>
-  <h2>Enter your access code</h2>
-  <p>You received this after payment. It looks like <strong>ABCD-1234</strong>.</p>
-  <input id="gateCode" type="text" maxlength="12" placeholder="XXXX-XXXX" autocomplete="off">
-  <div class="err" id="gateErr">Invalid code. Please check and try again.</div>
-  <button class="btn btn-next" style="width:100%" onclick="verifyAccess()">Continue →</button>
-  <p style="margin-top:16px;font-size:.8rem;color:#94a3b8">Lost your code? <a href="https://wa.me/917992111021?text=Hi!%20I%20lost%20my%20access%20code" target="_blank" style="color:#6366f1">WhatsApp us</a></p>
+  <div style="font-size:2.6rem">🎉</div>
+  <h2>Get free access</h2>
+  <p style="color:#64748b">Fill in a couple of details and start setting up your bot — no payment, no credit card.</p>
+  <input id="gateName" type="text" placeholder="Your full name" autocomplete="name" style="margin-top:8px">
+  <input id="gateEmail" type="email" placeholder="Your business email" autocomplete="email" style="margin-top:8px">
+  <input id="gateWebsite" type="text" placeholder="Your website (optional)" autocomplete="url" style="margin-top:8px">
+  <div class="err" id="gateErr">Please enter your name and email.</div>
+  <button class="btn btn-next" style="width:100%;margin-top:10px" onclick="startSignup()">🚀 Start Free Setup →</button>
+  <p style="margin-top:16px;font-size:.75rem;color:#94a3b8">Already have an access code? <a href="#" onclick="showCodeInput(event)" style="color:#6366f1">Enter it here</a></p>
+  <div id="codeInputRow" class="hidden" style="margin-top:12px">
+    <input id="gateCode" type="text" maxlength="12" placeholder="XXXX-XXXX" autocomplete="off">
+    <button class="btn btn-back" style="width:100%;margin-top:8px" onclick="verifyAccess()">Continue with code →</button>
+  </div>
 </div>
 
 <!-- MAIN PAGE (after gate) -->
@@ -285,11 +291,11 @@ nav{background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-bottom:1p
 
     <div class="field">
       <label>Refund / cancellation policy <span class="hint">(if applicable)</span></label>
-      <textarea id="bizRefund" placeholder="e.g. Cash refunds within 24 hrs of purchase. Cooked food not refundable. All orders final after delivery."></textarea>
+      <textarea id="bizRefund" placeholder="e.g. Refunds within 24 hours of purchase. Digital services non-refundable after delivery."></textarea>
     </div>
     <div class="field">
       <label>Delivery / booking info <span class="hint">(if applicable)</span></label>
-      <textarea id="bizDelivery" placeholder="e.g. Home delivery within 5 km, free above ₹500. Advance table booking on WhatsApp."></textarea>
+      <textarea id="bizDelivery" placeholder="e.g. Home delivery within a 5 km radius, free above a minimum order. Advance booking via email."></textarea>
     </div>
 
     <div class="field">
@@ -334,12 +340,12 @@ nav{background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-bottom:1p
         <button class="copy-btn" onclick="copyEmbed()">📋 Copy</button>
         <span id="embedCode"></span>
       </div>
-      <p style="color:#64748b;font-size:.8rem;margin-top:8px">✅ Can't add it yourself? <a href="https://wa.me/917992111021?text=Hi!%20Please%20install%20my%20BotifyAI%20on%20my%20website." target="_blank" style="color:#6366f1;font-weight:700">WhatsApp us</a> — we'll install it for you free (usually within 1 hour).</p>
+      <p style="color:#64748b;font-size:.8rem;margin-top:8px">✅ Can't add it yourself? <a href="mailto:hello@botifyai.xyz?subject=Please%20install%20my%20BotifyAI%20on%20my%20website" style="color:#6366f1;font-weight:700">Email us</a> — we'll install it for you free (usually within 24 hours).</p>
     </div>
 
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px">
       <a href="/deploy-guide" class="btn btn-next" style="text-decoration:none;display:inline-block">📖 Installation Guide</a>
-      <a href="https://wa.me/917992111021?text=Hi!%20My%20bot%20is%20set%20up.%20Please%20help%20me%20install%20it%20on%20my%20website." target="_blank" class="btn btn-back" style="text-decoration:none;display:inline-block">💬 Get Free Setup Help</a>
+      <a href="mailto:hello@botifyai.xyz?subject=Please%20help%20install%20my%20BotifyAI" class="btn btn-back" style="text-decoration:none;display:inline-block">✉️ Get Free Setup Help</a>
     </div>
 
     <p style="margin-top:32px;color:#94a3b8;font-size:.82rem">You'll always be able to update your bot's knowledge, add FAQ, or change settings anytime by messaging us on WhatsApp.</p>
@@ -357,7 +363,61 @@ let selectedLangs = ['English'];
 
 // Prefill access code from URL
 const urlCode = new URLSearchParams(window.location.search).get('code');
-if(urlCode){document.getElementById('gateCode').value=urlCode;}
+if(urlCode){
+  // If code came in via URL, jump straight past the gate
+  accessCode = urlCode.toUpperCase();
+  document.getElementById('gateCode').value = accessCode;
+  // Auto-verify silently on load
+  setTimeout(verifyAccess, 100);
+}
+
+function showCodeInput(e){e.preventDefault();document.getElementById('codeInputRow').classList.remove('hidden');}
+
+function startSignup(){
+  const name = document.getElementById('gateName').value.trim();
+  const email = document.getElementById('gateEmail').value.trim();
+  const website = document.getElementById('gateWebsite').value.trim();
+  const err = document.getElementById('gateErr');
+  if(!name || !email){
+    err.textContent = 'Please enter your name and email.';
+    err.classList.add('show');
+    return;
+  }
+  err.classList.remove('show');
+  const btn = event.target;
+  const oldTxt = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '⏳ Creating your access...';
+  fetch('/api/quick-access', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({name, email, website, plan:'starter'})
+  })
+  .then(r=>r.json())
+  .then(data=>{
+    if(data.success && data.access_code){
+      accessCode = data.access_code;
+      try{localStorage.setItem('accessCode', accessCode);}catch(e){}
+      document.getElementById('gate').classList.add('hidden');
+      document.getElementById('app').classList.remove('hidden');
+      initSteps();
+      // Prefill business name
+      if(name){document.getElementById('bizName').value = name;}
+      if(website){document.getElementById('bizWebsite').value = website;}
+    } else {
+      err.textContent = data.message || 'Something went wrong. Please try again.';
+      err.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = oldTxt;
+    }
+  })
+  .catch(()=>{
+    err.textContent = 'Network error. Please check your connection and try again.';
+    err.classList.add('show');
+    btn.disabled = false;
+    btn.textContent = oldTxt;
+  });
+}
 
 function verifyAccess(){
   const code = document.getElementById('gateCode').value.trim().toUpperCase();
@@ -530,13 +590,13 @@ function submitAll(){
         document.getElementById('embedCode').textContent = buildEmbed(accessCode);
         showStep(5);
       } else {
-        alert(resp.message || 'Something went wrong. Please WhatsApp us.');
+        alert(resp.message || 'Something went wrong. Please email hello@botifyai.xyz');
         btn.disabled = false;
         btn.textContent = '🚀 Submit & Get My Bot';
       }
     })
     .catch(()=>{
-      // Even if server fails, show the embed — user can WhatsApp for real setup
+      // Even if server fails, show the embed — user can email for real setup
       document.getElementById('embedCode').textContent = buildEmbed(accessCode);
       showStep(5);
     });
