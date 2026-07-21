@@ -806,7 +806,7 @@ def onboard_submit():
         return jsonify({"success": True, "message": "Bot training data saved"})
     except Exception as e:
         logger.error(f"onboard/submit error: {e}")
-        return jsonify({"success": False, "message": "Server error, please WhatsApp us."}), 500
+        return jsonify({"success": False, "message": "Server error — please email hello@botifyai.xyz"}), 500
 
 
 def notify_onboard_complete(client, payload):
