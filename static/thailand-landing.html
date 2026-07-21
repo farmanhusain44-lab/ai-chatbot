@@ -595,6 +595,24 @@ html[dir="rtl"] .showcase-card.active .showcase-media-inner{transform:scaleX(-1)
 html[dir="rtl"] .showcase-card{direction:rtl}
 html[dir="rtl"] .showcase-media{direction:ltr}
 </style>
+<style>
+/* Kill any horizontal overflow (right-side white gap) */
+html,body{overflow-x:hidden!important;max-width:100vw!important;width:100%}
+*{max-width:100vw}
+/* Hero h1 gets a reserved min-height so the typewriter phrase change doesn't push the page up-down. clamp() means it grows on wider screens */
+.hero h1{min-height:clamp(4.5em,10vw,5em)!important}
+@media(max-width:900px){
+  .hero h1{min-height:4.5em!important;font-size:1.8rem!important;line-height:1.18!important;word-break:break-word}
+  .hero-sub{padding:0 6px}
+  nav .nav-lang{display:none!important}
+  nav{overflow:hidden}
+  .nav-inner{max-width:100vw!important;overflow:hidden}
+  .hero-badge{max-width:92vw;white-space:normal;text-align:center;line-height:1.3}
+}
+@media(max-width:640px){
+  .hero h1{font-size:1.55rem!important;min-height:5em!important}
+}
+</style>
 </head>
 <body>
 <div class="mob-lang"><button class="active" data-lang="en" onclick="switchLang('en')">EN</button><button class="" data-lang="th" onclick="switchLang('th')">ไทย</button></div>
