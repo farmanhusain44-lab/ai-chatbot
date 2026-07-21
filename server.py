@@ -772,8 +772,11 @@ def onboard_submit():
         if payload.get("extra_notes"): parts.append(f"\nADDITIONAL NOTES:\n{payload['extra_notes']}")
         text_content = "\n".join(parts)
 
-        # Save as one document tagged onboard_ so we can detect completion later
-        add_document(client_id, "onboard_business_info.txt", text_content, "text")
+        # add_document signature: (client_id, filename, content, chunk_count=0) — 4th arg is INTEGER
+        try:
+            add_document(client_id, "onboard_business_info.txt", text_content, 0)
+        except Exception as doc_err:
+            logger.error(f"onboard/submit add_document failed: {doc_err}")
 
         # Save any uploaded files as additional documents
         for key in request.files:
@@ -784,7 +787,7 @@ def onboard_submit():
                 content = f.read()
                 # For text-like files store as text; PDF/DOC left to admin extraction later
                 if f.filename.lower().endswith((".txt",)):
-                    add_document(client_id, f"onboard_{f.filename}", content.decode("utf-8", errors="ignore"), "text")
+                    add_document(client_id, f"onboard_{f.filename}", content.decode("utf-8", errors="ignore"), 0)
                 else:
                     # Save the file blob to disk for admin to process
                     upload_dir = os.path.join(os.path.dirname(__file__), "uploads")
@@ -793,7 +796,7 @@ def onboard_submit():
                     path = os.path.join(upload_dir, safe_name)
                     with open(path, "wb") as out:
                         out.write(content)
-                    add_document(client_id, f"onboard_{f.filename}", f"[Uploaded file — admin will extract] path={safe_name}", "file")
+                    add_document(client_id, f"onboard_{f.filename}", f"[Uploaded file — admin will extract] path={safe_name}", 0)
             except Exception as inner:
                 logger.error(f"onboard file save failed: {inner}")
 
