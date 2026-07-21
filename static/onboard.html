@@ -198,21 +198,21 @@ nav{background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-bottom:1p
 
     <div class="field">
       <label>Business Name <span class="req">*</span></label>
-      <input type="text" id="bizName" placeholder="e.g. Sharma Sweets &amp; Restaurant">
+      <input type="text" id="bizName" placeholder="e.g. Sunrise Café" id="bizNameInput">
     </div>
     <div class="field field-row">
       <div>
         <label>City / Location</label>
-        <input type="text" id="bizCity" placeholder="e.g. Mumbai, Dubai, Doha">
+        <input type="text" id="bizCity" placeholder="e.g. Your city">
       </div>
       <div>
         <label>Phone Number</label>
-        <input type="tel" id="bizPhone" placeholder="+91 98765 43210">
+        <input type="tel" id="bizPhone" placeholder="Include country code, e.g. +1 555 123 4567">
       </div>
     </div>
     <div class="field">
       <label>Full Address <span class="hint">(optional but helpful)</span></label>
-      <input type="text" id="bizAddress" placeholder="Shop 12, Main Road, City, State, PIN">
+      <input type="text" id="bizAddress" placeholder="Street, City, State/Region, Postal code">
     </div>
     <div class="field field-row">
       <div>
@@ -226,7 +226,7 @@ nav{background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-bottom:1p
     </div>
     <div class="field">
       <label>Short description <span class="req">*</span> <span class="hint">— 1-3 sentences</span></label>
-      <textarea id="bizDesc" placeholder="e.g. We are a family-run sweet shop in Mumbai serving traditional Indian sweets, snacks, and hot meals since 1985. Known for our jalebi and chole bhature."></textarea>
+      <textarea id="bizDesc" placeholder="e.g. We are a family-run café in the city center serving breakfast, coffee, sandwiches, and pastries since 1998. Known for our fresh croissants and specialty coffee."></textarea>
     </div>
 
     <div class="nav-btns">
@@ -244,11 +244,11 @@ nav{background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-bottom:1p
     <div class="field">
       <label>Products / services list <span class="hint">— paste directly or leave blank if uploading below</span></label>
       <textarea id="bizProducts" placeholder="e.g.
-- Jalebi ₹120/kg
-- Chole Bhature ₹80/plate
-- Samosa ₹15 each
-- Rasgulla ₹200/kg
-- Party orders (min 24hrs notice)" style="min-height:180px;font-family:monospace;font-size:.85rem"></textarea>
+- Espresso  3.00
+- Cappuccino  4.50
+- Croissant  2.75
+- Club sandwich  8.00
+- Catering orders (24 hrs notice)" style="min-height:180px;font-family:monospace;font-size:.85rem"></textarea>
     </div>
 
     <div class="field">
@@ -302,18 +302,8 @@ nav{background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-bottom:1p
       <label>Languages bot should support <span class="req">*</span></label>
       <div class="lang-grid" id="langGrid">
         <label class="lang-chip"><input type="checkbox" value="English" checked> English</label>
-        <label class="lang-chip"><input type="checkbox" value="Hindi"> Hindi</label>
-        <label class="lang-chip"><input type="checkbox" value="Arabic"> Arabic</label>
-        <label class="lang-chip"><input type="checkbox" value="Urdu"> Urdu</label>
-        <label class="lang-chip"><input type="checkbox" value="Tamil"> Tamil</label>
-        <label class="lang-chip"><input type="checkbox" value="Telugu"> Telugu</label>
-        <label class="lang-chip"><input type="checkbox" value="Bengali"> Bengali</label>
-        <label class="lang-chip"><input type="checkbox" value="Marathi"> Marathi</label>
-        <label class="lang-chip"><input type="checkbox" value="Gujarati"> Gujarati</label>
-        <label class="lang-chip"><input type="checkbox" value="Punjabi"> Punjabi</label>
-        <label class="lang-chip"><input type="checkbox" value="Malayalam"> Malayalam</label>
-        <label class="lang-chip"><input type="checkbox" value="Kannada"> Kannada</label>
       </div>
+      <p style="color:#94a3b8;font-size:.78rem;margin-top:8px;line-height:1.55">🌍 Your bot can also understand and reply in almost any world language — even ones not shown here. These options are just a shortcut. Add any others in the box below.</p>
     </div>
 
     <div class="field">
@@ -348,7 +338,7 @@ nav{background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-bottom:1p
       <a href="mailto:hello@botifyai.xyz?subject=Please%20help%20install%20my%20BotifyAI" class="btn btn-back" style="text-decoration:none;display:inline-block">✉️ Get Free Setup Help</a>
     </div>
 
-    <p style="margin-top:32px;color:#94a3b8;font-size:.82rem">You'll always be able to update your bot's knowledge, add FAQ, or change settings anytime by messaging us on WhatsApp.</p>
+    <p style="margin-top:32px;color:#94a3b8;font-size:.82rem">You'll always be able to update your bot's knowledge, add FAQ, or change settings anytime — just email us at <a href="mailto:hello@botifyai.xyz" style="color:#6366f1">hello@botifyai.xyz</a>.</p>
   </div>
 
 </div>
@@ -454,6 +444,70 @@ function verifyAccess(){
 // Also support enter key on gate
 document.getElementById('gateCode').addEventListener('keydown', e=>{if(e.key==='Enter')verifyAccess();});
 
+// Region-aware language shortcut chips
+const REGION_LANG_CHIPS = {
+  india:       ['English','Hindi','Tamil','Telugu','Bengali','Marathi','Gujarati','Punjabi','Malayalam','Kannada','Urdu','Odia','Assamese'],
+  pakistan:    ['English','Urdu','Punjabi','Sindhi','Pashto','Balochi'],
+  uae:         ['English','Arabic','Hindi','Urdu','Filipino','Malayalam'],
+  qatar:       ['English','Arabic','Hindi','Urdu','Nepali'],
+  kuwait:      ['English','Arabic','Hindi','Urdu','Filipino'],
+  bahrain:     ['English','Arabic','Hindi','Urdu'],
+  oman:        ['English','Arabic','Hindi','Urdu','Swahili','Baluchi'],
+  jordan:      ['English','Arabic','French'],
+  iraq:        ['English','Arabic','Kurdish','Turkmen'],
+  lebanon:     ['English','Arabic','French','Armenian'],
+  egypt:       ['English','Arabic','French'],
+  bangladesh:  ['English','Bengali','Hindi'],
+  srilanka:    ['English','Sinhala','Tamil'],
+  nepal:       ['English','Nepali','Hindi','Maithili','Bhojpuri','Tharu'],
+  china:       ['English','Chinese (Mandarin)','Cantonese','Wu','Min'],
+  bhutan:      ['English','Dzongkha','Nepali','Hindi'],
+  myanmar:     ['English','Burmese','Shan','Karen'],
+  indonesia:   ['English','Bahasa Indonesia','Javanese','Sundanese','Malay'],
+  philippines: ['English','Filipino','Cebuano','Ilocano','Hiligaynon','Bicol'],
+  vietnam:     ['English','Vietnamese','Chinese (Mandarin)'],
+  malaysia:    ['English','Bahasa Malay','Chinese (Mandarin)','Tamil'],
+  thailand:    ['English','Thai','Chinese (Mandarin)','Lao'],
+  nigeria:     ['English','Hausa','Yorùbá','Igbo','Pidgin'],
+  kenya:       ['English','Swahili','Kikuyu','Luo','Kalenjin'],
+  southafrica: ['English','Afrikaans','isiZulu','isiXhosa','Sesotho','Setswana'],
+  ghana:       ['English','Twi (Akan)','Ewe','Ga','Dagbani'],
+  uganda:      ['English','Luganda','Runyakitara','Swahili','Ateso'],
+  tanzania:    ['English','Swahili','Chaga','Sukuma'],
+  rwanda:      ['English','Kinyarwanda','French','Swahili'],
+  mexico:      ['English','Spanish','Nahuatl','Yucatec Maya'],
+  brazil:      ['English','Portuguese','Spanish'],
+  colombia:    ['English','Spanish','Wayuu'],
+  argentina:   ['English','Spanish','Guaraní','Italian'],
+  peru:        ['English','Spanish','Quechua','Aymara'],
+  chile:       ['English','Spanish','Mapudungun'],
+};
+function detectClientRegion(){
+  // 1. Explicit ?region= URL param wins
+  const p = new URLSearchParams(window.location.search).get('region');
+  if(p) return p.toLowerCase();
+  // 2. Fallback: check referrer path
+  try {
+    const ref = document.referrer || '';
+    const m = ref.match(/\/(india|pakistan|uae|qatar|kuwait|bahrain|oman|jordan|iraq|lebanon|egypt|bangladesh|srilanka|nepal|china|bhutan|myanmar|indonesia|philippines|vietnam|malaysia|thailand|nigeria|kenya|southafrica|ghana|uganda|tanzania|rwanda|mexico|brazil|colombia|argentina|peru|chile)(?:$|\/|\?)/i);
+    if(m) return m[1].toLowerCase();
+  } catch(e){}
+  return null;
+}
+function populateLangChips(){
+  const region = detectClientRegion();
+  const list = (region && REGION_LANG_CHIPS[region]) || ['English','Spanish','French','Arabic','Chinese (Mandarin)','Portuguese','German','Japanese'];
+  const grid = document.getElementById('langGrid');
+  grid.innerHTML = '';
+  list.forEach((lang, i)=>{
+    const label = document.createElement('label');
+    label.className = 'lang-chip' + (i===0 ? ' checked' : '');
+    label.innerHTML = '<input type="checkbox" value="'+lang+'"'+(i===0?' checked':'')+'> '+lang;
+    grid.appendChild(label);
+  });
+  selectedLangs = [list[0]];
+}
+
 function initSteps(){
   // Build stepper dots
   const stepper = document.getElementById('stepper');
@@ -474,7 +528,8 @@ function initSteps(){
   });
   // Init FAQ
   if(faqs.length===0){addFaq();addFaq();addFaq();}
-  // Init languages
+  // Populate region-aware language chips
+  populateLangChips();
   document.querySelectorAll('#langGrid .lang-chip').forEach(chip=>{
     const cb = chip.querySelector('input');
     if(cb.checked)chip.classList.add('checked');
