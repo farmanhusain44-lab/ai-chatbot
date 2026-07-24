@@ -654,13 +654,6 @@ html,body{overflow-x:hidden!important;max-width:100vw!important;width:100%}
 </head>
 <body>
 <div class="mob-lang"><select onchange="switchLang(this.value)" style="background:transparent;border:none;font-weight:800;color:#475569;font-family:inherit;font-size:.72rem;padding:4px 8px;outline:none"><option value="en">EN</option><option value="hi">हिंदी</option><option value="ta">தமிழ்</option><option value="bn">বাংলা</option><option value="mr">मराठी</option><option value="te">తెలుగు</option><option value="gu">ગુજરાતી</option><option value="pa">ਪੰਜਾਬੀ</option><option value="kn">ಕನ್ನಡ</option><option value="ml">മലയാളം</option></select></div>
-<div class="lang-banner" id="langBanner">
- <div class="inner">
- <span id="langBannerText">We detected your state. View in your language?</span>
- <button class="detected" id="langBannerDetected" onclick="applyDetectedLanguage()">Hindi</button>
- <button class="english" onclick="setLanguage('en')">English</button>
- </div>
-</div>
 <canvas id="pc"></canvas>
 
 <div id="progress-bar"></div>
@@ -678,16 +671,9 @@ html,body{overflow-x:hidden!important;max-width:100vw!important;width:100%}
  <a href="#results" data-i18n="nav_results">Results</a>
  <a href="#pricing" data-i18n="nav_pricing">Pricing</a>
  <a href="#faq" data-i18n="nav_faq">FAQ</a>
- <div class="lang-switch" id="langSwitch">
- <button class="active" onclick="setLanguage('en')" data-lang="en">English</button>
- <button onclick="setLanguage('hi')" data-lang="hi" id="navDetectedLang">Hindi</button>
- </div>
+ <div class="nav-lang" id="navLangSwitcher"><button class="nav-lang-btn active" data-lang="en" onclick="switchLang('en')">EN</button><button class="nav-lang-btn" data-lang="hi" onclick="switchLang('hi')">हिंदी</button></div>
  </div>
  <div class="nav-right">
- <div class="lang-switch" id="desktopLangSwitch">
- <button class="active" onclick="setLanguage('en')" data-lang="en">English</button>
- <button onclick="setLanguage('hi')" data-lang="hi" id="desktopDetectedLang">Hindi</button>
- </div>
  <button class="nav-cta" onclick="window.location.href='/onboard?region=india'"><span data-i18n="nav_getstarted">Get Started →</span></button>
  </div>
  </div>
