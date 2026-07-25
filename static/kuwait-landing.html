@@ -50,7 +50,7 @@ window.addEventListener('DOMContentLoaded',function(){
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 *{margin:0;padding:0;box-sizing:border-box;overflow-anchor:none}
 html{scroll-behavior:auto}
-body{font-family:'Inter',sans-serif;background:#02020a;color:#e2e8f0;overflow-x:hidden}
+body{font-family:'Inter',sans-serif;background:#02020a;color:#e2e8f0;overflow-x:clip}
 a{text-decoration:none;color:inherit}
 
 /* ANNOUNCE */
@@ -599,7 +599,7 @@ html[dir="rtl"] .showcase-media{direction:ltr}
 </style>
 <style>
 /* Kill any horizontal overflow (right-side white gap) */
-html,body{overflow-x:hidden!important;max-width:100vw!important;width:100%}
+html,body{overflow-x:clip!important;max-width:100vw!important;width:100%}
 /* Hero h1 gets a reserved min-height so the typewriter phrase change doesn't push the page up-down. clamp() means it grows on wider screens */
 .hero h1{min-height:clamp(4.5em,10vw,5em)!important}
 @media(max-width:900px){
