@@ -26,6 +26,7 @@
     const iconUrl = currentScript.getAttribute('data-icon') || '';                              // custom image URL, wins over iconStyle
     const shape = (currentScript.getAttribute('data-shape') || 'round').toLowerCase();          // round|square|pill
     const size = (currentScript.getAttribute('data-size') || 'medium').toLowerCase();           // small|medium|large
+    const chatColor = currentScript.getAttribute('data-chat-color') || '';                      // chat window header color (defaults to button color)
 
     const SIZE_MAP = { small: 48, medium: 60, large: 72 };
     const buttonSize = SIZE_MAP[size] || 60;
@@ -170,7 +171,9 @@
     // Chat panel iframe
     const panel = document.createElement('iframe');
     panel.id = widgetId + '-panel';
-    panel.src = `${baseUrl}/widget.html?name=${encodeURIComponent(agentName)}&welcome=${encodeURIComponent(welcomeText)}&access=${encodeURIComponent(accessCode)}&lang=${encodeURIComponent(lang)}&region=${encodeURIComponent(region)}`;
+    // Pass icon + colors to the iframe so the chat panel header can match the button's look
+    const effectiveChatColor = chatColor || color;
+    panel.src = `${baseUrl}/widget.html?name=${encodeURIComponent(agentName)}&welcome=${encodeURIComponent(welcomeText)}&access=${encodeURIComponent(accessCode)}&lang=${encodeURIComponent(lang)}&region=${encodeURIComponent(region)}&icon-style=${encodeURIComponent(iconStyle)}&icon=${encodeURIComponent(iconUrl)}&color=${encodeURIComponent(effectiveChatColor)}`;
     panel.title = agentName;
     panel.setAttribute('allow', 'microphone');
 
