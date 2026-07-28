@@ -140,8 +140,14 @@ header p{color:#475569;font-size:1rem}
         <input type="text" id="accessInput" placeholder="BOT-XXXXXXXXXXXXXX">
       </div>
       <div class="field">
-        <label>Custom icon URL (optional — overrides icon above)</label>
-        <input type="text" id="iconUrlInput" placeholder="https://your-site.com/logo.png">
+        <label>🖼️ Upload your own icon (or paste image URL)</label>
+        <input type="file" id="iconFileInput" accept="image/png,image/jpeg,image/svg+xml,image/webp" style="width:100%;padding:12px;border:1.5px dashed #a5b4fc;border-radius:10px;font-size:.85rem;background:#eef2ff;cursor:pointer;color:#334155">
+        <div class="hint">PNG / JPG / SVG / WEBP · Best 200×200px, transparent background. Max ~500 KB.</div>
+        <input type="text" id="iconUrlInput" placeholder="Or paste any image URL: https://your-site.com/logo.png" style="margin-top:10px">
+        <div id="iconUploadPreview" style="margin-top:12px;display:none">
+          <img id="iconUploadImg" style="width:56px;height:56px;object-fit:cover;border-radius:12px;border:2px solid #e2e8f0;vertical-align:middle">
+          <button type="button" id="iconClearBtn" style="margin-left:10px;padding:6px 12px;border:none;border-radius:8px;background:#ef4444;color:#fff;cursor:pointer;font-size:.75rem;font-weight:600">✕ Clear</button>
+        </div>
       </div>
     </div>
   </div>
@@ -319,8 +325,57 @@ document.getElementById('colorPicker').addEventListener('input', e => {
   const keys = ['agent','welcome','access','iconUrl'];
   document.getElementById(id).addEventListener('input', e => {
     state[keys[i]] = e.target.value;
+    if (id === 'iconUrlInput' && e.target.value) {
+      document.getElementById('iconUploadPreview').style.display = 'block';
+      document.getElementById('iconUploadImg').src = e.target.value;
+    } else if (id === 'iconUrlInput' && !e.target.value) {
+      document.getElementById('iconUploadPreview').style.display = 'none';
+    }
     update();
   });
+});
+
+// Handle file upload — convert to data URL so it works instantly in preview.
+// Note: for the FINAL embed code, users should host the image somewhere
+// (their site or a free CDN) and paste that URL — data URLs are too long.
+document.getElementById('iconFileInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 500 * 1024) {
+    alert('Image is bigger than 500KB. Please compress it or use a smaller image so your website stays fast.');
+    e.target.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    state.iconUrl = ev.target.result;
+    document.getElementById('iconUrlInput').value = ev.target.result.length < 200 ? ev.target.result : '(uploaded — see preview)';
+    document.getElementById('iconUploadPreview').style.display = 'block';
+    document.getElementById('iconUploadImg').src = ev.target.result;
+    update();
+    // Warn about hosting the image for production
+    setTimeout(() => {
+      const codeBox = document.querySelector('.code-box');
+      if (!document.getElementById('hostWarn')) {
+        const warn = document.createElement('div');
+        warn.id = 'hostWarn';
+        warn.style.cssText = 'margin-top:12px;padding:12px;background:#fef3c7;border:1px solid #f59e0b;border-radius:10px;font-size:.8rem;color:#78350f;line-height:1.5';
+        warn.innerHTML = '<strong>💡 Almost done —</strong> Upload your icon to your own website (or any free image host like <a href="https://imgur.com" target="_blank" style="color:#0f172a">imgur.com</a>), then paste that URL in the field above. The embed code needs a live URL, not the local file.';
+        codeBox.parentElement.appendChild(warn);
+      }
+    }, 500);
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('iconClearBtn').addEventListener('click', () => {
+  state.iconUrl = '';
+  document.getElementById('iconUrlInput').value = '';
+  document.getElementById('iconFileInput').value = '';
+  document.getElementById('iconUploadPreview').style.display = 'none';
+  const w = document.getElementById('hostWarn');
+  if (w) w.remove();
+  update();
 });
 
 document.getElementById('copyBtn').addEventListener('click', async () => {
