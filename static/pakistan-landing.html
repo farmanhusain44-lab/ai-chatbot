@@ -15,8 +15,7 @@ function switchLang(lang){
   document.querySelectorAll('.nav-lang-btn,.mob-lang button').forEach(function(b){b.classList.toggle('active',b.dataset&&b.dataset.lang===lang);});
   document.documentElement.setAttribute('dir',(lang==='ar'||lang==='ur')?'rtl':'ltr');
   document.documentElement.setAttribute('lang',lang);
-  var isRTL=(lang==='ar'||lang==='ur');
-  document.querySelectorAll('.showcase-media-inner').forEach(function(el){el.style.setProperty('transform', isRTL?'scaleX(-1)':'', 'important');});
+  // Photo mirror is handled entirely in CSS (html[dir="rtl"] rules) — no inline transform override needed here
   try{localStorage.setItem('botifyai_lang',lang);}catch(e){}
 }
 window.addEventListener('DOMContentLoaded',function(){
@@ -592,10 +591,18 @@ footer{background:#0f172a;color:#94a3b8;border-top:none;padding-top:60px}
 </style>
 <style>
 /* RTL: mirror photos so faces face the reading direction */
-html[dir="rtl"] .showcase-media-inner{transform:scaleX(-1) scale(1) !important}
-html[dir="rtl"] .showcase-card.active .showcase-media-inner{transform:scaleX(-1) scale(1) !important}
-html[dir="rtl"] .showcase-card{direction:rtl}
-html[dir="rtl"] .showcase-media{direction:ltr}
+/* RTL: keep the horizontal card track LTR so cards stay in file order */
+html[dir="rtl"] .showcase-track{direction:ltr}
+html[dir="rtl"] .showcase-section,html[dir="rtl"] .showcase-sticky{direction:ltr}
+/* Mirror the photo — separate rules for inactive vs active so scale + parallax survive */
+html[dir="rtl"] .showcase-card:not(.active) .showcase-media-inner{transform:scale(.85) scaleX(-1) !important}
+html[dir="rtl"] .showcase-card.active .showcase-media-inner{transform:scale(1) scaleX(-1) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) !important;filter:blur(0) brightness(1.5) contrast(1.06) saturate(1.12) !important}
+/* Flip the dark→transparent horizontal overlay so the black side sits under the right-aligned text */
+html[dir="rtl"] .showcase-card::before{background:linear-gradient(270deg,rgba(2,2,10,.96) 0%,rgba(2,2,10,.82) 40%,rgba(2,2,10,.35) 100%)}
+/* Move the details block to the right side */
+html[dir="rtl"] .showcase-card-inner{justify-content:flex-end;text-align:right;direction:rtl}
+html[dir="rtl"] .showcase-content{text-align:right}
+html[dir="rtl"] .showcase-chips{justify-content:flex-end}
 </style>
 <style>
 /* Kill any horizontal overflow (right-side white gap) */
