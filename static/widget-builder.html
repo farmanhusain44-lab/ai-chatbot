@@ -138,6 +138,10 @@ header p{color:#475569;font-size:1rem}
       <div class="field">
         <label>Access code (from your account)</label>
         <input type="text" id="accessInput" placeholder="BOT-XXXXXXXXXXXXXX">
+        <div class="hint">
+          Don't have one yet? <a href="/onboard" style="color:#6366f1;font-weight:700">Get your free access code here →</a>
+          <br>Already signed up? Check your <strong>email inbox</strong> (from hello@botifyai.xyz) — the code was sent when you registered.
+        </div>
       </div>
       <div class="field">
         <label>🖼️ Upload your own icon (or paste image URL)</label>
@@ -390,6 +394,20 @@ document.getElementById('copyBtn').addEventListener('click', async () => {
     alert('Copy failed. Please select the code and copy manually.');
   }
 });
+
+// Auto-fill access code from URL (?access=BOT-...) or from localStorage (saved when user first signed up on /onboard)
+(function autofillAccess(){
+  try {
+    const url = new URLSearchParams(window.location.search);
+    const fromUrl = url.get('access');
+    const fromStorage = localStorage.getItem('accessCode');
+    const code = fromUrl || fromStorage;
+    if (code) {
+      state.access = code;
+      document.getElementById('accessInput').value = code;
+    }
+  } catch(e) {}
+})();
 
 update();
 </script>
