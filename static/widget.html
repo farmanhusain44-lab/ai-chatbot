@@ -42,7 +42,7 @@ body{font-family:'Segoe UI',sans-serif;background:#fff;display:flex;flex-directi
 <body>
 
 <div id="chat-header">
-  <div class="av" style="background:none;padding:0"><img src="https://i.imgur.com/FfNwGyA.png" width="36" height="36" style="border-radius:50%;object-fit:cover"/></div>
+  <div class="av" id="header-avatar" style="background:none;padding:0"></div>
   <div class="info">
     <h4 id="agent-name">AI Assistant</h4>
     <p>● Online — replies instantly</p>
@@ -67,6 +67,34 @@ const agentName = params.get('name') || 'AI Assistant';
 const color = params.get('color') || '#6366f1';
 const lang = (params.get('lang') || 'en').toLowerCase();
 const region = (params.get('region') || '').toLowerCase();
+const iconStyle = (params.get('icon-style') || 'logo').toLowerCase();
+const iconUrl = params.get('icon') || '';
+
+// Paint the header avatar with the client-chosen icon (same rules as the launcher button)
+(function renderHeaderAvatar(){
+  const av = document.getElementById('header-avatar');
+  if (!av) return;
+  if (iconUrl) {
+    av.innerHTML = `<img src="${iconUrl}" width="36" height="36" style="border-radius:50%;object-fit:cover" alt=""/>`;
+    return;
+  }
+  const PRESETS = {
+    logo:    `<img src="https://i.imgur.com/FfNwGyA.png" width="36" height="36" style="border-radius:50%;object-fit:cover" alt=""/>`,
+    chat:    `<span style="font-size:22px;line-height:1">💬</span>`,
+    robot:   `<span style="font-size:22px;line-height:1">🤖</span>`,
+    phone:   `<span style="font-size:22px;line-height:1">📞</span>`,
+    sparkle: `<span style="font-size:22px;line-height:1">✨</span>`,
+    headset: `<span style="font-size:22px;line-height:1">🎧</span>`,
+    whatsapp:`<span style="font-size:22px;line-height:1">💬</span>`,
+    upload:  `<span style="font-size:22px;line-height:1">🖼️</span>`,
+  };
+  // A single emoji character passed as iconStyle also works
+  if (iconStyle.length <= 2 && !PRESETS[iconStyle]) {
+    av.innerHTML = `<span style="font-size:22px;line-height:1">${iconStyle}</span>`;
+  } else {
+    av.innerHTML = PRESETS[iconStyle] || PRESETS.logo;
+  }
+})();
 
 document.getElementById('agent-name').textContent = agentName;
 document.documentElement.style.setProperty('--color', color);

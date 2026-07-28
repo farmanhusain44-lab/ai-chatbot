@@ -723,6 +723,10 @@ def onboard_verify():
         code = (data.get("access_code") or "").strip().upper()
         if not code:
             return jsonify({"valid": False, "message": "Please enter your access code."}), 400
+        # Normalize: users often paste just the 16-hex suffix (from a shortened widget snippet,
+        # a chat log, etc.) without the "BOT-" prefix — auto-prefix so lookup still works.
+        if not code.startswith("BOT-") and len(code) == 16 and all(c in "0123456789ABCDEF" for c in code):
+            code = "BOT-" + code
         client = get_client_by_access_code(code)
         if not client:
             return jsonify({"valid": False, "message": "This access code was not found."}), 404
