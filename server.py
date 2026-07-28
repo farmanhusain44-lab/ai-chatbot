@@ -676,6 +676,11 @@ def partners():
 def onboard():
     return app.send_static_file("onboard.html")
 
+@app.route("/widget-builder")
+@app.route("/customize")
+def widget_builder():
+    return app.send_static_file("widget-builder.html")
+
 @app.route("/api/quick-access", methods=["POST"])
 def quick_access():
     """Instant access code — client fills a small form, we create the account and
