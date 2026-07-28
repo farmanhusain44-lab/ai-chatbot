@@ -2,6 +2,14 @@
     // AI Chatbot Widget Embed Script
     // Usage: <script src="https://your-domain.com/widget.js" data-agent="AI Agent" data-welcome="Hello!"></script>
 
+    // Guard: if someone accidentally embeds this script twice (e.g., basic + customized), only render one widget
+    // Uses a global flag on window so a second load is a no-op instead of stacking two chat bubbles on the page.
+    if (window.__botifyaiWidgetLoaded) {
+        try { console.warn('[BotifyAI] Widget script loaded more than once — ignoring the second copy. Keep only one <script src=".../widget.js"> tag on your page.'); } catch(e) {}
+        return;
+    }
+    window.__botifyaiWidgetLoaded = true;
+
     function initWidget() {
     const scripts = document.getElementsByTagName('script');
     const currentScript = scripts[scripts.length - 1];
