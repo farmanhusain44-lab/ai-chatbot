@@ -149,11 +149,27 @@ def create_client(name, email="", website="", plan="basic", days_valid=365, regi
     return client_id, access_code
 
 def get_client_by_access_code(access_code):
+    """Find client by access code — tries the code as-is, and also tries with/without the BOT- prefix
+    so clients who paste just the 16-hex suffix (or accidentally add a prefix) still resolve."""
+    if not access_code:
+        return None
+    code = str(access_code).strip().upper()
+    # Build candidate list: as-is, plus common prefix variants
+    candidates = [code]
+    if code.startswith("BOT-"):
+        candidates.append(code[4:])  # strip BOT- and try suffix alone
+    else:
+        candidates.append("BOT-" + code)  # add BOT- prefix
+
     conn = get_db()
     cursor = conn.cursor()
     active_val = 'TRUE' if IS_POSTGRES else '1'
-    cursor.execute(f'SELECT * FROM clients WHERE access_code = {ph(1)} AND active = {active_val}', (access_code,))
-    row = cursor.fetchone()
+    row = None
+    for cand in candidates:
+        cursor.execute(f'SELECT * FROM clients WHERE access_code = {ph(1)} AND active = {active_val}', (cand,))
+        row = cursor.fetchone()
+        if row:
+            break
     conn.close()
     return row_to_dict(cursor, row)
 
