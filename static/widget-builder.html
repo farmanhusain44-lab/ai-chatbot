@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BotifyAI Widget Builder — Customize Your Chat Bubble</title>
+<meta name="description" content="Design your BotifyAI chat widget — pick icon, color, shape, position — then copy the 1-line embed code.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:linear-gradient(180deg,#f8fafc 0%,#e0e7ff 100%);min-height:100vh;color:#0f172a}
+.wrap{max-width:1200px;margin:0 auto;padding:32px 20px}
+header{text-align:center;margin-bottom:32px}
+header h1{font-size:2.2rem;font-weight:900;letter-spacing:-.03em;margin-bottom:8px;background:linear-gradient(135deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+header p{color:#475569;font-size:1rem}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.panel{background:#fff;border-radius:20px;padding:28px;box-shadow:0 10px 30px rgba(15,23,42,.06);border:1px solid rgba(15,23,42,.05)}
+.panel h2{font-size:1.15rem;font-weight:800;margin-bottom:18px;color:#0f172a}
+.field{margin-bottom:20px}
+.field label{display:block;font-size:.82rem;font-weight:700;color:#334155;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
+.field input[type=text],.field select{width:100%;padding:12px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:.9rem;font-family:inherit;background:#fff;color:#0f172a;transition:.2s}
+.field input:focus,.field select:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.12)}
+.color-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.color-swatch{width:36px;height:36px;border-radius:10px;cursor:pointer;border:3px solid transparent;transition:.15s;position:relative}
+.color-swatch.active{border-color:#0f172a;transform:scale(1.1)}
+.color-swatch:hover{transform:scale(1.05)}
+.field input[type=color]{width:44px;height:36px;border:1.5px solid #e2e8f0;border-radius:8px;padding:2px;cursor:pointer;background:#fff}
+.icon-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.icon-opt{aspect-ratio:1;border:2px solid #e2e8f0;border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s;font-size:1.6rem;background:#f8fafc}
+.icon-opt:hover{border-color:#a5b4fc;background:#eef2ff}
+.icon-opt.active{border-color:#6366f1;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}
+.icon-opt img{width:32px;height:32px;object-fit:contain;border-radius:6px}
+.icon-opt svg{width:26px;height:26px;stroke:currentColor}
+.pill-row{display:flex;gap:8px;flex-wrap:wrap}
+.pill{padding:8px 16px;border:2px solid #e2e8f0;border-radius:999px;cursor:pointer;font-size:.8rem;font-weight:700;transition:.15s;color:#475569;background:#fff}
+.pill:hover{border-color:#a5b4fc;color:#6366f1}
+.pill.active{border-color:#6366f1;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}
+.preview-box{position:relative;height:420px;background:linear-gradient(180deg,#f1f5f9 0%,#e2e8f0 100%);border-radius:14px;overflow:hidden;border:1px solid rgba(15,23,42,.06)}
+.preview-fake{padding:24px;height:100%;background-image:linear-gradient(rgba(255,255,255,.7),rgba(255,255,255,.7)),url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="none"/><path d="M0 40 L80 40 M40 0 L40 80" stroke="%23cbd5e1" stroke-width=".5"/></svg>');background-size:80px 80px;position:relative}
+.preview-fake h3{font-size:1.4rem;color:#64748b;margin-bottom:8px;font-weight:800}
+.preview-fake p{font-size:.85rem;color:#94a3b8}
+.preview-label{position:absolute;top:12px;left:12px;background:rgba(15,23,42,.85);color:#fff;padding:5px 10px;border-radius:6px;font-size:.7rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+#previewButton{position:absolute;box-shadow:0 4px 20px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.25s;border:none;padding:0}
+#previewButton:hover{transform:scale(1.05);box-shadow:0 6px 25px rgba(0,0,0,.35)}
+.code-box{background:#0f172a;color:#e2e8f0;padding:20px;border-radius:12px;font-family:'SF Mono','Monaco',monospace;font-size:.78rem;line-height:1.7;overflow-x:auto;position:relative;white-space:pre-wrap;word-break:break-all}
+.copy-btn{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.75rem;font-weight:600;transition:.2s}
+.copy-btn:hover{background:rgba(255,255,255,.2)}
+.copy-btn.copied{background:#10b981;border-color:#10b981}
+.hint{font-size:.78rem;color:#64748b;margin-top:8px;line-height:1.55}
+.note{background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid #f59e0b;border-radius:12px;padding:14px 16px;font-size:.85rem;color:#78350f;margin-bottom:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<h1>🎨 BotifyAI Widget Builder</h1>
+<p>Design your chat bubble — see it live — copy the 1-line code</p>
+</header>
+
+<div class="grid">
+  <!-- LEFT: Customization -->
+  <div>
+    <div class="panel">
+      <h2>1. Pick an icon</h2>
+      <div class="icon-grid" id="iconGrid">
+        <div class="icon-opt active" data-icon="logo" title="BotifyAI logo"><img src="https://i.imgur.com/FfNwGyA.png" alt=""/></div>
+        <div class="icon-opt" data-icon="chat" title="Chat bubble">💬</div>
+        <div class="icon-opt" data-icon="robot" title="Robot">🤖</div>
+        <div class="icon-opt" data-icon="phone" title="Phone">📞</div>
+        <div class="icon-opt" data-icon="sparkle" title="Sparkle">✨</div>
+        <div class="icon-opt" data-icon="headset" title="Headset">🎧</div>
+        <div class="icon-opt" data-icon="whatsapp" title="WhatsApp style">
+          <svg viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </div>
+        <div class="icon-opt" data-icon="custom" title="Custom URL">🔗</div>
+      </div>
+      <div class="hint">Or pick any emoji/URL below in "Custom icon".</div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <h2>2. Shape & Size</h2>
+      <div class="field">
+        <label>Button shape</label>
+        <div class="pill-row" id="shapeRow">
+          <div class="pill active" data-shape="round">Round</div>
+          <div class="pill" data-shape="square">Square</div>
+          <div class="pill" data-shape="pill">Pill</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Button size</label>
+        <div class="pill-row" id="sizeRow">
+          <div class="pill" data-size="small">Small</div>
+          <div class="pill active" data-size="medium">Medium</div>
+          <div class="pill" data-size="large">Large</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <h2>3. Color & Position</h2>
+      <div class="field">
+        <label>Button color</label>
+        <div class="color-row">
+          <div class="color-swatch active" style="background:#25D366" data-color="#25D366"></div>
+          <div class="color-swatch" style="background:#6366f1" data-color="#6366f1"></div>
+          <div class="color-swatch" style="background:#8b5cf6" data-color="#8b5cf6"></div>
+          <div class="color-swatch" style="background:#ec4899" data-color="#ec4899"></div>
+          <div class="color-swatch" style="background:#f59e0b" data-color="#f59e0b"></div>
+          <div class="color-swatch" style="background:#ef4444" data-color="#ef4444"></div>
+          <div class="color-swatch" style="background:#0f172a" data-color="#0f172a"></div>
+          <div class="color-swatch" style="background:#0ea5e9" data-color="#0ea5e9"></div>
+          <input type="color" id="colorPicker" value="#25D366" title="Pick any color">
+        </div>
+      </div>
+      <div class="field">
+        <label>Position on page</label>
+        <div class="pill-row" id="posRow">
+          <div class="pill active" data-pos="bottom-right">Bottom Right</div>
+          <div class="pill" data-pos="bottom-left">Bottom Left</div>
+          <div class="pill" data-pos="top-right">Top Right</div>
+          <div class="pill" data-pos="top-left">Top Left</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <h2>4. Text & Custom Icon</h2>
+      <div class="field">
+        <label>Agent name (tooltip)</label>
+        <input type="text" id="agentInput" placeholder="Chat with us" value="Chat with us">
+      </div>
+      <div class="field">
+        <label>Welcome message</label>
+        <input type="text" id="welcomeInput" placeholder="Hello! How can I help?" value="Hello! How can I help?">
+      </div>
+      <div class="field">
+        <label>Access code (from your account)</label>
+        <input type="text" id="accessInput" placeholder="BOT-XXXXXXXXXXXXXX">
+      </div>
+      <div class="field">
+        <label>Custom icon URL (optional — overrides icon above)</label>
+        <input type="text" id="iconUrlInput" placeholder="https://your-site.com/logo.png">
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Live Preview + Code -->
+  <div>
+    <div class="panel">
+      <h2>👀 Live preview</h2>
+      <div class="preview-box">
+        <span class="preview-label">YOUR WEBSITE</span>
+        <div class="preview-fake">
+          <h3>Your Website Homepage</h3>
+          <p>This is a preview of how the widget appears on your site.</p>
+        </div>
+        <button id="previewButton"></button>
+      </div>
+      <div class="hint">Click the button to open the chat panel (simulated here — full chat opens on your live site).</div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <h2>📋 Your embed code</h2>
+      <div class="note">Paste this <strong>once</strong> in your website's HTML — just before the closing <code>&lt;/body&gt;</code> tag. That's it. Works on WordPress, Shopify, Wix, Squarespace, custom sites.</div>
+      <div class="code-box">
+        <button class="copy-btn" id="copyBtn">📋 Copy</button>
+        <div id="codeOutput"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const SIZE_MAP = { small: 48, medium: 60, large: 72 };
+const ICON_PRESETS = {
+  logo: 'img|https://i.imgur.com/FfNwGyA.png',
+  chat: 'emoji|💬',
+  robot: 'emoji|🤖',
+  phone: 'emoji|📞',
+  sparkle: 'emoji|✨',
+  headset: 'emoji|🎧',
+  whatsapp: 'svg|<svg viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>',
+  custom: 'url'
+};
+
+const state = {
+  icon: 'logo',
+  shape: 'round',
+  size: 'medium',
+  color: '#25D366',
+  pos: 'bottom-right',
+  agent: 'Chat with us',
+  welcome: 'Hello! How can I help?',
+  access: '',
+  iconUrl: ''
+};
+
+function selectFromGroup(row, attr, val, key){
+  row.querySelectorAll('.'+row.dataset.pillClass||'pill,.icon-opt,.color-swatch').forEach(el => {
+    if (el.dataset[attr] === val) el.classList.add('active');
+    else el.classList.remove('active');
+  });
+  state[key] = val;
+  update();
+}
+
+function makeIconHTML(px){
+  const preset = ICON_PRESETS[state.icon] || ICON_PRESETS.logo;
+  if (state.iconUrl) {
+    return `<img src="${state.iconUrl}" width="${px}" height="${px}" style="border-radius:${state.shape==='round'?'50%':'8px'};object-fit:cover" alt=""/>`;
+  }
+  if (preset.startsWith('img|')) {
+    const url = preset.slice(4);
+    return `<img src="${url}" width="${px}" height="${px}" style="border-radius:${state.shape==='round'?'50%':'8px'};object-fit:cover" alt=""/>`;
+  }
+  if (preset.startsWith('emoji|')) {
+    return `<span style="font-size:${Math.round(px*0.85)}px;line-height:1">${preset.slice(6)}</span>`;
+  }
+  if (preset.startsWith('svg|')) {
+    return preset.slice(4).replace('<svg ', `<svg width="${px}" height="${px}" `);
+  }
+  return `<span style="font-size:${Math.round(px*0.85)}px;line-height:1">🤖</span>`;
+}
+
+function update(){
+  const btn = document.getElementById('previewButton');
+  const size = SIZE_MAP[state.size];
+  const radius = state.shape === 'round' ? '50%' : (state.shape === 'pill' ? (size/2)+'px' : '14px');
+  const iconPx = Math.round(size * 0.7);
+
+  btn.style.cssText = `
+    width:${size}px;
+    height:${size}px;
+    border-radius:${radius};
+    background:${state.color};
+    color:white;
+    ${state.pos.includes('right') ? 'right:16px' : 'left:16px'};
+    ${state.pos.includes('bottom') ? 'bottom:16px' : 'top:16px'};
+    position:absolute;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 4px 20px rgba(0,0,0,.25);
+    cursor:pointer;
+    border:none;
+    padding:0;
+  `;
+  btn.innerHTML = makeIconHTML(iconPx);
+
+  // Build embed code
+  const attrs = [
+    `src="https://botifyai.xyz/widget.js"`,
+    state.access ? `data-access="${state.access}"` : '',
+    state.agent !== 'Chat with us' ? `data-agent="${state.agent}"` : '',
+    state.welcome !== 'Hello! How can I help?' ? `data-welcome="${state.welcome}"` : '',
+    state.pos !== 'bottom-right' ? `data-position="${state.pos}"` : '',
+    state.color !== '#25D366' ? `data-color="${state.color}"` : '',
+    state.icon !== 'logo' && !state.iconUrl ? `data-icon-style="${state.icon}"` : '',
+    state.iconUrl ? `data-icon="${state.iconUrl}"` : '',
+    state.shape !== 'round' ? `data-shape="${state.shape}"` : '',
+    state.size !== 'medium' ? `data-size="${state.size}"` : ''
+  ].filter(Boolean);
+
+  const code = `<script\n  ${attrs.join('\n  ')}\n><\/script>`;
+  document.getElementById('codeOutput').textContent = code;
+}
+
+// Wire up controls
+document.getElementById('iconGrid').addEventListener('click', e => {
+  const opt = e.target.closest('.icon-opt');
+  if (!opt) return;
+  document.querySelectorAll('#iconGrid .icon-opt').forEach(x => x.classList.remove('active'));
+  opt.classList.add('active');
+  state.icon = opt.dataset.icon;
+  update();
+});
+document.getElementById('shapeRow').addEventListener('click', e => {
+  const p = e.target.closest('.pill');
+  if (!p) return;
+  document.querySelectorAll('#shapeRow .pill').forEach(x => x.classList.remove('active'));
+  p.classList.add('active');
+  state.shape = p.dataset.shape;
+  update();
+});
+document.getElementById('sizeRow').addEventListener('click', e => {
+  const p = e.target.closest('.pill');
+  if (!p) return;
+  document.querySelectorAll('#sizeRow .pill').forEach(x => x.classList.remove('active'));
+  p.classList.add('active');
+  state.size = p.dataset.size;
+  update();
+});
+document.getElementById('posRow').addEventListener('click', e => {
+  const p = e.target.closest('.pill');
+  if (!p) return;
+  document.querySelectorAll('#posRow .pill').forEach(x => x.classList.remove('active'));
+  p.classList.add('active');
+  state.pos = p.dataset.pos;
+  update();
+});
+document.querySelectorAll('.color-swatch').forEach(sw => {
+  sw.addEventListener('click', () => {
+    document.querySelectorAll('.color-swatch').forEach(x => x.classList.remove('active'));
+    sw.classList.add('active');
+    state.color = sw.dataset.color;
+    document.getElementById('colorPicker').value = state.color;
+    update();
+  });
+});
+document.getElementById('colorPicker').addEventListener('input', e => {
+  state.color = e.target.value;
+  document.querySelectorAll('.color-swatch').forEach(x => x.classList.remove('active'));
+  update();
+});
+['agentInput','welcomeInput','accessInput','iconUrlInput'].forEach((id, i) => {
+  const keys = ['agent','welcome','access','iconUrl'];
+  document.getElementById(id).addEventListener('input', e => {
+    state[keys[i]] = e.target.value;
+    update();
+  });
+});
+
+document.getElementById('copyBtn').addEventListener('click', async () => {
+  const code = document.getElementById('codeOutput').textContent;
+  try {
+    await navigator.clipboard.writeText(code);
+    const b = document.getElementById('copyBtn');
+    b.textContent = '✓ Copied!';
+    b.classList.add('copied');
+    setTimeout(() => { b.textContent = '📋 Copy'; b.classList.remove('copied'); }, 2000);
+  } catch(e) {
+    alert('Copy failed. Please select the code and copy manually.');
+  }
+});
+
+update();
+</script>
+</body>
+</html>
