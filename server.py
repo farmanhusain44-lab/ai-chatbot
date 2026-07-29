@@ -762,14 +762,26 @@ def onboard_verify():
         client = get_client_by_access_code(code)
         if not client:
             return jsonify({"valid": False, "message": "This access code was not found."}), 404
-        # Detect if already onboarded (any existing docs)
+        # Detect if already onboarded (any existing docs) and load the most recent saved payload
+        # so the client-side form can pre-fill every field for editing/retraining.
         docs = get_documents(client["id"]) or []
         onboarded = any((d.get("filename") or "").startswith("onboard_") for d in docs)
+        payload = None
+        # get_documents returns newest first — grab the latest onboard_payload.json we find
+        import json as _json
+        for d in docs:
+            if (d.get("filename") or "") == "onboard_payload.json":
+                try:
+                    payload = _json.loads(d.get("content") or "{}")
+                    break
+                except Exception:
+                    continue
         return jsonify({
             "valid": True,
             "name": client.get("name", ""),
             "website": client.get("website", ""),
             "already_onboarded": onboarded,
+            "payload": payload,  # null if fresh signup; full form data if returning to edit
         })
     except Exception as e:
         logger.error(f"onboard/verify error: {e}")
@@ -812,11 +824,18 @@ def onboard_submit():
         if payload.get("extra_notes"): parts.append(f"\nADDITIONAL NOTES:\n{payload['extra_notes']}")
         text_content = "\n".join(parts)
 
-        # add_document signature: (client_id, filename, content, chunk_count=0) — 4th arg is INTEGER
+        # Save two docs in parallel:
+        #   1. onboard_business_info.txt — human-readable free text used to train the bot
+        #   2. onboard_payload.json — the original structured payload so we can reload every
+        #      field verbatim when the client comes back to edit their profile
         try:
             add_document(client_id, "onboard_business_info.txt", text_content, 0)
         except Exception as doc_err:
             logger.error(f"onboard/submit add_document failed: {doc_err}")
+        try:
+            add_document(client_id, "onboard_payload.json", _json.dumps(payload), 0)
+        except Exception as doc_err:
+            logger.error(f"onboard/submit payload save failed: {doc_err}")
 
         # Save any uploaded files as additional documents
         for key in request.files:
