@@ -444,11 +444,17 @@ function verifyAccess(){
         document.getElementById('app').classList.remove('hidden');
         initSteps();
         fillAccessCodeBanner();
-        // If they already onboarded, jump to success
-        if(data.already_onboarded){showStep(5); document.getElementById('embedCode').textContent = buildEmbed(code); showAccessCode();}
-        // Prefill name
+        // Prefill basics first
         if(data.name){document.getElementById('bizName').value=data.name;}
         if(data.website){document.getElementById('bizWebsite').value=data.website;}
+        // Returning client — hydrate every field from their saved payload so they can edit and retrain
+        if(data.payload){
+          prefillFromPayload(data.payload);
+          showEditWelcome();
+        }
+        // Always land on step 0 so the client sees their full profile and can jump to any section.
+        // (The old "if already_onboarded jump to success" flow trapped clients on the embed page with no way to edit.)
+        showStep(0);
       } else {
         err.textContent = data.message || 'Invalid access code';
         err.classList.add('show');
@@ -722,6 +728,53 @@ function copyAccessCodeBanner(){
     b.style.background = '#10b981';
     setTimeout(()=>{b.textContent = old; b.style.background='#f59e0b';}, 2000);
   });
+}
+
+// Hydrate every form field from a previously-saved payload so returning clients can edit
+function prefillFromPayload(p){
+  if (!p || typeof p !== 'object') return;
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
+  set('bizName', p.name);
+  set('bizWebsite', p.website);
+  set('bizCity', p.city);
+  set('bizAddress', p.address);
+  set('bizPhone', p.phone);
+  set('bizHours', p.hours);
+  set('bizDescription', p.description);
+  set('bizProducts', p.products);
+  set('bizRefund', p.refund_policy);
+  set('bizDelivery', p.delivery_info);
+  set('bizExtra', p.extra_notes);
+  // Business type chip
+  if (p.business_type) {
+    document.querySelectorAll('#typeChips .chip').forEach(c => {
+      c.classList.toggle('active', c.dataset.type === p.business_type);
+    });
+  }
+  // Language chips
+  if (Array.isArray(p.languages)) {
+    document.querySelectorAll('#langGrid input[type=checkbox]').forEach(cb => {
+      cb.checked = p.languages.includes(cb.value);
+    });
+  }
+  // FAQs (rebuild the FAQ list — assumes an "addFaq()" that appends inputs exists)
+  if (Array.isArray(p.faqs) && p.faqs.length && typeof window.renderFaqs === 'function') {
+    window.renderFaqs(p.faqs);
+  } else if (Array.isArray(p.faqs) && p.faqs.length) {
+    // Fallback: leave FAQ handling to whatever the current step-5 UI supports
+    window.__prefillFaqs = p.faqs;
+  }
+}
+
+// Show a friendly "Welcome back — edit anything, then Submit to retrain" banner at the top of app
+function showEditWelcome(){
+  if (document.getElementById('editWelcome')) return;
+  const app = document.getElementById('app');
+  const banner = document.createElement('div');
+  banner.id = 'editWelcome';
+  banner.style.cssText = 'max-width:720px;margin:0 auto 16px;background:linear-gradient(135deg,#dbeafe,#bfdbfe);border:1px solid #3b82f6;border-radius:12px;padding:14px 18px;color:#1e40af;font-size:.9rem;line-height:1.5';
+  banner.innerHTML = '👋 <strong>Welcome back!</strong> Your bot is already trained — every field below is filled with your saved answers. Edit anything you want, then hit <strong>Submit</strong> at the end to retrain your bot with the new info.';
+  app.insertBefore(banner, app.firstChild);
 }
 </script>
 </body>
