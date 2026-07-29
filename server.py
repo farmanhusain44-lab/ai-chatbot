@@ -681,6 +681,13 @@ def onboard():
 def widget_builder():
     return app.send_static_file("widget-builder.html")
 
+@app.route("/my-bot")
+@app.route("/login")
+@app.route("/dashboard")
+def my_bot_login():
+    """Dedicated 'log in with access code' page. Verifies then redirects to /onboard?code=... for editing."""
+    return app.send_static_file("my-bot.html")
+
 @app.route("/api/upload-icon", methods=["POST"])
 def upload_icon():
     """Client uploads a logo/photo → we host it and return a public URL.
