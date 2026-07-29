@@ -4,6 +4,7 @@ import anthropic
 import os
 import re
 import tempfile
+import uuid
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -679,6 +680,37 @@ def onboard():
 @app.route("/customize")
 def widget_builder():
     return app.send_static_file("widget-builder.html")
+
+@app.route("/api/upload-icon", methods=["POST"])
+def upload_icon():
+    """Client uploads a logo/photo → we host it and return a public URL.
+    Avoids the data:URL problem where huge base64 blobs in a script-tag
+    attribute get truncated by HTML parsers or sanitizers on the customer's site."""
+    try:
+        if 'file' not in request.files:
+            return jsonify({"success": False, "message": "No file provided"}), 400
+        f = request.files['file']
+        if not f or not f.filename:
+            return jsonify({"success": False, "message": "Empty file"}), 400
+        # Size check — read raw to know length
+        content = f.read()
+        if len(content) > 800 * 1024:
+            return jsonify({"success": False, "message": "Image is bigger than 800KB — please compress and try again."}), 400
+        # Content-type sniff via extension only (small surface; we accept common web image formats)
+        ext = os.path.splitext(f.filename.lower())[1]
+        if ext not in {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}:
+            return jsonify({"success": False, "message": "Only PNG, JPG, GIF, WEBP, or SVG allowed."}), 400
+        upload_dir = os.path.join(os.path.dirname(__file__), "static", "uploads", "icons")
+        os.makedirs(upload_dir, exist_ok=True)
+        # Unique filename so uploads don't collide + never expose the original name
+        safe_name = f"{uuid.uuid4().hex}{ext}"
+        with open(os.path.join(upload_dir, safe_name), "wb") as out:
+            out.write(content)
+        public_url = f"/static/uploads/icons/{safe_name}"
+        return jsonify({"success": True, "url": public_url})
+    except Exception as e:
+        logger.error(f"upload_icon error: {e}")
+        return jsonify({"success": False, "message": "Upload failed. Please try again."}), 500
 
 @app.route("/api/quick-access", methods=["POST"])
 def quick_access():
