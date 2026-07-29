@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Bot — Log in with Access Code | BotifyAI</title>
+<meta name="description" content="Enter your BotifyAI access code to view and edit your bot's profile, business info, FAQs, and settings.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#f8fafc 0%,#e0e7ff 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;color:#0f172a}
+.wrap{width:100%;max-width:520px}
+.card{background:#fff;border-radius:22px;padding:36px 32px;box-shadow:0 20px 60px rgba(15,23,42,.12);border:1px solid rgba(15,23,42,.06)}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:24px}
+.logo img{width:44px;height:44px;border-radius:50%}
+.logo-text{font-size:1.15rem;font-weight:900;background:linear-gradient(135deg,#6366f1,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+h1{font-size:1.55rem;font-weight:900;margin-bottom:8px;letter-spacing:-.02em}
+.sub{color:#475569;font-size:.92rem;line-height:1.6;margin-bottom:24px}
+.field{margin-bottom:16px}
+label{display:block;font-size:.78rem;font-weight:800;color:#334155;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+input[type=text]{width:100%;padding:14px 16px;border:2px solid #e2e8f0;border-radius:12px;font-size:1rem;font-family:'SF Mono','Monaco',monospace;color:#0f172a;transition:.2s;letter-spacing:.05em}
+input[type=text]:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+.hint{font-size:.78rem;color:#64748b;margin-top:8px;line-height:1.55}
+.hint code{background:#f1f5f9;padding:2px 6px;border-radius:5px;font-family:'SF Mono','Monaco',monospace;color:#6366f1;font-size:.75rem}
+.btn{width:100%;padding:14px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;transition:.2s;box-shadow:0 6px 20px rgba(99,102,241,.3);font-family:inherit}
+.btn:hover{transform:translateY(-1px);box-shadow:0 10px 30px rgba(99,102,241,.4)}
+.btn:disabled{opacity:.6;cursor:wait;transform:none}
+.err{background:#fee2e2;border:1px solid #ef4444;color:#7f1d1d;padding:12px 14px;border-radius:10px;font-size:.85rem;margin-bottom:16px;display:none;line-height:1.5}
+.err.show{display:block}
+.divider{margin:24px 0;text-align:center;position:relative;color:#94a3b8;font-size:.78rem}
+.divider::before,.divider::after{content:'';position:absolute;top:50%;width:40%;height:1px;background:#e2e8f0}
+.divider::before{left:0}
+.divider::after{right:0}
+.secondary{text-align:center;font-size:.85rem;color:#475569}
+.secondary a{color:#6366f1;font-weight:700;text-decoration:none}
+.secondary a:hover{text-decoration:underline}
+.example{background:#fef3c7;border:1px dashed #f59e0b;border-radius:10px;padding:12px 14px;margin-top:12px;font-size:.8rem;color:#78350f;line-height:1.5}
+.example strong{color:#92400e}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="logo">
+      <img src="https://i.imgur.com/FfNwGyA.png" alt="BotifyAI"/>
+      <span class="logo-text">BotifyAI</span>
+    </div>
+    <h1>Open my bot's profile</h1>
+    <p class="sub">Enter the access code you got when you signed up. You'll see all your bot's info, edit any part, and retrain instantly.</p>
+
+    <div class="err" id="err"></div>
+
+    <div class="field">
+      <label>Access code</label>
+      <input type="text" id="code" placeholder="BOT-XXXXXXXXXXXXXXXX" autocomplete="off" autofocus>
+      <div class="hint">Paste the full code exactly as you received it. Both <code>BOT-XXXX...</code> and <code>XXXX...</code> formats work — even partial codes if they're unique enough.</div>
+      <div class="example">
+        <strong>Where do I find my access code?</strong> Check the email we sent when you signed up (from hello@botifyai.xyz). Or look inside the <code>&lt;script data-access="..."&gt;</code> tag on your website.
+      </div>
+    </div>
+
+    <button class="btn" id="loginBtn" onclick="login()">🔓 Open My Bot Profile</button>
+
+    <div class="divider">or</div>
+    <p class="secondary">Don't have an access code yet? <a href="/onboard">Get free access →</a></p>
+    <p class="secondary" style="margin-top:8px">Need help? Email <a href="mailto:hello@botifyai.xyz">hello@botifyai.xyz</a></p>
+  </div>
+</div>
+
+<script>
+// Auto-fill from URL (?code=XXX) or localStorage
+(function autofill(){
+  try {
+    const url = new URLSearchParams(window.location.search);
+    const fromUrl = url.get('code') || url.get('access');
+    const fromStorage = localStorage.getItem('accessCode');
+    const c = fromUrl || fromStorage;
+    if (c) document.getElementById('code').value = c;
+  } catch(e) {}
+})();
+
+// Enter key submits
+document.getElementById('code').addEventListener('keydown', e => {
+  if (e.key === 'Enter') login();
+});
+
+async function login(){
+  const code = document.getElementById('code').value.trim();
+  const err = document.getElementById('err');
+  const btn = document.getElementById('loginBtn');
+  if (!code || code.length < 6) {
+    err.textContent = 'Please enter your access code.';
+    err.classList.add('show');
+    return;
+  }
+  err.classList.remove('show');
+  btn.disabled = true;
+  btn.textContent = '⏳ Verifying...';
+  try {
+    const resp = await fetch('/onboard/verify', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({access_code: code})
+    });
+    const data = await resp.json();
+    if (data.valid) {
+      // Persist for future auto-fill
+      try { localStorage.setItem('accessCode', code); } catch(e) {}
+      // Hand off to /onboard which already handles prefill + edit UI
+      window.location.href = '/onboard?code=' + encodeURIComponent(code);
+    } else {
+      err.textContent = (data.message || 'This access code was not found.') + ' Please double-check every character.';
+      err.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = '🔓 Open My Bot Profile';
+    }
+  } catch (e) {
+    err.textContent = 'Network error — please check your connection and try again.';
+    err.classList.add('show');
+    btn.disabled = false;
+    btn.textContent = '🔓 Open My Bot Profile';
+  }
+}
+</script>
+</body>
+</html>

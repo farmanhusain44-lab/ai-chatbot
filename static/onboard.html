@@ -370,14 +370,20 @@ let faqs = [];
 let uploadedFiles = [];
 let selectedLangs = ['English'];
 
-// Prefill access code from URL
-const urlCode = new URLSearchParams(window.location.search).get('code');
+// Prefill access code from URL (?code=BOT-... or ?access=...)
+const urlCode = new URLSearchParams(window.location.search).get('code') ||
+                new URLSearchParams(window.location.search).get('access');
 if(urlCode){
-  // If code came in via URL, jump straight past the gate
-  accessCode = urlCode.toUpperCase();
-  document.getElementById('gateCode').value = accessCode;
-  // Auto-verify silently on load
-  setTimeout(verifyAccess, 100);
+  accessCode = urlCode.trim().toUpperCase();
+  // Reveal the code input row (hidden by default until user clicks "Enter it here")
+  // and populate it so the visible error path can guide the user if verify fails.
+  setTimeout(() => {
+    const row = document.getElementById('codeInputRow');
+    if (row) row.classList.remove('hidden');
+    const input = document.getElementById('gateCode');
+    if (input) input.value = accessCode;
+    verifyAccess();
+  }, 50);
 }
 
 function showCodeInput(e){e.preventDefault();document.getElementById('codeInputRow').classList.remove('hidden');}

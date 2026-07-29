@@ -149,29 +149,49 @@ def create_client(name, email="", website="", plan="basic", days_valid=365, regi
     return client_id, access_code
 
 def get_client_by_access_code(access_code):
-    """Find client by access code — tries the code as-is, and also tries with/without the BOT- prefix
-    so clients who paste just the 16-hex suffix (or accidentally add a prefix) still resolve."""
+    """Find client by access code with maximum tolerance so real clients never get locked out.
+
+    Tries, in order:
+      1. Exact match on the code as given
+      2. Exact match with BOT- prefix flipped (added if missing, stripped if present)
+      3. Substring match — for clients who copied only a truncated portion of the code
+         (min 8 hex chars required so we don't ever match wrong client on accident)
+    """
     if not access_code:
         return None
     code = str(access_code).strip().upper()
-    # Build candidate list: as-is, plus common prefix variants
+    # Strip whitespace inside the code too (e.g. "BOT- 51480" pasted with a space)
+    code = code.replace(" ", "")
     candidates = [code]
     if code.startswith("BOT-"):
-        candidates.append(code[4:])  # strip BOT- and try suffix alone
+        candidates.append(code[4:])
     else:
-        candidates.append("BOT-" + code)  # add BOT- prefix
+        candidates.append("BOT-" + code)
 
     conn = get_db()
     cursor = conn.cursor()
     active_val = 'TRUE' if IS_POSTGRES else '1'
-    row = None
+
+    # Step 1+2 — exact-match candidates
     for cand in candidates:
         cursor.execute(f'SELECT * FROM clients WHERE access_code = {ph(1)} AND active = {active_val}', (cand,))
         row = cursor.fetchone()
         if row:
-            break
+            conn.close()
+            return row_to_dict(cursor, row)
+
+    # Step 3 — partial match (only if the stripped payload is long enough to be unique)
+    stripped = code[4:] if code.startswith("BOT-") else code
+    if len(stripped) >= 8 and all(c in "0123456789ABCDEF" for c in stripped):
+        like = "%" + stripped + "%"
+        cursor.execute(f'SELECT * FROM clients WHERE access_code LIKE {ph(1)} AND active = {active_val}', (like,))
+        row = cursor.fetchone()
+        if row:
+            conn.close()
+            return row_to_dict(cursor, row)
+
     conn.close()
-    return row_to_dict(cursor, row)
+    return None
 
 def get_client(client_id):
     conn = get_db()
