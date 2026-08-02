@@ -24,11 +24,27 @@ class ReplicateUnavailable(Exception):
     """REPLICATE_API_TOKEN missing or client library missing."""
 
 
+_TOKEN_ENV_NAMES = (
+    "REPLICATE_API_TOKEN",
+    "REPLICATE_API_KEY",
+    "REPLICATE_TOKEN",
+    "REPLICATE_KEY",
+)
+
+
+def _get_token() -> str | None:
+    for name in _TOKEN_ENV_NAMES:
+        val = os.environ.get(name)
+        if val and val.strip():
+            return val.strip()
+    return None
+
+
 def _client():
-    token = os.environ.get("REPLICATE_API_TOKEN")
+    token = _get_token()
     if not token:
         raise ReplicateUnavailable(
-            "REPLICATE_API_TOKEN not set. Add it in Railway → Variables to enable AI features."
+            "Replicate token not set. Add REPLICATE_API_TOKEN in Railway → Variables to enable AI features."
         )
     try:
         import replicate
