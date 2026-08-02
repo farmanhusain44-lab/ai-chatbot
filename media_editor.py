@@ -18,6 +18,8 @@ from typing import Any
 
 from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 
+from replicate_ops import AI_IMAGE_OPS, ai_text_to_image, ReplicateUnavailable
+
 logger = logging.getLogger(__name__)
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".gif", ".heic"}
@@ -219,6 +221,17 @@ def apply_video_ops(input_path: str, output_path: str, ops: list[dict[str, Any]]
         shutil.rmtree(tmpdir, ignore_errors=True)
 
 
+def _apply_ai_image_op(current_path: str, op_name: str, params: dict[str, Any], out_dir: str) -> str:
+    """Run a Replicate-backed image op and return the new file path."""
+    fn = AI_IMAGE_OPS[op_name]
+    try:
+        return fn(current_path, params, out_dir)
+    except ReplicateUnavailable as e:
+        raise MediaEditorError(str(e))
+    except Exception as e:
+        raise MediaEditorError(f"AI op {op_name} failed: {e}")
+
+
 def edit_media(input_path: str, ops: list[dict[str, Any]], out_dir: str) -> str:
     kind = kind_from_path(input_path)
     size_mb = os.path.getsize(input_path) / (1024 * 1024)
@@ -232,7 +245,37 @@ def edit_media(input_path: str, ops: list[dict[str, Any]], out_dir: str) -> str:
     output_path = os.path.join(out_dir, f"edited_{uuid.uuid4().hex}{ext}")
 
     if kind == "image":
-        apply_image_ops(input_path, output_path, ops)
+        # Split into AI ops (run one-at-a-time via Replicate) and local PIL ops
+        # (accumulated). AI ops produce a new file each time, so we chain them.
+        current = input_path
+        local_ops: list[dict[str, Any]] = []
+        for op in ops:
+            name = op.get("op", "")
+            if name in AI_IMAGE_OPS:
+                # Flush any queued local ops first
+                if local_ops:
+                    tmp = os.path.join(out_dir, f"step_{uuid.uuid4().hex}.png")
+                    apply_image_ops(current, tmp, local_ops)
+                    if current != input_path:
+                        try: os.remove(current)
+                        except OSError: pass
+                    current = tmp
+                    local_ops = []
+                new_path = _apply_ai_image_op(current, name, op.get("params", {}), out_dir)
+                if current != input_path:
+                    try: os.remove(current)
+                    except OSError: pass
+                current = new_path
+            else:
+                local_ops.append(op)
+
+        if local_ops or current == input_path:
+            apply_image_ops(current, output_path, local_ops)
+            if current != input_path:
+                try: os.remove(current)
+                except OSError: pass
+        else:
+            os.rename(current, output_path)
     else:
         apply_video_ops(input_path, output_path, ops)
     return output_path
@@ -266,5 +309,12 @@ SUPPORTED_OPS_HINT = json.dumps({
         "resize": {"width": "int (or -2 to auto)", "height": "int"},
         "compress": {"crf": "int 18-32, higher=smaller file"},
         "extract_audio": {},
+    },
+    "ai_image": {
+        "ai_bg_remove": {"description": "Auto-remove background from a photo"},
+        "ai_upscale": {"scale": "int 2 or 4"},
+        "ai_beautify": {"codeformer_fidelity": "float 0-1 (default 0.6)"},
+        "ai_object_remove": {"mask": "b64 image mask (optional, else auto)"},
+        "ai_cartoonify": {"description": "Convert photo to anime/cartoon"},
     },
 }, indent=2)

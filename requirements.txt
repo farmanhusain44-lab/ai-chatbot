@@ -13,3 +13,4 @@ stripe
 razorpay
 psycopg2-binary
 Pillow
+replicate

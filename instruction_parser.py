@@ -24,12 +24,27 @@ Return ONLY a JSON object, no prose, no markdown fences. Shape:
 }
 
 Supported ops per kind:
-IMAGE: rotate, flip, resize, crop, brightness, contrast, saturation, sharpness,
-       grayscale, sepia, invert, blur, sharpen, edge, auto_contrast, watermark
+IMAGE (local, instant, free):
+  rotate, flip, resize, crop, brightness, contrast, saturation, sharpness,
+  grayscale, sepia, invert, blur, sharpen, edge, auto_contrast, watermark
+IMAGE (AI, ~5-30 seconds, uses Replicate):
+  ai_bg_remove         → auto-remove background
+  ai_upscale           → 2x/4x sharpen and enlarge (params: {"scale": 2 or 4})
+  ai_beautify          → face smooth / skin enhance / face restore
+  ai_object_remove     → remove an object or person from the photo
+  ai_cartoonify        → convert photo to anime/cartoon style
 VIDEO: trim, rotate, flip, speed, mute, resize, compress, extract_audio
 
 Guidelines:
-- If the user wants "brighter"/"chamak badhao" → brightness with factor 1.3-1.6.
+- Prefer local ops (grayscale, brightness, etc.) — they are free and instant.
+- Use AI ops ONLY when the user asks for something local ops cannot do:
+  * "background hatao" / "background remove" / "no background"  → ai_bg_remove
+  * "HD karo" / "clear karo" / "upscale" / "enhance quality"    → ai_upscale (scale 2)
+  * "face smooth" / "beautify" / "skin fair" / "face clear"     → ai_beautify
+  * "ye person hata do" / "object remove"                       → ai_object_remove
+  * "cartoon" / "anime" / "ghibli"                              → ai_cartoonify
+- Multiple ops can be combined ("BG hatao aur upscale karo" → both, in order).
+- "Brighter"/"chamak badhao" → brightness with factor 1.3-1.6.
 - "Darker"/"halka karo" → brightness with factor 0.6-0.8.
 - "Slow motion"/"slow-mo" → speed with factor 0.5.
 - "Fast"/"tez" → speed with factor 2.0.
@@ -37,10 +52,10 @@ Guidelines:
 - "Rotate 90"/"90 degree ghumao" → rotate degrees:90.
 - "Trim first 5 seconds off"/"pehle 5 sec kaat do" → trim start:5.
 - "Cut to 30 seconds"/"30 sec ka bana do" → trim start:0, end:30.
-- If the user asks for something not supported (background remove, upscale, AI beautify),
-  return an empty ops list AND set "summary" to "AI feature — coming soon: <what they asked>".
 - If unclear, pick your best guess and mention it in summary.
 - Never invent ops that aren't in the supported list.
+- If the request is genuinely unsupported (e.g. text-to-video, 3D generation),
+  return an empty ops list with summary explaining it's not available yet.
 """
 
 
