@@ -31,12 +31,25 @@ _TOKEN_ENV_NAMES = (
     "REPLICATE_KEY",
 )
 
+_TOKEN_VALUE_PREFIX = "r8_"
+
 
 def _get_token() -> str | None:
+    # 1. Preferred: standard env var names.
     for name in _TOKEN_ENV_NAMES:
         val = os.environ.get(name)
         if val and val.strip():
             return val.strip()
+    # 2. Fallback: any env var whose value looks like a Replicate token.
+    # Replicate tokens all start with "r8_". This lets us find the token even
+    # if the user saved it under a custom variable name.
+    for k, v in os.environ.items():
+        if not v:
+            continue
+        stripped = v.strip()
+        if stripped.startswith(_TOKEN_VALUE_PREFIX) and len(stripped) >= 20:
+            logger.info("Using Replicate token from env var %s (matched by r8_ prefix)", k)
+            return stripped
     return None
 
 
