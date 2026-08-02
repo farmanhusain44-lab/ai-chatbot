@@ -12,3 +12,4 @@ numpy
 stripe
 razorpay
 psycopg2-binary
+Pillow

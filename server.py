@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify, send_from_directory, Response, redirect
 from flask_cors import CORS
 import anthropic
+import json
 import os
 import re
 import tempfile
@@ -10,6 +11,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from datetime import datetime, timedelta
 from database import init_db, create_client, get_client, get_client_by_access_code, get_all_clients, add_document, get_documents, get_client_context, increment_message_count
+from media_editor import edit_media, kind_from_path, MediaEditorError, SUPPORTED_OPS_HINT
+from instruction_parser import parse_instruction as parse_edit_instruction
 from twilio.rest import Client as TwilioClient
 from twilio.twiml.messaging_response import MessagingResponse
 from langdetect import detect
@@ -1827,6 +1830,104 @@ def speak():
     except Exception as e:
         logger.error("ElevenLabs error: %s", e)
         return jsonify({"error": "Failed to generate audio"}), 503
+
+EDIT_UPLOAD_DIR = os.environ.get("EDIT_UPLOAD_DIR", "/tmp/botifyai_edits")
+EDIT_OUTPUT_DIR = os.environ.get("EDIT_OUTPUT_DIR", "/tmp/botifyai_edits/out")
+os.makedirs(EDIT_UPLOAD_DIR, exist_ok=True)
+os.makedirs(EDIT_OUTPUT_DIR, exist_ok=True)
+
+
+@app.route("/edit-media/ops-schema", methods=["GET"])
+def edit_media_schema():
+    """Clients (LumaEdit app) fetch this to know what ops are supported."""
+    return Response(SUPPORTED_OPS_HINT, mimetype="application/json")
+
+
+@app.route("/edit-media", methods=["POST"])
+def edit_media_endpoint():
+    """Multipart upload: file + optional (instruction | ops JSON).
+
+    - instruction: natural-language ("brightness badhao, 10 sec ka trim karo") →
+      Claude parses into ops list.
+    - ops: JSON-encoded ops list, bypasses the parser (for LumaEdit's manual UI).
+    Returns JSON with an /edit-media/download/<name> URL for the result.
+    """
+    if "file" not in request.files:
+        return jsonify({"error": "No file provided (field name: 'file')"}), 400
+    file = request.files["file"]
+    if not file.filename:
+        return jsonify({"error": "Empty filename"}), 400
+
+    try:
+        kind_from_path(file.filename)
+    except MediaEditorError as e:
+        return jsonify({"error": str(e)}), 400
+
+    safe_name = re.sub(r"[^A-Za-z0-9._-]", "_", file.filename)
+    input_path = os.path.join(EDIT_UPLOAD_DIR, f"{uuid.uuid4().hex}_{safe_name}")
+    file.save(input_path)
+    kind = kind_from_path(input_path)
+
+    ops: list = []
+    summary = ""
+
+    ops_json = request.form.get("ops")
+    instruction = (request.form.get("instruction") or "").strip()
+
+    if ops_json:
+        try:
+            ops = json.loads(ops_json)
+            if not isinstance(ops, list):
+                raise ValueError("ops must be a JSON list")
+        except Exception as e:
+            os.remove(input_path)
+            return jsonify({"error": f"Invalid ops JSON: {e}"}), 400
+        summary = f"Applied {len(ops)} operation(s)"
+    elif instruction:
+        parsed = parse_edit_instruction(get_anthropic_client(), kind, instruction)
+        ops = parsed["ops"]
+        summary = parsed["summary"]
+        if not ops:
+            os.remove(input_path)
+            return jsonify({
+                "error": summary or "No editable operations found in instruction",
+                "instruction": instruction,
+            }), 400
+    else:
+        os.remove(input_path)
+        return jsonify({"error": "Provide either 'instruction' or 'ops' form field"}), 400
+
+    try:
+        output_path = edit_media(input_path, ops, EDIT_OUTPUT_DIR)
+    except MediaEditorError as e:
+        return jsonify({"error": str(e), "ops": ops}), 400
+    except Exception as e:
+        logger.exception("edit_media crashed: %s", e)
+        return jsonify({"error": f"Internal edit error: {e}"}), 500
+    finally:
+        try:
+            os.remove(input_path)
+        except OSError:
+            pass
+
+    out_name = os.path.basename(output_path)
+    return jsonify({
+        "success": True,
+        "kind": kind,
+        "ops_applied": ops,
+        "summary": summary,
+        "download_url": f"/edit-media/download/{out_name}",
+        "filename": out_name,
+    })
+
+
+@app.route("/edit-media/download/<path:name>", methods=["GET"])
+def edit_media_download(name: str):
+    # basic path traversal guard
+    if "/" in name or ".." in name:
+        return jsonify({"error": "Invalid filename"}), 400
+    return send_from_directory(EDIT_OUTPUT_DIR, name, as_attachment=True)
+
 
 @app.route("/whatsapp", methods=["POST"])
 def whatsapp():
