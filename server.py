@@ -1843,17 +1843,6 @@ def edit_media_schema():
     return Response(SUPPORTED_OPS_HINT, mimetype="application/json")
 
 
-@app.route("/edit-media/_debug-env", methods=["GET"])
-def edit_media_debug_env():
-    """Temporary: names of env vars matching REP*, so we can spot the exact
-    variable name the user set. Values are NEVER returned — only names."""
-    matching = sorted(k for k in os.environ if "REP" in k.upper())
-    return jsonify({
-        "matching_env_var_names": matching,
-        "hint": "One of these should be REPLICATE_API_TOKEN. If none listed, the variable isn't set on this service.",
-    })
-
-
 @app.route("/edit-media", methods=["POST"])
 def edit_media_endpoint():
     """Multipart upload: file + optional (instruction | ops JSON).
