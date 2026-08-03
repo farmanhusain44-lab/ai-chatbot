@@ -10,8 +10,10 @@ Each op takes an input file path and returns the path to a new file.
 import logging
 import mimetypes
 import os
+import re
 import shutil
 import tempfile
+import time
 import uuid
 from typing import Any
 
@@ -76,8 +78,8 @@ MODELS: dict[str, str] = {
     "ai_beautify": "sczhou/codeformer:cc4956dd26fa5a7185d5660cc2100fab1cfa4c076c81ff7ceb9d5bf9e1b6c31c",
     # Object / person removal (fills with plausible content)
     "ai_object_remove": "zylim0702/remove-object:0e3a841c913f597c1e4c321560aa69e2bc1f15c65f8c366caafc379240efd8ba",
-    # Anime / cartoon stylization
-    "ai_cartoonify": "cjwbw/animegan:1e8e7b4a97ea3f39d3a0c8b3f95f27c988bff2e2617e1bea0a7be36c9843c98d",
+    # Anime / cartoon stylization (AnimeGAN v3, latest stable)
+    "ai_cartoonify": "412392/animeganv3:75d51a73fce3c00de31ed9ab4358c73e8fc0f627dc8ce975818e653317cb919f",
     # Text-to-image (Flux Schnell — fast and cheap)
     "ai_text_to_image": "black-forest-labs/flux-schnell",
 }
@@ -169,6 +171,17 @@ def _save_output(output: Any, out_dir: str, prefer_ext: str | None = None) -> st
     return _download(_first_url(output), out_dir, prefer_ext)
 
 
+_RATE_LIMIT_MAX_RETRIES = 4
+
+
+def _parse_reset_seconds(err_msg: str) -> float:
+    """Extract 'resets in ~7s' style hints from Replicate's 429 message."""
+    m = re.search(r"resets in\s*~?\s*(\d+(?:\.\d+)?)\s*s", err_msg, re.IGNORECASE)
+    if m:
+        return float(m.group(1))
+    return 0.0
+
+
 def _run_model(op: str, image_path: str | None, params: dict[str, Any], out_dir: str) -> str:
     client = _client()
     if op not in MODELS:
@@ -181,10 +194,34 @@ def _run_model(op: str, image_path: str | None, params: dict[str, Any], out_dir:
         inputs[key] = open(image_path, "rb")
 
     logger.info("Replicate %s: inputs keys=%s", op, list(inputs.keys()))
-    output = client.run(model_id, input=inputs)
 
-    prefer_ext = ".png"
-    return _save_output(output, out_dir, prefer_ext)
+    # Retry with exponential backoff on 429 (rate-limit) errors. Replicate
+    # throttles accounts under $5 lifetime spend to 1 request per burst — a
+    # short wait usually clears it, so multi-op requests still succeed.
+    last_err: Exception | None = None
+    for attempt in range(_RATE_LIMIT_MAX_RETRIES):
+        try:
+            output = client.run(model_id, input=inputs)
+            return _save_output(output, out_dir, ".png")
+        except Exception as e:
+            msg = str(e)
+            is_rate_limit = "429" in msg or "throttled" in msg.lower() or "rate limit" in msg.lower()
+            if not is_rate_limit or attempt == _RATE_LIMIT_MAX_RETRIES - 1:
+                raise
+            hinted = _parse_reset_seconds(msg)
+            wait = max(hinted + 1.0, 2.0 * (2 ** attempt))  # honor server hint or backoff
+            logger.warning(
+                "Replicate %s rate-limited (attempt %d/%d), sleeping %.1fs then retrying",
+                op, attempt + 1, _RATE_LIMIT_MAX_RETRIES, wait,
+            )
+            time.sleep(wait)
+            # Reopen file handle if input was a file — some clients consume it
+            if image_path is not None:
+                key = _INPUT_IMAGE_KEY.get(op, "image")
+                inputs[key] = open(image_path, "rb")
+            last_err = e
+    # Should not reach here — either returned or raised in the loop.
+    raise last_err if last_err else RuntimeError("Replicate run failed without a specific error")
 
 
 # Public entry points --------------------------------------------------------
