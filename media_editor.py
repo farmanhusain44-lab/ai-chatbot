@@ -18,7 +18,14 @@ from typing import Any
 
 from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 
-from replicate_ops import AI_IMAGE_OPS, ai_text_to_image, ReplicateUnavailable
+from replicate_ops import AI_IMAGE_OPS as _REPLICATE_AI_OPS, ai_text_to_image, ReplicateUnavailable
+from local_ai import local_bg_remove
+
+# Route AI image ops: local (free) where possible, Replicate for the rest.
+AI_IMAGE_OPS: dict[str, Any] = {
+    **_REPLICATE_AI_OPS,
+    "ai_bg_remove": local_bg_remove,  # free self-hosted, overrides Replicate
+}
 
 logger = logging.getLogger(__name__)
 
