@@ -1,0 +1,14 @@
+.git
+.gitignore
+.env
+env/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+.claude/
+BotifyAI_Code.pdf
+netlify.toml
+nixpacks.toml
+*.db
