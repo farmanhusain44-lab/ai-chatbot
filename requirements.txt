@@ -14,5 +14,3 @@ razorpay
 psycopg2-binary
 Pillow
 replicate
-rembg[cpu]
-onnxruntime

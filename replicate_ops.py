@@ -143,17 +143,29 @@ def _first_url(output: Any) -> str:
 
 def _save_output(output: Any, out_dir: str, prefer_ext: str | None = None) -> str:
     """Handles both URL outputs and FileOutput objects (newer replicate lib)."""
-    # FileOutput case
+    ext = prefer_ext or ".png"
+
+    # FileOutput case — newer replicate lib returns objects with .read()
+    # that returns bytes when called with no args (unlike a file-like that
+    # accepts a length). Also expose .url as a fallback.
     if not isinstance(output, (str, list)) and hasattr(output, "read"):
-        ext = prefer_ext or ".png"
         out_path = os.path.join(out_dir, f"ai_{uuid.uuid4().hex}{ext}")
-        with open(out_path, "wb") as f:
-            shutil.copyfileobj(output, f)
-        return out_path
-    # list of FileOutput
-    if isinstance(output, list) and output and hasattr(output[0], "read"):
+        try:
+            data = output.read()
+            with open(out_path, "wb") as f:
+                f.write(data if isinstance(data, (bytes, bytearray)) else data.encode())
+            return out_path
+        except TypeError:
+            # Fall through to URL download
+            if hasattr(output, "url"):
+                return _download(output.url, out_dir, prefer_ext)
+            raise
+
+    # list of FileOutput / URLs
+    if isinstance(output, list) and output:
         return _save_output(output[0], out_dir, prefer_ext)
-    # URL string / list of URLs
+
+    # Plain URL string
     return _download(_first_url(output), out_dir, prefer_ext)
 
 
