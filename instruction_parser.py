@@ -30,9 +30,6 @@ IMAGE (local, instant, free):
 IMAGE (AI, ~5-30 seconds, uses Replicate):
   ai_bg_remove         → auto-remove background
   ai_upscale           → 2x/4x sharpen and enlarge (params: {"scale": 2 or 4})
-  ai_beautify          → face smooth / skin enhance / face restore
-  ai_object_remove     → remove an object or person from the photo
-  ai_cartoonify        → convert photo to anime/cartoon style
 VIDEO: trim, rotate, flip, speed, mute, resize, compress, extract_audio
 
 Guidelines:
@@ -40,9 +37,9 @@ Guidelines:
 - Use AI ops ONLY when the user asks for something local ops cannot do:
   * "background hatao" / "background remove" / "no background"  → ai_bg_remove
   * "HD karo" / "clear karo" / "upscale" / "enhance quality"    → ai_upscale (scale 2)
-  * "face smooth" / "beautify" / "skin fair" / "face clear"     → ai_beautify
-  * "ye person hata do" / "object remove"                       → ai_object_remove
-  * "cartoon" / "anime" / "ghibli"                              → ai_cartoonify
+- If the user asks for features not yet supported (face beautify, object remove,
+  cartoonify, style transfer), return an empty ops list and set summary to
+  "AI feature — coming soon: <what they asked>".
 - Multiple ops can be combined ("BG hatao aur upscale karo" → both, in order).
 - "Brighter"/"chamak badhao" → brightness with factor 1.3-1.6.
 - "Darker"/"halka karo" → brightness with factor 0.6-0.8.

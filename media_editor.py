@@ -313,8 +313,5 @@ SUPPORTED_OPS_HINT = json.dumps({
     "ai_image": {
         "ai_bg_remove": {"description": "Auto-remove background from a photo"},
         "ai_upscale": {"scale": "int 2 or 4"},
-        "ai_beautify": {"codeformer_fidelity": "float 0-1 (default 0.6)"},
-        "ai_object_remove": {"mask": "b64 image mask (optional, else auto)"},
-        "ai_cartoonify": {"description": "Convert photo to anime/cartoon"},
     },
 }, indent=2)

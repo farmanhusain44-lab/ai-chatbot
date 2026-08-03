@@ -69,17 +69,16 @@ def _client():
 
 
 # Model versions pinned so behavior is stable. Update deliberately.
+# Only ops that have been end-to-end verified live are included.
+# Deferred until working versions are pinned:
+#   ai_beautify      — codeformer version removed from Replicate (was 422)
+#   ai_cartoonify    — animegan variants removed (both 422s)
+#   ai_object_remove — requires a mask image input; needs UX design
 MODELS: dict[str, str] = {
     # Background removal from an image
     "ai_bg_remove": "cjwbw/rembg:fb8af171cfa1616ddcf1242c093f9c46bcada5ad4cf6f2fbe8b81b330ec5c003",
     # 2x/4x super-resolution
     "ai_upscale": "nightmareai/real-esrgan:f121d640bd286e1fdc67f9799164c1d5be36ff74576ee11c803ae5b665dd46aa",
-    # Face restoration & smoothing
-    "ai_beautify": "sczhou/codeformer:cc4956dd26fa5a7185d5660cc2100fab1cfa4c076c81ff7ceb9d5bf9e1b6c31c",
-    # Object / person removal (fills with plausible content)
-    "ai_object_remove": "zylim0702/remove-object:0e3a841c913f597c1e4c321560aa69e2bc1f15c65f8c366caafc379240efd8ba",
-    # Anime / cartoon stylization (AnimeGAN v3, latest stable)
-    "ai_cartoonify": "412392/animeganv3:75d51a73fce3c00de31ed9ab4358c73e8fc0f627dc8ce975818e653317cb919f",
     # Text-to-image (Flux Schnell — fast and cheap)
     "ai_text_to_image": "black-forest-labs/flux-schnell",
 }
@@ -88,15 +87,11 @@ MODELS: dict[str, str] = {
 _INPUT_IMAGE_KEY: dict[str, str] = {
     "ai_bg_remove": "image",
     "ai_upscale": "image",
-    "ai_beautify": "image",
-    "ai_object_remove": "image",
-    "ai_cartoonify": "image",
 }
 
 # Extra defaults per model (merged with user params)
 _DEFAULTS: dict[str, dict[str, Any]] = {
     "ai_upscale": {"scale": 2},
-    "ai_beautify": {"codeformer_fidelity": 0.6, "background_enhance": True, "face_upsample": True},
     "ai_text_to_image": {"aspect_ratio": "1:1", "output_format": "png", "num_inference_steps": 4},
 }
 
@@ -234,18 +229,6 @@ def ai_upscale(image_path: str, params: dict[str, Any], out_dir: str) -> str:
     return _run_model("ai_upscale", image_path, params, out_dir)
 
 
-def ai_beautify(image_path: str, params: dict[str, Any], out_dir: str) -> str:
-    return _run_model("ai_beautify", image_path, params, out_dir)
-
-
-def ai_object_remove(image_path: str, params: dict[str, Any], out_dir: str) -> str:
-    return _run_model("ai_object_remove", image_path, params, out_dir)
-
-
-def ai_cartoonify(image_path: str, params: dict[str, Any], out_dir: str) -> str:
-    return _run_model("ai_cartoonify", image_path, params, out_dir)
-
-
 def ai_text_to_image(prompt: str, params: dict[str, Any], out_dir: str) -> str:
     return _run_model("ai_text_to_image", None, {**params, "prompt": prompt}, out_dir)
 
@@ -253,7 +236,4 @@ def ai_text_to_image(prompt: str, params: dict[str, Any], out_dir: str) -> str:
 AI_IMAGE_OPS = {
     "ai_bg_remove": ai_bg_remove,
     "ai_upscale": ai_upscale,
-    "ai_beautify": ai_beautify,
-    "ai_object_remove": ai_object_remove,
-    "ai_cartoonify": ai_cartoonify,
 }
