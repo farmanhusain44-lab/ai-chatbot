@@ -4,7 +4,9 @@ import anthropic
 import json
 import os
 import re
+import shutil
 import tempfile
+import time
 import uuid
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -1833,8 +1835,64 @@ def speak():
 
 EDIT_UPLOAD_DIR = os.environ.get("EDIT_UPLOAD_DIR", "/tmp/botifyai_edits")
 EDIT_OUTPUT_DIR = os.environ.get("EDIT_OUTPUT_DIR", "/tmp/botifyai_edits/out")
+EDIT_SESSION_DIR = os.environ.get("EDIT_SESSION_DIR", "/tmp/botifyai_edits/sessions")
 os.makedirs(EDIT_UPLOAD_DIR, exist_ok=True)
 os.makedirs(EDIT_OUTPUT_DIR, exist_ok=True)
+os.makedirs(EDIT_SESSION_DIR, exist_ok=True)
+
+EDIT_SESSION_TTL_SECONDS = 30 * 60  # 30 minutes
+
+
+def _session_dir(session_id: str) -> str:
+    """Safe path for a session's working files. Rejects traversal."""
+    if not re.fullmatch(r"[A-Za-z0-9_-]{6,64}", session_id or ""):
+        raise ValueError("Invalid session_id")
+    return os.path.join(EDIT_SESSION_DIR, session_id)
+
+
+def _session_current_file(session_id: str) -> str | None:
+    """Return the path to the session's most recent working file, if any and
+    not expired."""
+    try:
+        sdir = _session_dir(session_id)
+    except ValueError:
+        return None
+    if not os.path.isdir(sdir):
+        return None
+    candidates = [
+        os.path.join(sdir, name)
+        for name in os.listdir(sdir)
+        if name.startswith("current.")
+    ]
+    if not candidates:
+        return None
+    path = candidates[0]
+    age = time.time() - os.path.getmtime(path)
+    if age > EDIT_SESSION_TTL_SECONDS:
+        # Expired — clean up
+        try:
+            shutil.rmtree(sdir, ignore_errors=True)
+        except OSError:
+            pass
+        return None
+    return path
+
+
+def _session_set_current(session_id: str, source_path: str) -> str:
+    """Copy source into the session's current-file slot; return new path."""
+    sdir = _session_dir(session_id)
+    os.makedirs(sdir, exist_ok=True)
+    # Clear any prior current.*
+    for name in os.listdir(sdir):
+        if name.startswith("current."):
+            try:
+                os.remove(os.path.join(sdir, name))
+            except OSError:
+                pass
+    ext = os.path.splitext(source_path)[1] or ".bin"
+    dst = os.path.join(sdir, f"current{ext}")
+    shutil.copy(source_path, dst)
+    return dst
 
 
 @app.route("/edit-media/ops-schema", methods=["GET"])
@@ -1845,34 +1903,65 @@ def edit_media_schema():
 
 @app.route("/edit-media", methods=["POST"])
 def edit_media_endpoint():
-    """Multipart upload: file + optional (instruction | ops JSON).
+    """Multipart upload for chat-style iterative editing.
 
-    - instruction: natural-language ("brightness badhao, 10 sec ka trim karo") →
-      Claude parses into ops list.
-    - ops: JSON-encoded ops list, bypasses the parser (for LumaEdit's manual UI).
-    Returns JSON with an /edit-media/download/<name> URL for the result.
+    Form fields:
+      file:         (required on first turn) the source photo/video
+      session_id:   (optional) client-generated stable id; if the server has
+                    a working file for this id, the ops apply to it instead
+                    of the uploaded file. On subsequent turns, sending only
+                    session_id + instruction is enough.
+      instruction:  natural-language description; Claude parses to ops
+      ops:          JSON op list (bypasses the parser; for manual UI)
+
+    Response:
+      { success, session_id, kind, ops_applied, summary,
+        download_url, filename }
     """
-    if "file" not in request.files:
-        return jsonify({"error": "No file provided (field name: 'file')"}), 400
-    file = request.files["file"]
-    if not file.filename:
-        return jsonify({"error": "Empty filename"}), 400
+    session_id = (request.form.get("session_id") or "").strip()
+    if session_id:
+        try:
+            _session_dir(session_id)  # validates format
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 400
 
-    try:
-        kind_from_path(file.filename)
-    except MediaEditorError as e:
-        return jsonify({"error": str(e)}), 400
+    # Decide input path: session's current file (subsequent turn) OR upload.
+    input_path: str | None = None
+    uploaded_temp: str | None = None
+    session_input = _session_current_file(session_id) if session_id else None
 
-    safe_name = re.sub(r"[^A-Za-z0-9._-]", "_", file.filename)
-    input_path = os.path.join(EDIT_UPLOAD_DIR, f"{uuid.uuid4().hex}_{safe_name}")
-    file.save(input_path)
+    if session_input:
+        input_path = session_input
+    else:
+        if "file" not in request.files or not request.files["file"].filename:
+            return jsonify({
+                "error": "First turn requires a file upload (or a valid session_id "
+                         "with a previously uploaded file that hasn't expired)."
+            }), 400
+        file = request.files["file"]
+        try:
+            kind_from_path(file.filename)
+        except MediaEditorError as e:
+            return jsonify({"error": str(e)}), 400
+        safe_name = re.sub(r"[^A-Za-z0-9._-]", "_", file.filename)
+        uploaded_temp = os.path.join(EDIT_UPLOAD_DIR, f"{uuid.uuid4().hex}_{safe_name}")
+        file.save(uploaded_temp)
+        input_path = uploaded_temp
+
     kind = kind_from_path(input_path)
 
+    # Parse instruction or accept explicit ops.
     ops: list = []
     summary = ""
-
     ops_json = request.form.get("ops")
     instruction = (request.form.get("instruction") or "").strip()
+
+    def _cleanup_upload() -> None:
+        if uploaded_temp:
+            try:
+                os.remove(uploaded_temp)
+            except OSError:
+                pass
 
     if ops_json:
         try:
@@ -1880,7 +1969,7 @@ def edit_media_endpoint():
             if not isinstance(ops, list):
                 raise ValueError("ops must be a JSON list")
         except Exception as e:
-            os.remove(input_path)
+            _cleanup_upload()
             return jsonify({"error": f"Invalid ops JSON: {e}"}), 400
         summary = f"Applied {len(ops)} operation(s)"
     elif instruction:
@@ -1888,37 +1977,57 @@ def edit_media_endpoint():
         ops = parsed["ops"]
         summary = parsed["summary"]
         if not ops:
-            os.remove(input_path)
+            _cleanup_upload()
             return jsonify({
                 "error": summary or "No editable operations found in instruction",
                 "instruction": instruction,
             }), 400
     else:
-        os.remove(input_path)
+        _cleanup_upload()
         return jsonify({"error": "Provide either 'instruction' or 'ops' form field"}), 400
 
     try:
         output_path = edit_media(input_path, ops, EDIT_OUTPUT_DIR)
     except MediaEditorError as e:
+        _cleanup_upload()
         return jsonify({"error": str(e), "ops": ops}), 400
     except Exception as e:
+        _cleanup_upload()
         logger.exception("edit_media crashed: %s", e)
         return jsonify({"error": f"Internal edit error: {e}"}), 500
-    finally:
-        try:
-            os.remove(input_path)
-        except OSError:
-            pass
+
+    # Persist output as the session's new current file (create session if none).
+    if not session_id:
+        session_id = uuid.uuid4().hex
+    try:
+        _session_set_current(session_id, output_path)
+    except Exception as e:
+        logger.warning("Could not persist session state: %s", e)
+
+    _cleanup_upload()
 
     out_name = os.path.basename(output_path)
     return jsonify({
         "success": True,
+        "session_id": session_id,
         "kind": kind,
         "ops_applied": ops,
         "summary": summary,
         "download_url": f"/edit-media/download/{out_name}",
         "filename": out_name,
     })
+
+
+@app.route("/edit-media/session/<session_id>", methods=["DELETE"])
+def edit_media_reset_session(session_id: str):
+    """Clear a session's working state (client's 'Reset' button)."""
+    try:
+        sdir = _session_dir(session_id)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    if os.path.isdir(sdir):
+        shutil.rmtree(sdir, ignore_errors=True)
+    return jsonify({"success": True, "session_id": session_id})
 
 
 @app.route("/edit-media/download/<path:name>", methods=["GET"])
