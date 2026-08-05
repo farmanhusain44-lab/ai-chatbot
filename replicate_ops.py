@@ -81,6 +81,9 @@ MODELS: dict[str, str] = {
     "ai_upscale": "nightmareai/real-esrgan:f121d640bd286e1fdc67f9799164c1d5be36ff74576ee11c803ae5b665dd46aa",
     # Text-to-image (Flux Schnell — fast and cheap)
     "ai_text_to_image": "black-forest-labs/flux-schnell",
+    # Speech-to-text with timestamps for SRT captions.
+    # Uses Whisper large-v3; produces srt-formatted output.
+    "ai_transcribe": "openai/whisper",
 }
 
 # Which param key each model expects for its image input
@@ -231,6 +234,38 @@ def ai_upscale(image_path: str, params: dict[str, Any], out_dir: str) -> str:
 
 def ai_text_to_image(prompt: str, params: dict[str, Any], out_dir: str) -> str:
     return _run_model("ai_text_to_image", None, {**params, "prompt": prompt}, out_dir)
+
+
+def ai_transcribe_to_srt(audio_path: str, out_dir: str) -> str:
+    """Run Whisper on [audio_path] and return the path to a saved .srt file.
+    Uses openai/whisper on Replicate."""
+    client = _client()
+    inputs: dict[str, Any] = {
+        "audio": open(audio_path, "rb"),
+        "model": "large-v3",
+        "translate": False,
+        "temperature": 0,
+        "transcription": "srt",
+        "condition_on_previous_text": True,
+        "no_speech_threshold": 0.6,
+    }
+    logger.info("Replicate whisper: inputs=%s", list(inputs.keys()))
+    output = client.run(MODELS["ai_transcribe"], input=inputs)
+    # Whisper output is a dict with 'transcription' key (SRT string) OR
+    # sometimes just the string directly. Handle both.
+    srt_text: str | None = None
+    if isinstance(output, dict):
+        srt_text = output.get("transcription") or output.get("srt")
+    elif isinstance(output, str):
+        srt_text = output
+    if not srt_text:
+        raise RuntimeError(f"Whisper returned no transcription (got {type(output)})")
+
+    os.makedirs(out_dir, exist_ok=True)
+    out_path = os.path.join(out_dir, f"captions_{uuid.uuid4().hex}.srt")
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(srt_text)
+    return out_path
 
 
 AI_IMAGE_OPS = {

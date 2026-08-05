@@ -15,6 +15,8 @@ from datetime import datetime, timedelta
 from database import init_db, create_client, get_client, get_client_by_access_code, get_all_clients, add_document, get_documents, get_client_context, increment_message_count
 from media_editor import edit_media, kind_from_path, MediaEditorError, SUPPORTED_OPS_HINT
 from instruction_parser import parse_instruction as parse_edit_instruction
+from replicate_ops import ai_transcribe_to_srt, ReplicateUnavailable
+import subprocess
 from twilio.rest import Client as TwilioClient
 from twilio.twiml.messaging_response import MessagingResponse
 from langdetect import detect
@@ -2028,6 +2030,57 @@ def edit_media_reset_session(session_id: str):
     if os.path.isdir(sdir):
         shutil.rmtree(sdir, ignore_errors=True)
     return jsonify({"success": True, "session_id": session_id})
+
+
+@app.route("/transcribe-media", methods=["POST"])
+def transcribe_media():
+    """Extract audio from an uploaded video/audio file, run Whisper on it via
+    Replicate, and return the resulting .srt as a downloadable file. Cost:
+    ~$0.006 per minute of audio.
+    """
+    if "file" not in request.files or not request.files["file"].filename:
+        return jsonify({"error": "No file provided (field name: 'file')"}), 400
+    file = request.files["file"]
+    try:
+        kind_from_path(file.filename)
+    except MediaEditorError as e:
+        return jsonify({"error": str(e)}), 400
+    safe_name = re.sub(r"[^A-Za-z0-9._-]", "_", file.filename)
+    src_path = os.path.join(EDIT_UPLOAD_DIR, f"{uuid.uuid4().hex}_{safe_name}")
+    file.save(src_path)
+
+    # Extract mono 16 kHz audio (Whisper's preferred input) to keep upload small.
+    audio_path = os.path.join(EDIT_UPLOAD_DIR, f"{uuid.uuid4().hex}.wav")
+    try:
+        proc = subprocess.run(
+            [
+                "ffmpeg", "-y", "-i", src_path,
+                "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le",
+                audio_path,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        if proc.returncode != 0:
+            return jsonify({"error": f"Audio extract failed: {proc.stderr[-400:]}"}), 500
+
+        try:
+            srt_path = ai_transcribe_to_srt(audio_path, EDIT_OUTPUT_DIR)
+        except ReplicateUnavailable as e:
+            return jsonify({"error": str(e)}), 503
+        except Exception as e:
+            logger.exception("whisper failed")
+            return jsonify({"error": f"Transcription failed: {e}"}), 500
+        return jsonify({
+            "success": True,
+            "download_url": f"/edit-media/download/{os.path.basename(srt_path)}",
+            "filename": os.path.basename(srt_path),
+        })
+    finally:
+        for p in (src_path, audio_path):
+            try: os.remove(p)
+            except OSError: pass
 
 
 @app.route("/edit-media/download/<path:name>", methods=["GET"])
