@@ -2084,6 +2084,81 @@ def transcribe_media():
             except OSError: pass
 
 
+@app.route("/generate-caption", methods=["POST"])
+def generate_caption_endpoint():
+    """Generate a punchy social-media caption + hashtags for a short-form
+    video via Claude Haiku. One-shot text generation — no source file.
+
+    Form fields:
+      topic:     (required) short description of the video's subject
+      platform:  (optional) 'instagram' | 'tiktok' | 'youtube_shorts' |
+                  'twitter' | 'linkedin'. Default 'instagram'.
+      language:  (optional) full language name for the caption
+                  (e.g. 'English', 'Hindi', 'Spanish'). Default English.
+      tone:      (optional) 'casual' | 'professional' | 'funny' |
+                  'inspirational'. Default 'casual'.
+
+    Response: { success, caption, hashtags: [str] }
+    """
+    topic = (request.form.get("topic") or "").strip()
+    if not topic:
+        return jsonify({"error": "Provide 'topic' — short description of the video"}), 400
+    platform = (request.form.get("platform") or "instagram").strip().lower()
+    language = (request.form.get("language") or "English").strip()
+    tone = (request.form.get("tone") or "casual").strip().lower()
+
+    client = get_anthropic_client()
+    if not client:
+        return jsonify({"error": "AI unavailable"}), 503
+
+    # Platform-specific caption length + hashtag count guidance.
+    guidance = {
+        "instagram": ("1-2 short sentences with 1-2 emojis", 8, 12),
+        "tiktok": ("one punchy line, ≤80 chars, hooky, 1 emoji ok", 4, 6),
+        "youtube_shorts": ("one hook line + one CTA", 5, 8),
+        "twitter": ("≤240 chars, minimal hashtags", 2, 4),
+        "linkedin": ("2-3 sentences, professional, minimal emoji", 3, 5),
+    }.get(platform, ("1-2 short sentences with 1-2 emojis", 8, 12))
+    fmt, hmin, hmax = guidance
+
+    system = (
+        f"You write social-media captions in the user's chosen language "
+        f"({language}). Return ONLY valid JSON, no prose, no code fences:\n"
+        f'{{"caption": "<caption text>", "hashtags": ["#tag1", "#tag2", ...]}}\n\n'
+        f"Constraints:\n"
+        f"- Platform: {platform}. Caption style: {fmt}.\n"
+        f"- Tone: {tone}.\n"
+        f"- Include {hmin}-{hmax} relevant hashtags (English hashtags stay in "
+        f"English even when the caption is in another language — that's the "
+        f"platform norm).\n"
+        f"- No repeating the user's topic verbatim; add hook / emotion."
+    )
+    try:
+        resp = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=500,
+            system=system,
+            messages=[{"role": "user", "content": f"Topic: {topic}"}],
+        )
+        text = "".join(
+            b.text for b in resp.content if getattr(b, "type", "") == "text"
+        ).strip()
+        text = re.sub(r"^```(?:json)?\s*", "", text)
+        text = re.sub(r"\s*```$", "", text)
+        parsed = json.loads(text)
+    except Exception as e:
+        logger.exception("caption generation failed")
+        return jsonify({"error": f"Generation failed: {e}"}), 500
+
+    return jsonify({
+        "success": True,
+        "platform": platform,
+        "language": language,
+        "caption": (parsed.get("caption") or "").strip(),
+        "hashtags": [str(h).strip() for h in (parsed.get("hashtags") or [])],
+    })
+
+
 @app.route("/translate-captions", methods=["POST"])
 def translate_captions_endpoint():
     """Translate an SRT caption file to a target language via Claude Haiku.
