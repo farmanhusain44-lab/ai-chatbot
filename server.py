@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 from database import init_db, create_client, get_client, get_client_by_access_code, get_all_clients, add_document, get_documents, get_client_context, increment_message_count
 from media_editor import edit_media, kind_from_path, MediaEditorError, SUPPORTED_OPS_HINT
 from instruction_parser import parse_instruction as parse_edit_instruction
-from replicate_ops import ai_transcribe_to_srt, ReplicateUnavailable
+from replicate_ops import ai_transcribe_to_srt, ai_transcribe_words, ReplicateUnavailable
 import subprocess
 from twilio.rest import Client as TwilioClient
 from twilio.twiml.messaging_response import MessagingResponse
@@ -2067,16 +2067,22 @@ def transcribe_media():
             return jsonify({"error": f"Audio extract failed: {proc.stderr[-400:]}"}), 500
 
         try:
-            srt_path = ai_transcribe_to_srt(audio_path, EDIT_OUTPUT_DIR)
+            srt_path, words_path = ai_transcribe_words(audio_path, EDIT_OUTPUT_DIR)
         except ReplicateUnavailable as e:
             return jsonify({"error": str(e)}), 503
         except Exception as e:
-            logger.exception("whisper failed")
+            logger.exception("whisperx failed")
             return jsonify({"error": f"Transcription failed: {e}"}), 500
         return jsonify({
             "success": True,
             "download_url": f"/edit-media/download/{os.path.basename(srt_path)}",
             "filename": os.path.basename(srt_path),
+            # Sidecar with per-word timings from WhisperX alignment. The
+            # editor uses this to build karaoke ASS where each word lights
+            # up on its true onset. Optional — legacy clients ignoring
+            # this field still get a working SRT.
+            "words_url": f"/edit-media/download/{os.path.basename(words_path)}",
+            "words_filename": os.path.basename(words_path),
         })
     finally:
         for p in (src_path, audio_path):

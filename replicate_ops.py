@@ -7,6 +7,7 @@ Requires REPLICATE_API_TOKEN env var. If it's not set, ops raise a clear
 Each op takes an input file path and returns the path to a new file.
 """
 
+import json
 import logging
 import mimetypes
 import os
@@ -82,9 +83,12 @@ MODELS: dict[str, str] = {
     "ai_upscale": "nightmareai/real-esrgan:f121d640bd286e1fdc67f9799164c1d5be36ff74576ee11c803ae5b665dd46aa",
     # Text-to-image (Flux Schnell — fast and cheap)
     "ai_text_to_image": "black-forest-labs/flux-schnell",
-    # Speech-to-text with timestamps for SRT captions.
-    # Uses Whisper large-v3; produces srt-formatted output.
-    "ai_transcribe": "openai/whisper",
+    # Speech-to-text with WORD-LEVEL timestamps via WhisperX. Powers
+    # word-perfect animated captions (Submagic look) — each word's
+    # highlight lands on its true onset instead of a mean across the cue.
+    # Also produces segment-level SRT for legacy consumers. Unpinned; the
+    # model author keeps versions stable.
+    "ai_transcribe": "victor-upmeet/whisperx",
     # Natural-language image transformation ("make him a bodybuilder",
     # "put him in a spacesuit", "cartoon style", etc). InstructPix2Pix is
     # purpose-built for prompt-driven photo edits, roughly $0.005 per call.
@@ -434,36 +438,139 @@ def ai_voice_enhance(video_or_audio_path: str, params: dict[str, Any], out_dir: 
     return enhanced_path
 
 
+def _ms_from_seconds(secs: float) -> int:
+    return max(0, int(round(secs * 1000)))
+
+
+def _format_srt_time(ms: int) -> str:
+    h = ms // 3_600_000
+    m = (ms // 60_000) % 60
+    s = (ms // 1_000) % 60
+    milli = ms % 1_000
+    return f"{h:02d}:{m:02d}:{s:02d},{milli:03d}"
+
+
+def _segments_to_srt(segments: list[dict[str, Any]]) -> str:
+    """Build a plain SRT string from WhisperX segment output. One cue per
+    segment, using segment-level start/end and the joined text.
+    """
+    lines: list[str] = []
+    for i, seg in enumerate(segments, start=1):
+        start_ms = _ms_from_seconds(float(seg.get("start", 0.0)))
+        end_ms = _ms_from_seconds(float(seg.get("end", 0.0)))
+        text = (seg.get("text") or "").strip()
+        if not text or end_ms <= start_ms:
+            continue
+        lines.append(str(i))
+        lines.append(f"{_format_srt_time(start_ms)} --> {_format_srt_time(end_ms)}")
+        lines.append(text)
+        lines.append("")
+    return "\n".join(lines).strip() + "\n"
+
+
+def _flatten_word_timings(segments: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Pull every WhisperX word with a valid (start,end) into a single flat
+    list — the shape the Flutter side consumes for karaoke highlighting.
+    Words without alignment (WhisperX drops those it can't align) get their
+    parent segment's midpoint as a best-effort fallback so the sentence
+    still highlights something instead of skipping the word entirely.
+    """
+    flat: list[dict[str, Any]] = []
+    for seg in segments:
+        seg_start = float(seg.get("start", 0.0) or 0.0)
+        seg_end = float(seg.get("end", seg_start) or seg_start)
+        words = seg.get("words") or []
+        # Some WhisperX responses split text as ["The quick", ...] into
+        # segment.text but leave words empty when alignment fails. In that
+        # case, fall back to whitespace splitting with even distribution
+        # inside the segment so downstream code always sees per-word times.
+        if not words:
+            tokens = (seg.get("text") or "").split()
+            if not tokens:
+                continue
+            span = max(seg_end - seg_start, 0.05)
+            per = span / len(tokens)
+            for i, tok in enumerate(tokens):
+                ws = seg_start + i * per
+                we = seg_start + (i + 1) * per
+                flat.append({"w": tok, "s": _ms_from_seconds(ws), "e": _ms_from_seconds(we)})
+            continue
+        for w in words:
+            token = (w.get("word") or w.get("text") or "").strip()
+            if not token:
+                continue
+            ws = w.get("start")
+            we = w.get("end")
+            if ws is None or we is None:
+                mid = (seg_start + seg_end) / 2
+                ws = mid - 0.05
+                we = mid + 0.05
+            flat.append({
+                "w": token,
+                "s": _ms_from_seconds(float(ws)),
+                "e": _ms_from_seconds(float(we)),
+            })
+    return flat
+
+
 def ai_transcribe_to_srt(audio_path: str, out_dir: str) -> str:
-    """Run Whisper on [audio_path] and return the path to a saved .srt file.
-    Uses openai/whisper on Replicate."""
+    """Backwards-compatible wrapper — returns only the .srt path. New
+    callers should prefer [ai_transcribe_words] to also get the per-word
+    timing sidecar."""
+    srt_path, _ = ai_transcribe_words(audio_path, out_dir)
+    return srt_path
+
+
+def ai_transcribe_words(audio_path: str, out_dir: str) -> tuple[str, str]:
+    """Run WhisperX on [audio_path] and persist BOTH a legacy .srt and a
+    <basename>.words.json sidecar with word-level timings. Returns
+    ``(srt_path, words_json_path)``. The two files share a basename so
+    downstream consumers can locate the words file from the srt path.
+
+    Cost: comparable to Whisper large-v3 (~$0.006/min). WhisperX runs
+    alignment on top of Whisper, so it's a hair slower but produces the
+    word onsets that make animated captions look professional instead of
+    drifting like an even-split does on longer cues.
+    """
     client = _client()
     inputs: dict[str, Any] = {
-        "audio": open(audio_path, "rb"),
-        "model": "large-v3",
-        "translate": False,
+        "audio_file": open(audio_path, "rb"),
+        "align_output": True,
+        "batch_size": 64,
         "temperature": 0,
-        "transcription": "srt",
-        "condition_on_previous_text": True,
-        "no_speech_threshold": 0.6,
+        "debug": False,
     }
-    logger.info("Replicate whisper: inputs=%s", list(inputs.keys()))
+    logger.info("Replicate whisperx: inputs=%s", list(inputs.keys()))
     output = client.run(MODELS["ai_transcribe"], input=inputs)
-    # Whisper output is a dict with 'transcription' key (SRT string) OR
-    # sometimes just the string directly. Handle both.
-    srt_text: str | None = None
-    if isinstance(output, dict):
-        srt_text = output.get("transcription") or output.get("srt")
-    elif isinstance(output, str):
-        srt_text = output
-    if not srt_text:
-        raise RuntimeError(f"Whisper returned no transcription (got {type(output)})")
+
+    # WhisperX returns a dict shaped roughly like
+    #   {"detected_language": "...", "segments": [{"start","end","text","words":[...]}]}
+    # but Replicate has shipped variants where "segments" lives directly at
+    # the top or where the whole payload is a JSON string. Handle each.
+    payload: Any = output
+    if isinstance(payload, str):
+        try:
+            payload = json.loads(payload)
+        except json.JSONDecodeError:
+            payload = {"segments": [{"start": 0, "end": 0, "text": payload, "words": []}]}
+    if not isinstance(payload, dict):
+        raise RuntimeError(f"WhisperX returned unexpected type: {type(output)}")
+    segments = payload.get("segments")
+    if not isinstance(segments, list):
+        # Some deployments nest one more level.
+        segments = payload.get("output", {}).get("segments") if isinstance(payload.get("output"), dict) else None
+    if not isinstance(segments, list) or not segments:
+        raise RuntimeError("WhisperX returned no segments")
 
     os.makedirs(out_dir, exist_ok=True)
-    out_path = os.path.join(out_dir, f"captions_{uuid.uuid4().hex}.srt")
-    with open(out_path, "w", encoding="utf-8") as f:
-        f.write(srt_text)
-    return out_path
+    base = f"captions_{uuid.uuid4().hex}"
+    srt_path = os.path.join(out_dir, f"{base}.srt")
+    words_path = os.path.join(out_dir, f"{base}.words.json")
+    with open(srt_path, "w", encoding="utf-8") as f:
+        f.write(_segments_to_srt(segments))
+    with open(words_path, "w", encoding="utf-8") as f:
+        json.dump(_flatten_word_timings(segments), f, ensure_ascii=False)
+    return srt_path, words_path
 
 
 AI_IMAGE_OPS = {
