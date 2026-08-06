@@ -313,5 +313,10 @@ SUPPORTED_OPS_HINT = json.dumps({
     "ai_image": {
         "ai_bg_remove": {"description": "Auto-remove background from a photo"},
         "ai_upscale": {"scale": "int 2 or 4"},
+        "ai_face_enhance": {"description": "Sharpen / restore faces via CodeFormer"},
+        "ai_transform_image": {
+            "description": "Natural-language photo transformation (bodybuilder, flying, cartoon, aged, etc)",
+            "prompt": "str, English imperative prompt for InstructPix2Pix",
+        },
     },
 }, indent=2)

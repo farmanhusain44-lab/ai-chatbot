@@ -30,16 +30,39 @@ IMAGE (local, instant, free):
 IMAGE (AI, ~5-30 seconds, uses Replicate):
   ai_bg_remove         → auto-remove background
   ai_upscale           → 2x/4x sharpen and enlarge (params: {"scale": 2 or 4})
+  ai_face_enhance      → face restoration / sharpen faces (identity preserved)
+  ai_transform_image   → natural-language photo transformation via InstructPix2Pix.
+                          params: {"prompt": "<clean English transformation prompt>"}
+                          Use this for ANY request that changes what's IN the image
+                          in a way local filters can't: change appearance, add clothing,
+                          change setting, apply style, age up/down, make into cartoon,
+                          etc. The prompt should be in English regardless of user
+                          language, imperative form ("make him a bodybuilder", "put
+                          her in a spacesuit", "cartoon style", "make him look old").
 VIDEO: trim, rotate, flip, speed, mute, resize, compress, extract_audio
 
 Guidelines:
 - Prefer local ops (grayscale, brightness, etc.) — they are free and instant.
-- Use AI ops ONLY when the user asks for something local ops cannot do:
+- Use AI ops when local can't do the job:
   * "background hatao" / "background remove" / "no background"  → ai_bg_remove
   * "HD karo" / "clear karo" / "upscale" / "enhance quality"    → ai_upscale (scale 2)
-- If the user asks for features not yet supported (face beautify, object remove,
-  cartoonify, style transfer), return an empty ops list and set summary to
-  "AI feature — coming soon: <what they asked>".
+  * "chehra saaf karo" / "face enhance" / "sharpen face"        → ai_face_enhance
+- Use ai_transform_image whenever the user wants to CHANGE what the subject looks like
+  or where they are, in a way that keeps the subject recognizable. Translate the
+  user's instruction to a concise English prompt suitable for InstructPix2Pix.
+  Examples (user → prompt):
+    "bodybuilder bana do" / "make him muscular"    → "make him a muscular bodybuilder"
+    "hawa me uda do" / "make me fly"               → "put him floating in the sky"
+    "cartoon bana do" / "anime style"              → "in the style of a cartoon"
+    "budha bana do" / "make him old"               → "make him look 70 years old"
+    "young bana do" / "younger"                    → "make him look 20 years old"
+    "beach pe le jao"                              → "put him on a tropical beach"
+    "superhero bana do"                            → "dress him as a superhero"
+    "moustache lagao" / "add beard"                → "give him a full beard"
+    "suit pehna do"                                → "dress him in a formal suit"
+- Only reject as unsupported when the user asks for something requiring true
+  generation from nothing (add a whole new person/object into the scene, generate
+  a full video from text, 3D scene). Say "AI generation feature — coming soon".
 - Multiple ops can be combined ("BG hatao aur upscale karo" → both, in order).
 - "Brighter"/"chamak badhao" → brightness with factor 1.3-1.6.
 - "Darker"/"halka karo" → brightness with factor 0.6-0.8.

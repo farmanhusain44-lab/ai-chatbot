@@ -84,18 +84,41 @@ MODELS: dict[str, str] = {
     # Speech-to-text with timestamps for SRT captions.
     # Uses Whisper large-v3; produces srt-formatted output.
     "ai_transcribe": "openai/whisper",
+    # Natural-language image transformation ("make him a bodybuilder",
+    # "put him in a spacesuit", "cartoon style", etc). InstructPix2Pix is
+    # purpose-built for prompt-driven photo edits, roughly $0.005 per call.
+    "ai_transform_image": "timothybrooks/instruct-pix2pix:30c1d0b916a6f8efce20493f5d61ee27491ab2a60437c13c588468b9810ec23f",
+    # Face restoration / enhancement — sharpens blurry / low-res faces
+    # while preserving identity. CodeFormer is currently alive on Replicate.
+    "ai_face_enhance": "sczhou/codeformer:cc4956dd26fa5a7185d5660cc2100fde1e761db2e5b62c831a44c00ef0f22e0b",
 }
 
 # Which param key each model expects for its image input
 _INPUT_IMAGE_KEY: dict[str, str] = {
     "ai_bg_remove": "image",
     "ai_upscale": "image",
+    "ai_transform_image": "image",
+    "ai_face_enhance": "image",
 }
 
 # Extra defaults per model (merged with user params)
 _DEFAULTS: dict[str, dict[str, Any]] = {
     "ai_upscale": {"scale": 2},
     "ai_text_to_image": {"aspect_ratio": "1:1", "output_format": "png", "num_inference_steps": 4},
+    # instruct-pix2pix defaults — moderate strength so identity is preserved
+    # while the transform is visible. num_inference_steps=25 is a good
+    # quality/speed tradeoff.
+    "ai_transform_image": {
+        "num_inference_steps": 25,
+        "image_guidance_scale": 1.5,
+        "guidance_scale": 7.5,
+    },
+    "ai_face_enhance": {
+        "codeformer_fidelity": 0.7,
+        "background_enhance": True,
+        "face_upsample": True,
+        "upscale": 2,
+    },
 }
 
 
@@ -236,6 +259,24 @@ def ai_text_to_image(prompt: str, params: dict[str, Any], out_dir: str) -> str:
     return _run_model("ai_text_to_image", None, {**params, "prompt": prompt}, out_dir)
 
 
+def ai_transform_image(image_path: str, params: dict[str, Any], out_dir: str) -> str:
+    """Apply a natural-language transformation to an image via
+    InstructPix2Pix. The [params] dict must contain a "prompt" key with
+    the transformation instruction (e.g. "make him a bodybuilder",
+    "put him floating in the sky", "cartoon style"). Preserves the
+    subject's identity while applying the transformation.
+    """
+    prompt = (params or {}).get("prompt", "").strip()
+    if not prompt:
+        raise RuntimeError("ai_transform_image requires a 'prompt' param")
+    return _run_model("ai_transform_image", image_path, params, out_dir)
+
+
+def ai_face_enhance(image_path: str, params: dict[str, Any], out_dir: str) -> str:
+    """CodeFormer face restoration — sharpens faces while keeping identity."""
+    return _run_model("ai_face_enhance", image_path, params, out_dir)
+
+
 def ai_transcribe_to_srt(audio_path: str, out_dir: str) -> str:
     """Run Whisper on [audio_path] and return the path to a saved .srt file.
     Uses openai/whisper on Replicate."""
@@ -271,4 +312,6 @@ def ai_transcribe_to_srt(audio_path: str, out_dir: str) -> str:
 AI_IMAGE_OPS = {
     "ai_bg_remove": ai_bg_remove,
     "ai_upscale": ai_upscale,
+    "ai_transform_image": ai_transform_image,
+    "ai_face_enhance": ai_face_enhance,
 }
