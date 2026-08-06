@@ -2084,6 +2084,68 @@ def transcribe_media():
             except OSError: pass
 
 
+@app.route("/translate-captions", methods=["POST"])
+def translate_captions_endpoint():
+    """Translate an SRT caption file to a target language via Claude Haiku.
+    Preserves timestamps exactly — only the text lines are translated.
+
+    Form fields:
+      file:            (required) the source .srt file
+      target_language: (required) full language name, e.g. "Spanish",
+                        "Hindi", "Arabic". Free-form; Claude handles it.
+    """
+    if "file" not in request.files or not request.files["file"].filename:
+        return jsonify({"error": "No file provided (field name: 'file')"}), 400
+    target = (request.form.get("target_language") or "").strip()
+    if not target:
+        return jsonify({"error": "Provide 'target_language' (e.g. Spanish, Hindi)"}), 400
+
+    src_file = request.files["file"]
+    srt_text = src_file.read().decode("utf-8", errors="replace")
+    if not srt_text.strip():
+        return jsonify({"error": "SRT file is empty"}), 400
+
+    client = get_anthropic_client()
+    if not client:
+        return jsonify({"error": "Translator unavailable"}), 503
+
+    system = (
+        "You translate SRT subtitle files. Preserve EVERY timestamp line and "
+        "the numeric index lines EXACTLY. Only translate the spoken-text lines "
+        "into the target language. Keep line breaks. Output ONLY the translated "
+        "SRT, no prose, no code fences."
+    )
+    try:
+        resp = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=6000,
+            system=system,
+            messages=[{
+                "role": "user",
+                "content": f"Target language: {target}\n\n{srt_text}",
+            }],
+        )
+        translated = "".join(
+            b.text for b in resp.content if getattr(b, "type", "") == "text"
+        ).strip()
+    except Exception as e:
+        logger.exception("caption translation failed")
+        return jsonify({"error": f"Translation failed: {e}"}), 500
+
+    os.makedirs(EDIT_OUTPUT_DIR, exist_ok=True)
+    out_name = f"captions_{uuid.uuid4().hex}_{target.replace(' ', '_')}.srt"
+    out_path = os.path.join(EDIT_OUTPUT_DIR, out_name)
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(translated)
+
+    return jsonify({
+        "success": True,
+        "download_url": f"/edit-media/download/{out_name}",
+        "filename": out_name,
+        "target_language": target,
+    })
+
+
 @app.route("/generate-video", methods=["POST"])
 def generate_video_endpoint():
     """Generate a ~6 second video from a text prompt via MiniMax Hailuo on
