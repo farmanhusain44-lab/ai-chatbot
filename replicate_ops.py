@@ -215,6 +215,56 @@ def _parse_reset_seconds(err_msg: str) -> float:
     return 0.0
 
 
+_MAX_INPUT_SIDE_PX = 1280
+_PREPARED_CACHE_DIR = os.path.join(tempfile.gettempdir(), "replicate_prepared")
+
+
+def _prepare_input_image(path: str) -> str:
+    """Return a Replicate-safe copy of [path]: max 1280px on the longest
+    side, RGB, JPEG-encoded (smaller upload, alpha-flattened). Files that
+    already fit the constraints get a fast path — we only re-encode when
+    something actually changes. Cached in a temp dir keyed by mtime+size
+    so repeated calls (chat loops) don't re-encode.
+    """
+    try:
+        from PIL import Image
+    except Exception:
+        return path  # Pillow not installed for some reason; upload original.
+    try:
+        os.makedirs(_PREPARED_CACHE_DIR, exist_ok=True)
+        st = os.stat(path)
+        cache_name = f"prep_{abs(hash((path, st.st_mtime, st.st_size)))}.jpg"
+        cache_path = os.path.join(_PREPARED_CACHE_DIR, cache_name)
+        if os.path.exists(cache_path):
+            return cache_path
+
+        with Image.open(path) as im:
+            im.load()
+            w, h = im.size
+            longest = max(w, h)
+            needs_resize = longest > _MAX_INPUT_SIDE_PX
+            needs_flatten = im.mode not in ("RGB",)
+            if not needs_resize and not needs_flatten and path.lower().endswith((".jpg", ".jpeg")):
+                return path
+            if needs_resize:
+                scale = _MAX_INPUT_SIDE_PX / longest
+                im = im.resize((max(1, int(w * scale)), max(1, int(h * scale))), Image.LANCZOS)
+            if im.mode != "RGB":
+                # Composite over white so bg-removed transparent pixels
+                # don't turn black in the downstream model.
+                bg = Image.new("RGB", im.size, (255, 255, 255))
+                if im.mode == "RGBA":
+                    bg.paste(im, mask=im.split()[-1])
+                else:
+                    bg.paste(im.convert("RGB"))
+                im = bg
+            im.save(cache_path, "JPEG", quality=92, optimize=True)
+        return cache_path
+    except Exception as e:
+        logger.warning("prepare_input_image fell back to original for %s: %s", path, e)
+        return path
+
+
 def _run_model(op: str, image_path: str | None, params: dict[str, Any], out_dir: str) -> str:
     client = _client()
     if op not in MODELS:
@@ -223,8 +273,20 @@ def _run_model(op: str, image_path: str | None, params: dict[str, Any], out_dir:
     inputs: dict[str, Any] = {**_DEFAULTS.get(op, {}), **params}
 
     if image_path is not None:
+        # Pre-shrink + RGB-flatten before uploading. Two protections at once:
+        #   1. Cap the longest side at 1280px — some Replicate models
+        #      (InstructPix2Pix, CodeFormer) allocate memory quadratic in
+        #      input pixels and OOM on native 4K phone photos (a 4032x3024
+        #      shot maps to a ~115 GiB tensor on an 80 GiB GPU — bang, CUDA
+        #      out-of-memory).
+        #   2. Flatten RGBA → RGB with a white matte, because the same
+        #      models often mis-handle the alpha channel (or the bg-remove
+        #      op that preceded left transparency the next op can't chew).
+        # Photos that were already small stay small; alpha-less RGB
+        # passes straight through.
+        prepared = _prepare_input_image(image_path)
         key = _INPUT_IMAGE_KEY.get(op, "image")
-        inputs[key] = open(image_path, "rb")
+        inputs[key] = open(prepared, "rb")
 
     logger.info("Replicate %s: inputs keys=%s", op, list(inputs.keys()))
 
