@@ -2084,6 +2084,33 @@ def transcribe_media():
             except OSError: pass
 
 
+@app.route("/generate-video", methods=["POST"])
+def generate_video_endpoint():
+    """Generate a ~6 second video from a text prompt via MiniMax Hailuo on
+    Replicate. Cost: ~$0.30 per call. Not tied to a session — one-shot.
+
+    Form fields:
+      prompt: str (required)
+    """
+    from replicate_ops import ai_text_to_video
+    prompt = (request.form.get("prompt") or "").strip()
+    if not prompt:
+        return jsonify({"error": "Provide a 'prompt'"}), 400
+    try:
+        out_path = ai_text_to_video(prompt, {}, EDIT_OUTPUT_DIR)
+    except ReplicateUnavailable as e:
+        return jsonify({"error": str(e)}), 503
+    except Exception as e:
+        logger.exception("text-to-video failed")
+        return jsonify({"error": f"Generation failed: {e}"}), 500
+    return jsonify({
+        "success": True,
+        "kind": "video",
+        "download_url": f"/edit-media/download/{os.path.basename(out_path)}",
+        "filename": os.path.basename(out_path),
+    })
+
+
 @app.route("/edit-media/download/<path:name>", methods=["GET"])
 def edit_media_download(name: str):
     # basic path traversal guard

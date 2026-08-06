@@ -100,6 +100,9 @@ MODELS: dict[str, str] = {
     # MiniMax Hailuo (video-01) is the cheapest usable pick on Replicate
     # (~$0.30/clip). Takes a first_frame_image and an optional motion prompt.
     "ai_animate_image": "minimax/video-01",
+    # Text-to-video — same MiniMax model without first_frame_image, generates
+    # a ~6s clip purely from the prompt. Same cost.
+    "ai_text_to_video": "minimax/video-01",
 }
 
 # Which param key each model expects for its image input
@@ -284,6 +287,22 @@ def ai_transform_image(image_path: str, params: dict[str, Any], out_dir: str) ->
 def ai_face_enhance(image_path: str, params: dict[str, Any], out_dir: str) -> str:
     """CodeFormer face restoration — sharpens faces while keeping identity."""
     return _run_model("ai_face_enhance", image_path, params, out_dir)
+
+
+def ai_text_to_video(prompt: str, params: dict[str, Any], out_dir: str) -> str:
+    """Generate a ~6-second video from a text prompt via MiniMax Hailuo.
+    Called from the standalone /generate-video endpoint (no input file).
+    """
+    client = _client()
+    if not prompt.strip():
+        raise RuntimeError("ai_text_to_video requires a non-empty prompt")
+    logger.info("Replicate text-to-video: prompt=%r", prompt)
+    inputs: dict[str, Any] = {
+        "prompt": prompt,
+        "prompt_optimizer": True,
+    }
+    output = client.run(MODELS["ai_text_to_video"], input=inputs)
+    return _save_output(output, out_dir, prefer_ext="mp4")
 
 
 def ai_animate_image(image_path: str, params: dict[str, Any], out_dir: str) -> str:
