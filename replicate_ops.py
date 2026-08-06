@@ -12,6 +12,7 @@ import mimetypes
 import os
 import re
 import shutil
+import subprocess
 import tempfile
 import time
 import uuid
@@ -91,6 +92,10 @@ MODELS: dict[str, str] = {
     # Face restoration / enhancement — sharpens blurry / low-res faces
     # while preserving identity. CodeFormer is currently alive on Replicate.
     "ai_face_enhance": "sczhou/codeformer:cc4956dd26fa5a7185d5660cc2100fde1e761db2e5b62c831a44c00ef0f22e0b",
+    # Voice / audio cleanup — Resemble Enhance denoises AND super-resolves
+    # speech up to 44.1kHz. Great for cleaning mobile-recorded voiceovers.
+    # No pinned version — Replicate resolves to the latest published one.
+    "ai_voice_enhance": "resemble-ai/resemble-enhance",
 }
 
 # Which param key each model expects for its image input
@@ -277,6 +282,56 @@ def ai_face_enhance(image_path: str, params: dict[str, Any], out_dir: str) -> st
     return _run_model("ai_face_enhance", image_path, params, out_dir)
 
 
+def ai_voice_enhance(video_or_audio_path: str, params: dict[str, Any], out_dir: str) -> str:
+    """Clean up a voiceover / video's audio track via Resemble Enhance.
+
+    Video input: extract audio → enhance → mux back with the original
+    video track. Output filename mirrors the input.
+    Audio input (mp3/wav/m4a/aac): enhance in place.
+    """
+    ext = os.path.splitext(video_or_audio_path)[1].lower().lstrip('.')
+    is_video = ext in {"mp4", "mov", "mkv", "webm", "m4v", "avi", "3gp"}
+
+    client = _client()
+    os.makedirs(out_dir, exist_ok=True)
+
+    # 1. Extract audio to WAV (Resemble likes clean PCM input).
+    if is_video:
+        audio_in = os.path.join(out_dir, f"vo_in_{uuid.uuid4().hex}.wav")
+        subprocess.run(
+            ["ffmpeg", "-y", "-i", video_or_audio_path, "-vn",
+             "-acodec", "pcm_s16le", "-ar", "44100", "-ac", "1", audio_in],
+            check=True, capture_output=True,
+        )
+    else:
+        audio_in = video_or_audio_path
+
+    # 2. Enhance via Replicate.
+    logger.info("Replicate resemble-enhance on %s", audio_in)
+    output = client.run(
+        MODELS["ai_voice_enhance"],
+        input={"input_audio": open(audio_in, "rb")},
+    )
+    enhanced_url = _first_url(output)
+    enhanced_path = _download(enhanced_url, out_dir, prefer_ext="wav")
+
+    # 3. If video, mux enhanced audio back with original video track.
+    if is_video:
+        out_video = os.path.join(out_dir, f"vo_out_{uuid.uuid4().hex}.mp4")
+        subprocess.run(
+            ["ffmpeg", "-y",
+             "-i", video_or_audio_path,     # video (with old audio)
+             "-i", enhanced_path,            # new audio
+             "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
+             "-map", "0:v:0", "-map", "1:a:0",
+             "-shortest", out_video],
+            check=True, capture_output=True,
+        )
+        return out_video
+
+    return enhanced_path
+
+
 def ai_transcribe_to_srt(audio_path: str, out_dir: str) -> str:
     """Run Whisper on [audio_path] and return the path to a saved .srt file.
     Uses openai/whisper on Replicate."""
@@ -314,4 +369,11 @@ AI_IMAGE_OPS = {
     "ai_upscale": ai_upscale,
     "ai_transform_image": ai_transform_image,
     "ai_face_enhance": ai_face_enhance,
+}
+
+# Video-scope AI ops. Same signature as image ops (input path + params →
+# output path). Kept separate so the routing layer knows to accept a
+# video input for these instead of blocking with the image-only check.
+AI_VIDEO_OPS = {
+    "ai_voice_enhance": ai_voice_enhance,
 }

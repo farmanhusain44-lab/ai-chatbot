@@ -18,7 +18,7 @@ from typing import Any
 
 from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 
-from replicate_ops import AI_IMAGE_OPS, ai_text_to_image, ReplicateUnavailable
+from replicate_ops import AI_IMAGE_OPS, AI_VIDEO_OPS, ai_text_to_image, ReplicateUnavailable
 
 logger = logging.getLogger(__name__)
 
@@ -277,7 +277,40 @@ def edit_media(input_path: str, ops: list[dict[str, Any]], out_dir: str) -> str:
         else:
             os.rename(current, output_path)
     else:
-        apply_video_ops(input_path, output_path, ops)
+        # Split video ops: AI ops (Replicate, one-at-a-time) vs local ffmpeg.
+        current = input_path
+        local_ops: list[dict[str, Any]] = []
+        for op in ops:
+            name = op.get("op", "")
+            if name in AI_VIDEO_OPS:
+                if local_ops:
+                    tmp = os.path.join(out_dir, f"vstep_{uuid.uuid4().hex}.mp4")
+                    apply_video_ops(current, tmp, local_ops)
+                    if current != input_path:
+                        try: os.remove(current)
+                        except OSError: pass
+                    current = tmp
+                    local_ops = []
+                try:
+                    new_path = AI_VIDEO_OPS[name](current, op.get("params", {}), out_dir)
+                except ReplicateUnavailable as e:
+                    raise MediaEditorError(str(e))
+                except Exception as e:
+                    raise MediaEditorError(f"AI op {name} failed: {e}")
+                if current != input_path:
+                    try: os.remove(current)
+                    except OSError: pass
+                current = new_path
+            else:
+                local_ops.append(op)
+
+        if local_ops or current == input_path:
+            apply_video_ops(current, output_path, local_ops)
+            if current != input_path:
+                try: os.remove(current)
+                except OSError: pass
+        else:
+            os.rename(current, output_path)
     return output_path
 
 
@@ -317,6 +350,11 @@ SUPPORTED_OPS_HINT = json.dumps({
         "ai_transform_image": {
             "description": "Natural-language photo transformation (bodybuilder, flying, cartoon, aged, etc)",
             "prompt": "str, English imperative prompt for InstructPix2Pix",
+        },
+    },
+    "ai_video": {
+        "ai_voice_enhance": {
+            "description": "Clean up voiceover / video audio via Resemble Enhance — denoise + speech super-resolution to 44.1kHz",
         },
     },
 }, indent=2)

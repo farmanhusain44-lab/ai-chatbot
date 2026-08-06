@@ -39,7 +39,13 @@ IMAGE (AI, ~5-30 seconds, uses Replicate):
                           etc. The prompt should be in English regardless of user
                           language, imperative form ("make him a bodybuilder", "put
                           her in a spacesuit", "cartoon style", "make him look old").
-VIDEO: trim, rotate, flip, speed, mute, resize, compress, extract_audio
+VIDEO (local ffmpeg): trim, rotate, flip, speed, mute, resize, compress, extract_audio
+VIDEO (AI, uses Replicate):
+  ai_voice_enhance  → clean up muddy voiceover / remove background noise
+                       and boost speech clarity via Resemble Enhance.
+                       Trigger phrases: "voice saaf karo", "audio clean",
+                       "noise remove", "voiceover enhance", "clean audio",
+                       "background noise hatao"
 
 Guidelines:
 - Prefer local ops (grayscale, brightness, etc.) — they are free and instant.
