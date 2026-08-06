@@ -2221,6 +2221,35 @@ def translate_captions_endpoint():
     })
 
 
+@app.route("/generate-image", methods=["POST"])
+def generate_image_endpoint():
+    """Generate an image from a text prompt via Flux Schnell on Replicate
+    (~$0.003 per image — cheap). One-shot; not tied to a session.
+
+    Form fields:
+      prompt:       (required) text description
+      aspect_ratio: (optional) '1:1' | '9:16' | '16:9' | '4:5'. Default '9:16'.
+    """
+    from replicate_ops import ai_text_to_image
+    prompt = (request.form.get("prompt") or "").strip()
+    if not prompt:
+        return jsonify({"error": "Provide a 'prompt'"}), 400
+    aspect = (request.form.get("aspect_ratio") or "9:16").strip()
+    try:
+        out_path = ai_text_to_image(prompt, {"aspect_ratio": aspect}, EDIT_OUTPUT_DIR)
+    except ReplicateUnavailable as e:
+        return jsonify({"error": str(e)}), 503
+    except Exception as e:
+        logger.exception("text-to-image failed")
+        return jsonify({"error": f"Generation failed: {e}"}), 500
+    return jsonify({
+        "success": True,
+        "kind": "image",
+        "download_url": f"/edit-media/download/{os.path.basename(out_path)}",
+        "filename": os.path.basename(out_path),
+    })
+
+
 @app.route("/generate-video", methods=["POST"])
 def generate_video_endpoint():
     """Generate a ~6 second video from a text prompt via MiniMax Hailuo on
