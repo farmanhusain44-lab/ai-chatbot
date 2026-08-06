@@ -96,6 +96,10 @@ MODELS: dict[str, str] = {
     # speech up to 44.1kHz. Great for cleaning mobile-recorded voiceovers.
     # No pinned version — Replicate resolves to the latest published one.
     "ai_voice_enhance": "resemble-ai/resemble-enhance",
+    # Image-to-video generation — animate a still into a 5-6s clip.
+    # MiniMax Hailuo (video-01) is the cheapest usable pick on Replicate
+    # (~$0.30/clip). Takes a first_frame_image and an optional motion prompt.
+    "ai_animate_image": "minimax/video-01",
 }
 
 # Which param key each model expects for its image input
@@ -282,6 +286,23 @@ def ai_face_enhance(image_path: str, params: dict[str, Any], out_dir: str) -> st
     return _run_model("ai_face_enhance", image_path, params, out_dir)
 
 
+def ai_animate_image(image_path: str, params: dict[str, Any], out_dir: str) -> str:
+    """Animate a still image into a ~6-second video via MiniMax/Hailuo.
+    An optional 'prompt' param steers the motion ("floating in the sky",
+    "camera zooms in slowly", etc). Returns the path to the downloaded mp4.
+    """
+    client = _client()
+    prompt = (params or {}).get("prompt", "").strip() or "gentle natural motion"
+    logger.info("Replicate image-to-video: prompt=%r", prompt)
+    inputs: dict[str, Any] = {
+        "first_frame_image": open(image_path, "rb"),
+        "prompt": prompt,
+        "prompt_optimizer": True,
+    }
+    output = client.run(MODELS["ai_animate_image"], input=inputs)
+    return _save_output(output, out_dir, prefer_ext="mp4")
+
+
 def ai_voice_enhance(video_or_audio_path: str, params: dict[str, Any], out_dir: str) -> str:
     """Clean up a voiceover / video's audio track via Resemble Enhance.
 
@@ -369,7 +390,16 @@ AI_IMAGE_OPS = {
     "ai_upscale": ai_upscale,
     "ai_transform_image": ai_transform_image,
     "ai_face_enhance": ai_face_enhance,
+    # Note: ai_animate_image takes an image but PRODUCES a video. The
+    # media_editor image-branch handles this specially and switches the
+    # output kind after this op runs.
+    "ai_animate_image": ai_animate_image,
 }
+
+# Ops that take an image input but return a video output. The media_editor
+# routes these carefully so downstream chained ops (if any) run in the
+# video branch and the response kind is 'video'.
+IMAGE_TO_VIDEO_OPS = {"ai_animate_image"}
 
 # Video-scope AI ops. Same signature as image ops (input path + params →
 # output path). Kept separate so the routing layer knows to accept a

@@ -18,7 +18,7 @@ from typing import Any
 
 from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 
-from replicate_ops import AI_IMAGE_OPS, AI_VIDEO_OPS, ai_text_to_image, ReplicateUnavailable
+from replicate_ops import AI_IMAGE_OPS, AI_VIDEO_OPS, IMAGE_TO_VIDEO_OPS, ai_text_to_image, ReplicateUnavailable
 
 logger = logging.getLogger(__name__)
 
@@ -232,7 +232,13 @@ def _apply_ai_image_op(current_path: str, op_name: str, params: dict[str, Any], 
         raise MediaEditorError(f"AI op {op_name} failed: {e}")
 
 
-def edit_media(input_path: str, ops: list[dict[str, Any]], out_dir: str) -> str:
+def edit_media(input_path: str, ops: list[dict[str, Any]], out_dir: str) -> tuple[str, str]:
+    """Run [ops] over [input_path] and return (output_path, output_kind).
+
+    output_kind is normally the same as the input's, but may switch from
+    "image" to "video" when an image-to-video AI op (e.g. ai_animate_image)
+    runs during the pipeline.
+    """
     kind = kind_from_path(input_path)
     size_mb = os.path.getsize(input_path) / (1024 * 1024)
     if kind == "image" and size_mb > MAX_IMAGE_MB:
@@ -249,8 +255,15 @@ def edit_media(input_path: str, ops: list[dict[str, Any]], out_dir: str) -> str:
         # (accumulated). AI ops produce a new file each time, so we chain them.
         current = input_path
         local_ops: list[dict[str, Any]] = []
-        for op in ops:
+        # ai_animate_image switches the pipeline to video mid-run. When that
+        # fires, remaining ops route through the video branch.
+        pending_video_ops: list[dict[str, Any]] = []
+        switched_to_video = False
+        for idx, op in enumerate(ops):
             name = op.get("op", "")
+            if switched_to_video:
+                pending_video_ops.append(op)
+                continue
             if name in AI_IMAGE_OPS:
                 # Flush any queued local ops first
                 if local_ops:
@@ -266,10 +279,23 @@ def edit_media(input_path: str, ops: list[dict[str, Any]], out_dir: str) -> str:
                     try: os.remove(current)
                     except OSError: pass
                 current = new_path
+                if name in IMAGE_TO_VIDEO_OPS:
+                    switched_to_video = True
+                    kind = "video"
             else:
                 local_ops.append(op)
 
-        if local_ops or current == input_path:
+        if switched_to_video:
+            # Rewrite output extension to mp4 and route remaining ops through
+            # the video pipeline.
+            output_path = os.path.join(out_dir, f"edited_{uuid.uuid4().hex}.mp4")
+            if pending_video_ops:
+                apply_video_ops(current, output_path, pending_video_ops)
+                try: os.remove(current)
+                except OSError: pass
+            else:
+                os.rename(current, output_path)
+        elif local_ops or current == input_path:
             apply_image_ops(current, output_path, local_ops)
             if current != input_path:
                 try: os.remove(current)
@@ -311,7 +337,7 @@ def edit_media(input_path: str, ops: list[dict[str, Any]], out_dir: str) -> str:
                 except OSError: pass
         else:
             os.rename(current, output_path)
-    return output_path
+    return output_path, kind
 
 
 SUPPORTED_OPS_HINT = json.dumps({
@@ -350,6 +376,10 @@ SUPPORTED_OPS_HINT = json.dumps({
         "ai_transform_image": {
             "description": "Natural-language photo transformation (bodybuilder, flying, cartoon, aged, etc)",
             "prompt": "str, English imperative prompt for InstructPix2Pix",
+        },
+        "ai_animate_image": {
+            "description": "Animate a still image into a ~6s video (MiniMax Hailuo). SWITCHES kind to video.",
+            "prompt": "str, optional motion prompt (e.g. 'floating in the sky', 'zooming in')",
         },
     },
     "ai_video": {

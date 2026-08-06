@@ -39,6 +39,17 @@ IMAGE (AI, ~5-30 seconds, uses Replicate):
                           etc. The prompt should be in English regardless of user
                           language, imperative form ("make him a bodybuilder", "put
                           her in a spacesuit", "cartoon style", "make him look old").
+  ai_animate_image     → animate a still image into a ~6-second video via MiniMax.
+                          params: {"prompt": "<motion prompt in English>"}
+                          Use when the user says "animate this", "video bana do",
+                          "hawa me uda ke video bana do", "make it move", "camera
+                          zoom", "video me convert karo". Also route "hawa me uda do"
+                          style prompts HERE when the input is a still photo AND
+                          the user seems to want motion — since the still-only
+                          transform (ai_transform_image) can only make a still of
+                          the person floating; ai_animate_image makes them actually
+                          fly. Motion prompts are English imperative: "floating in
+                          the sky", "camera zooms in slowly", "wind blowing hair".
 VIDEO (local ffmpeg): trim, rotate, flip, speed, mute, resize, compress, extract_audio
 VIDEO (AI, uses Replicate):
   ai_voice_enhance  → clean up muddy voiceover / remove background noise

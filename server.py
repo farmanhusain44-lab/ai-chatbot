@@ -1989,7 +1989,7 @@ def edit_media_endpoint():
         return jsonify({"error": "Provide either 'instruction' or 'ops' form field"}), 400
 
     try:
-        output_path = edit_media(input_path, ops, EDIT_OUTPUT_DIR)
+        output_path, out_kind = edit_media(input_path, ops, EDIT_OUTPUT_DIR)
     except MediaEditorError as e:
         _cleanup_upload()
         return jsonify({"error": str(e), "ops": ops}), 400
@@ -2012,7 +2012,8 @@ def edit_media_endpoint():
     return jsonify({
         "success": True,
         "session_id": session_id,
-        "kind": kind,
+        "kind": out_kind,
+        "input_kind": kind,
         "ops_applied": ops,
         "summary": summary,
         "download_url": f"/edit-media/download/{out_name}",
