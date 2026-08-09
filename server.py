@@ -2090,6 +2090,77 @@ def transcribe_media():
             except OSError: pass
 
 
+@app.route("/generate-voiceover", methods=["POST"])
+def generate_voiceover_endpoint():
+    """Generate an AI voice-over audio track for the media editor via
+    ElevenLabs. Takes a script + optional language; returns a mp3
+    file URL just like /transcribe-media so the editor can attach it
+    as a voiceOver MusicTrack.
+
+    Form fields:
+      text:     (required) the script to speak (<= 3000 chars trimmed)
+      language: (optional) full language name — defaults to English
+      stability: (optional) 0..1, ElevenLabs stability. Default 0.5
+      similarity: (optional) 0..1, similarity_boost. Default 0.75
+
+    Response: { success, download_url, filename }
+    Errors:
+      400 — missing text
+      503 — ElevenLabs key missing / quota exceeded / upstream error
+    """
+    text = (request.form.get("text") or "").strip()
+    if not text:
+        return jsonify({"error": "Provide 'text' — the script to speak"}), 400
+    if not elevenlabs_key:
+        return jsonify({"error": "ELEVENLABS_API_KEY not set on server"}), 503
+
+    language = (request.form.get("language") or "English").strip()
+    stability = float(request.form.get("stability") or 0.5)
+    similarity = float(request.form.get("similarity") or 0.75)
+
+    # Map full language name → voice id via the existing voice table;
+    # unknown languages fall through to the default English voice.
+    lang_key = "en"
+    for k, name in LANGUAGE_NAMES.items():
+        if name.lower() == language.lower():
+            lang_key = k
+            break
+    voice_id = ELEVENLABS_VOICES.get(lang_key, ELEVENLABS_VOICES["en"])
+
+    url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
+    headers = {
+        "Accept": "audio/mpeg",
+        "Content-Type": "application/json",
+        "xi-api-key": elevenlabs_key,
+    }
+    payload = {
+        "text": text[:3000],
+        "model_id": "eleven_multilingual_v2",
+        "voice_settings": {
+            "stability": max(0.0, min(1.0, stability)),
+            "similarity_boost": max(0.0, min(1.0, similarity)),
+        },
+    }
+    try:
+        resp = requests.post(url, json=payload, headers=headers, timeout=120)
+    except Exception as e:
+        logger.exception("ElevenLabs request failed")
+        return jsonify({"error": f"ElevenLabs upstream error: {e}"}), 503
+    if resp.status_code in (401, 429):
+        return jsonify({"error": "ElevenLabs quota exceeded or key rejected"}), 503
+    if resp.status_code != 200:
+        return jsonify({"error": f"ElevenLabs returned {resp.status_code}"}), 503
+
+    out_path = os.path.join(EDIT_OUTPUT_DIR, f"voiceover_{uuid.uuid4().hex}.mp3")
+    with open(out_path, "wb") as f:
+        f.write(resp.content)
+    return jsonify({
+        "success": True,
+        "download_url": f"/edit-media/download/{os.path.basename(out_path)}",
+        "filename": os.path.basename(out_path),
+    })
+
+
 @app.route("/generate-caption", methods=["POST"])
 def generate_caption_endpoint():
     """Generate a punchy social-media caption + hashtags for a short-form
