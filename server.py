@@ -2090,6 +2090,80 @@ def transcribe_media():
             except OSError: pass
 
 
+@app.route("/detect-beats", methods=["POST"])
+def detect_beats_endpoint():
+    """Onset / beat detection on an uploaded audio (or video) file. Uses a
+    pure-numpy RMS-envelope + rising-edge threshold, so no extra
+    dependencies beyond what's already in requirements.txt.
+
+    Not as accurate as librosa's beat_track for musical BPM tracking,
+    but plenty good for editor-side "split on rhythm hits" — which is
+    what CapCut's Beat Sync ships in practice.
+
+    Form fields:
+      file:      required — the music (mp3/wav/m4a) OR any video file;
+                  audio is auto-extracted via ffmpeg.
+      min_gap:   optional — minimum seconds between adjacent beats
+                  (default 0.20 ≈ 300 BPM ceiling).
+      strength:  optional — 0..1, higher = fewer beats. Default 0.5.
+
+    Response: { success, beats: [seconds…], count }
+    """
+    if "file" not in request.files or not request.files["file"].filename:
+        return jsonify({"error": "No file provided (field name: 'file')"}), 400
+    file = request.files["file"]
+    min_gap = float(request.form.get("min_gap") or 0.20)
+    strength = float(request.form.get("strength") or 0.5)
+
+    import numpy as np
+    safe_name = re.sub(r"[^A-Za-z0-9._-]", "_", file.filename)
+    src_path = os.path.join(EDIT_UPLOAD_DIR, f"{uuid.uuid4().hex}_{safe_name}")
+    file.save(src_path)
+    try:
+        sr = 22050
+        # Decode audio to raw 16-bit mono @ sr Hz via ffmpeg pipe.
+        proc = subprocess.run(
+            ["ffmpeg", "-y", "-i", src_path, "-vn", "-ac", "1", "-ar", str(sr),
+             "-f", "s16le", "-loglevel", "error", "pipe:1"],
+            capture_output=True, timeout=120,
+        )
+        if proc.returncode != 0:
+            return jsonify({"error": f"Audio decode failed: {proc.stderr[:400]}"}), 500
+        pcm = np.frombuffer(proc.stdout, dtype=np.int16).astype(np.float32) / 32768.0
+        if pcm.size < sr:
+            return jsonify({"error": "Audio too short for beat detection"}), 400
+
+        # RMS envelope — hop=512 samples ≈ 23 ms per frame.
+        hop = 512
+        n = (pcm.size - hop) // hop
+        env = np.empty(n, dtype=np.float32)
+        for i in range(n):
+            block = pcm[i * hop:i * hop + hop]
+            env[i] = float(np.sqrt(np.mean(block * block)))
+        # Rising-edge onset function: positive differences of the envelope.
+        diff = np.diff(env)
+        diff = np.maximum(diff, 0)
+        # Adaptive threshold — median + k * std. strength maps to k in [1..3].
+        k = 1.0 + 2.0 * max(0.0, min(1.0, strength))
+        thr = float(np.median(diff)) + k * float(np.std(diff))
+        peaks = np.where(diff > thr)[0]
+
+        # De-duplicate: enforce min_gap seconds between accepted beats.
+        beats = []
+        min_gap_frames = max(1, int(min_gap * sr / hop))
+        last = -min_gap_frames * 2
+        for p in peaks:
+            if p - last >= min_gap_frames:
+                beats.append(round(float(p * hop / sr), 3))
+                last = p
+        return jsonify({"success": True, "beats": beats, "count": len(beats)})
+    finally:
+        try:
+            os.remove(src_path)
+        except OSError:
+            pass
+
+
 @app.route("/generate-voiceover", methods=["POST"])
 def generate_voiceover_endpoint():
     """Generate an AI voice-over audio track for the media editor via
