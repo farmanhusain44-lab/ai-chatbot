@@ -1,20 +1,48 @@
 import os
 import hashlib
+import logging
 import uuid
 from datetime import datetime, timedelta
 
+log = logging.getLogger(__name__)
+
 DATABASE_URL = os.environ.get('DATABASE_URL', '')
 DB_PATH = os.environ.get('DATABASE_PATH', 'botifyai.db')
-IS_POSTGRES = DATABASE_URL.startswith('postgresql')
+# Whether the server should attempt Postgres. Toggles OFF automatically
+# the first time a connection fails so subsequent boots don't crash the
+# whole app when the Postgres service is paused/removed on Railway.
+_want_postgres = DATABASE_URL.startswith('postgresql')
+IS_POSTGRES = _want_postgres
 
-if IS_POSTGRES:
-    import psycopg2
-else:
-    import sqlite3
+import sqlite3
+if _want_postgres:
+    try:
+        import psycopg2
+    except ImportError:
+        # psycopg2 not installed for some reason — fall back to sqlite
+        # instead of crashing at import.
+        log.warning("psycopg2 unavailable; falling back to SQLite")
+        _want_postgres = False
+        IS_POSTGRES = False
 
 def get_db():
+    global IS_POSTGRES
     if IS_POSTGRES:
-        return psycopg2.connect(DATABASE_URL)
+        try:
+            return psycopg2.connect(DATABASE_URL, connect_timeout=5)
+        except Exception as e:
+            # Runtime downgrade — Postgres unreachable (Railway
+            # postgres service paused / removed / DNS failure). We
+            # switch to SQLite for the rest of the process so the
+            # editor endpoints (which don't need the DB) keep working
+            # and BotifyAI chat routes fail-soft rather than 500.
+            log.warning(
+                "Postgres connect failed (%s); downgrading to SQLite "
+                "for this process. Editor endpoints keep working; "
+                "BotifyAI chat state is ephemeral until DB is "
+                "reattached on Railway.", e,
+            )
+            IS_POSTGRES = False
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
@@ -35,8 +63,17 @@ def rows_to_dicts(cursor, rows):
     return [row_to_dict(cursor, row) for row in rows]
 
 def init_db():
-    conn = get_db()
-    cursor = conn.cursor()
+    """Create tables on the active DB backend. Never raises — a failure
+    here (Postgres offline, sqlite path unwriteable) is logged and the
+    app is allowed to boot with degraded DB. Editor routes don't touch
+    the DB so they stay online; BotifyAI chat routes will surface a
+    503 or similar at their own boundaries."""
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+    except Exception as e:
+        log.warning("init_db skipped — DB unavailable: %s", e)
+        return
 
     if IS_POSTGRES:
         cursor.execute(f'''
@@ -118,8 +155,11 @@ def init_db():
             cursor.execute(alter_sql)
         except Exception:
             pass
-    conn.commit()
-    conn.close()
+    try:
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        log.warning("init_db commit/close failed: %s", e)
 
 def generate_access_code(email="", plan="basic"):
     raw = f"{email}{plan}{uuid.uuid4().hex}{datetime.utcnow().timestamp()}"
