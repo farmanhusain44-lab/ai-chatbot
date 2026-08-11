@@ -107,6 +107,11 @@ MODELS: dict[str, str] = {
     # Text-to-video — same MiniMax model without first_frame_image, generates
     # a ~6s clip purely from the prompt. Same cost.
     "ai_text_to_video": "minimax/video-01",
+    # Text-to-music via Meta's MusicGen. Copyright-safe by construction
+    # (AI-generated original composition). ~$0.02-0.05 per 15s clip.
+    # Users pass a genre/mood prompt like "upbeat bollywood-style beat
+    # with tabla and synth, 30 seconds" and get a downloadable mp3.
+    "ai_generate_music": "meta/musicgen:671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb",
 }
 
 # Which param key each model expects for its image input
@@ -369,6 +374,37 @@ def ai_text_to_video(prompt: str, params: dict[str, Any], out_dir: str) -> str:
     }
     output = client.run(MODELS["ai_text_to_video"], input=inputs)
     return _save_output(output, out_dir, prefer_ext="mp4")
+
+
+def ai_generate_music(prompt: str, params: dict[str, Any], out_dir: str) -> str:
+    """Generate a music clip from a text prompt via Meta MusicGen.
+
+    Called from the standalone /generate-music endpoint. Returns the
+    path to the downloaded mp3. Duration defaults to 15s (clamped to
+    MusicGen's practical 30s ceiling).
+
+    Prompt examples:
+      - "upbeat bollywood-style beat with tabla and synth"
+      - "cinematic epic trailer strings, slow build"
+      - "chill lofi hip hop with soft piano"
+      - "80s synthwave with pulsing bass"
+    """
+    client = _client()
+    if not prompt.strip():
+        raise RuntimeError("ai_generate_music requires a non-empty prompt")
+    duration = int((params or {}).get("duration", 15))
+    duration = max(4, min(duration, 30))
+    logger.info("Replicate MusicGen: prompt=%r duration=%d",
+                prompt, duration)
+    inputs: dict[str, Any] = {
+        "prompt": prompt,
+        "duration": duration,
+        "model_version": "stereo-large",
+        "output_format": "mp3",
+        "normalization_strategy": "peak",
+    }
+    output = client.run(MODELS["ai_generate_music"], input=inputs)
+    return _save_output(output, out_dir, prefer_ext="mp3")
 
 
 def ai_animate_image(image_path: str, params: dict[str, Any], out_dir: str) -> str:

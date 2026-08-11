@@ -2428,6 +2428,40 @@ def generate_video_endpoint():
     })
 
 
+@app.route("/generate-music", methods=["POST"])
+def generate_music_endpoint():
+    """Generate an original music clip from a text prompt via Meta
+    MusicGen on Replicate. Copyright-safe (AI-composed). Cost ~$0.02
+    per call for 15s. Not tied to a session — one-shot.
+
+    Form fields:
+      prompt: str (required, e.g. "upbeat bollywood beat with tabla")
+      duration: int (optional, 4-30 seconds, default 15)
+    """
+    from replicate_ops import ai_generate_music
+    prompt = (request.form.get("prompt") or "").strip()
+    if not prompt:
+        return jsonify({"error": "Provide a 'prompt'"}), 400
+    try:
+        duration = int(request.form.get("duration", "15"))
+    except ValueError:
+        duration = 15
+    try:
+        out_path = ai_generate_music(
+            prompt, {"duration": duration}, EDIT_OUTPUT_DIR)
+    except ReplicateUnavailable as e:
+        return jsonify({"error": str(e)}), 503
+    except Exception as e:
+        logger.exception("music generation failed")
+        return jsonify({"error": f"Generation failed: {e}"}), 500
+    return jsonify({
+        "success": True,
+        "kind": "music",
+        "download_url": f"/edit-media/download/{os.path.basename(out_path)}",
+        "filename": os.path.basename(out_path),
+    })
+
+
 @app.route("/edit-media/download/<path:name>", methods=["GET"])
 def edit_media_download(name: str):
     # basic path traversal guard
